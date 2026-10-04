@@ -57,6 +57,10 @@ export function renderMarkdown(source) {
 
 const MARK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>`;
 
+function current(path, section) {
+  return path === section || path.startsWith(section + '/') ? ' aria-current="page"' : '';
+}
+
 export function layout({ title, description, path = '/', body, robots = 'index,follow', jsonLd = null, article = false }) {
   const canonical = SITE + (path === '/' ? '/' : path);
   const fullTitle = title.includes('La Homa') ? title : `${title} · La Homa`;
@@ -84,30 +88,50 @@ ${ld}
 <body>
 <a class="skip" href="#contenido">Saltar al contenido</a>
 <header class="site-header">
-  <a class="brand" href="/"><span class="brand-mark">${MARK}</span><span>La Homa<small>Organización familiar</small></span></a>
-  <input id="menu" class="menu-check" type="checkbox">
-  <label class="menu-button" for="menu">Menú</label>
-  <nav class="site-nav" aria-label="Secciones">
-    <a href="/como-funciona">Cómo funciona</a>
-    <a href="/familias">Familias</a>
-    <a href="/blog">Blog</a>
-    <a href="/privacidad">Privacidad</a>
-  </nav>
-  <a class="button" href="${PUBLIC.app}">Abrir la app</a>
+  <div class="wrap header-inner">
+    <a class="brand" href="/" aria-label="La Homa, inicio"><span class="brand-mark">${MARK}</span><span>La Homa<small>Organización familiar</small></span></a>
+    <input id="menu" class="menu-check" type="checkbox" aria-label="Abrir el menú">
+    <label class="menu-button" for="menu" aria-hidden="true"><span></span><span></span></label>
+    <div class="menu-panel">
+      <nav class="site-nav" aria-label="Secciones">
+        <a href="/como-funciona"${current(path, '/como-funciona')}>Cómo funciona</a>
+        <a href="/familias"${current(path, '/familias')}>Para quién es</a>
+        <a href="/blog"${current(path, '/blog')}>Blog</a>
+      </nav>
+      <div class="header-actions">
+        <a class="link-quiet" href="${PUBLIC.app}">Entrar</a>
+        <a class="button small" href="${PUBLIC.app}">Crear mi casa</a>
+      </div>
+    </div>
+  </div>
 </header>
 <main id="contenido">${body}</main>
 <footer class="site-footer">
-  <div>
-    <strong>La Homa</strong>
-    <p>Tu vida familiar, organizada.</p>
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href="/"><span class="brand-mark">${MARK}</span><span>La Homa<small>Organización familiar</small></span></a>
+      <p>Tareas, paga, calendario y cocina de toda la familia, en un mismo sitio.</p>
+    </div>
+    <nav aria-label="La Homa">
+      <b>La Homa</b>
+      <a href="/como-funciona">Cómo funciona</a>
+      <a href="/familias">Para quién es</a>
+      <a href="/blog">Blog</a>
+    </nav>
+    <nav aria-label="La app">
+      <b>La app</b>
+      <a href="${PUBLIC.app}">Entrar</a>
+      <a href="${PUBLIC.app}">Crear mi casa</a>
+    </nav>
+    <nav aria-label="Información">
+      <b>Información</b>
+      <a href="/privacidad">Privacidad</a>
+    </nav>
   </div>
-  <nav aria-label="Pie">
-    <a href="/como-funciona">Cómo funciona</a>
-    <a href="/familias">Familias</a>
-    <a href="/blog">Blog</a>
-    <a href="/privacidad">Privacidad</a>
-    <a href="${PUBLIC.app}">Entrar</a>
-  </nav>
+  <div class="wrap footer-bottom">
+    <span>© ${new Date().getFullYear()} La Homa</span>
+    <span>Tu vida familiar, organizada.</span>
+  </div>
 </footer>
 </body>
 </html>`;
@@ -150,13 +174,13 @@ export async function publishedPosts(filters = '') {
 export function blogIndexDocument(posts, ready) {
   const list = posts.length
     ? `<ul class="post-list">${posts.map(post => `<li><a href="/blog/${escapeHtml(post.slug)}"><time datetime="${escapeHtml(post.published_at || '')}">${escapeHtml(formatDate(post.published_at))}</time><h2>${escapeHtml(post.title)}</h2><p>${escapeHtml(post.excerpt || '')}</p></a></li>`).join('')}</ul>`
-    : `<div class="empty-note"><h2>Todavía no hay artículos</h2><p>Cuando publiquemos el primero, aparecerá aquí con su propia dirección.</p></div>`;
+    : `<div class="empty-note"><h2>Todavía no hay artículos</h2><p>Estamos escribiendo los primeros. Mientras tanto, puedes ver <a href="/como-funciona">cómo es una semana con La Homa</a>.</p></div>`;
   return layout({
     title: 'Blog',
     description: 'Ideas y guías de La Homa para organizar la casa, la semana y el dinero familiar.',
     path: '/blog',
     robots: posts.length ? 'index,follow' : 'noindex,follow',
-    body: `<article class="page narrow"><p class="eyebrow">Blog</p><h1>Notas para la casa</h1><p class="lede">Textos claros sobre organización familiar. Cada artículo tiene su dirección para que pueda encontrarse.</p>${ready ? list : '<div class="empty-note"><h2>El blog se está preparando</h2><p>Vuelve en un momento. La página ya está reservada.</p></div>'}</article>`
+    body: `<article class="wrap page narrow"><p class="eyebrow">Blog</p><h1>Ideas para organizar la casa</h1><p class="lede">Artículos sobre tareas, paga, convivencia y cocina en familia, escritos a partir de lo que funciona en casas reales.</p>${ready ? list : '<div class="empty-note"><h2>No hemos podido cargar los artículos</h2><p>Vuelve a intentarlo en un momento.</p></div>'}</article>`
   });
 }
 
@@ -180,7 +204,7 @@ export function articleDocument(post) {
     path: `/blog/${post.slug}`,
     article: true,
     jsonLd,
-    body: `<article class="page narrow article"><p class="eyebrow">Blog</p><h1>${escapeHtml(post.title)}</h1><p class="byline"><time datetime="${escapeHtml(post.published_at || '')}">${escapeHtml(formatDate(post.published_at))}</time></p><div class="prose">${renderMarkdown(post.body)}</div><p class="back"><a href="/blog">Volver al blog</a></p></article>`
+    body: `<article class="wrap page narrow article"><p class="eyebrow"><a href="/blog">Blog</a></p><h1>${escapeHtml(post.title)}</h1><p class="byline"><time datetime="${escapeHtml(post.published_at || '')}">${escapeHtml(formatDate(post.published_at))}</time></p><div class="prose">${renderMarkdown(post.body)}</div><aside class="article-cta"><h2>Organiza tu casa con La Homa</h2><p>Tareas con puntos, paga y ahorro, calendario y menú de toda la familia en un mismo sitio.</p><a class="button" href="${PUBLIC.app}">Crear mi casa</a></aside><p class="back"><a href="/blog">Volver al blog</a></p></article>`
   });
 }
 
@@ -190,7 +214,7 @@ export function notFoundDocument() {
     description: 'Esa dirección no existe en La Homa.',
     path: '/404',
     robots: 'noindex,follow',
-    body: `<article class="page narrow"><p class="eyebrow">404</p><h1>Esta página no está</h1><p class="lede">Puedes volver al inicio o entrar en la app.</p><p><a class="button" href="/">Ir al inicio</a></p></article>`
+    body: `<article class="wrap page narrow"><p class="eyebrow">Error 404</p><h1>Esta página no existe.</h1><p class="lede">Puede que la dirección esté mal escrita o que la página se haya movido. Desde el inicio puedes llegar a todo lo demás.</p><div class="actions"><a class="button" href="/">Ir al inicio</a><a class="button quiet" href="${PUBLIC.app}">Entrar en la app</a></div></article>`
   });
 }
 

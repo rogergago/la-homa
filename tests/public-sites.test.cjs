@@ -15,7 +15,9 @@ test('marketing pages explain the product and stay free of secrets', async () =>
   assert.doesNotMatch(home, /sb_secret|service_role|Iniciar sesión con Apple/);
   assert.match(fs.readFileSync(path.join(dist, 'como-funciona', 'index.html'), 'utf8'), /correo o con Google/);
   assert.match(fs.readFileSync(path.join(dist, 'familias', 'index.html'), 'utf8'), /Custodia compartida/);
-  assert.match(fs.readFileSync(path.join(dist, 'privacidad', 'index.html'), 'utf8'), /No abre nombres/);
+  assert.match(fs.readFileSync(path.join(dist, 'privacidad', 'index.html'), 'utf8'), /no abre los nombres/);
+  assert.match(home, /"@type":"FAQPage"/);
+  assert.doesNotMatch(home, /style="/);
   assert.match(fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8'), /Sitemap: https:\/\/lahoma\.app\/sitemap\.xml/);
   const { renderMarkdown, blogIndexDocument, articleDocument, sitemap } = await import('../site/functions/_lib.js');
   assert.match(renderMarkdown('<script>alert(1)</script>'), /&lt;script&gt;/);
