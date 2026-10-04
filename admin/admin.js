@@ -32,17 +32,14 @@
 
   function login(notice) {
     gate('Entra para administrar', `
-      <p class="lede">Correo o Google. Es la misma cuenta de la app. Solo una cuenta marcada como operadora abre el panel.</p>
+      <p class="lede">Entra con el correo y la contraseña de tu cuenta. Solo esa cuenta, marcada como operadora, abre el panel.</p>
       ${notice ? `<div class="note ${error ? 'bad' : ''}">${esc(notice)}</div>` : ''}
       <form id="login">
         <label class="field">Correo<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
         <label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" required minlength="6" maxlength="200"></label>
         <div class="actions"><button class="button wide" type="submit">Entrar</button></div>
-      </form>
-      <div class="actions"><button class="quiet" type="button" id="google">Continuar con Google</button><button class="quiet" type="button" id="forgot">He olvidado mi contraseña</button></div>`);
+      </form>`);
     document.querySelector('#login').addEventListener('submit', onLogin);
-    document.querySelector('#google').addEventListener('click', onGoogle);
-    document.querySelector('#forgot').addEventListener('click', onForgot);
   }
 
   function operatorInstructions() {
@@ -156,19 +153,6 @@
     if (result.error) { error = 'Correo o contraseña incorrectos.'; login(error); return; }
     session = result.data.session;
     await boot();
-  }
-
-  async function onGoogle() {
-    error = '';
-    const result = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/', queryParams: { prompt: 'select_account' } } });
-    if (result.error) { error = 'Google no ha abierto el acceso.'; login(error); }
-  }
-
-  async function onForgot() {
-    const email = document.querySelector('[name="email"]')?.value || '';
-    if (!email) { login('Escribe el correo y vuelve a pedir la contraseña.'); return; }
-    const result = await client.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/' });
-    login(result.error ? 'No se pudo enviar el correo.' : 'Si la cuenta existe, llega un correo para elegir otra contraseña.');
   }
 
   async function onPassword() {

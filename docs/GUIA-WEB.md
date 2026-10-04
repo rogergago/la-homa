@@ -139,6 +139,6 @@ Proyecto del panel:
 - Directorio de salida: `dist`
 - Dominio: `admin.lahoma.app`
 
-En Supabase, Authentication, URL configuration, añade `https://admin.lahoma.app/**` a las redirecciones permitidas. Si entras al panel con Google, añade también `https://admin.lahoma.app` como origen autorizado en el cliente de Google.
+El panel se abre con el correo y la contraseña de la cuenta operadora. No usa Google y no necesita una redirección nueva en Supabase.
 
 El primer acceso al panel, con la misma cuenta de la app, muestra la sentencia SQL que marca esa cuenta como operadora. Hay que pegarla en el editor SQL. A partir de ahí se publican artículos y se ven las casas por nombre, tamaño y actividad.

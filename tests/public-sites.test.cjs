@@ -40,6 +40,7 @@ test('admin is a noindex operator panel without a secret', () => {
   assert.match(html, /noindex/);
   assert.match(config, /sb_publishable_/);
   assert.doesNotMatch(config + source, /sb_secret|service_role/);
+  assert.doesNotMatch(source, /signInWithOAuth/);
   assert.match(source, /homa_is_operator/);
   assert.match(source, /homa_operator_overview/);
   assert.match(fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8'), /Disallow: \//);
