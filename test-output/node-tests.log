@@ -1,0 +1,1343 @@
+
+> la-homa@5.0.0-beta.1 check
+> npm run build && npm test
+
+
+> la-homa@5.0.0-beta.1 build
+> node scripts/build.cjs
+
+Built 7d25ed38d169 web directory and standalone preview
+
+> la-homa@5.0.0-beta.1 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: seed data passes schema validation
+ok 1 - seed data passes schema validation
+  ---
+  duration_ms: 29.305174
+  type: 'test'
+  ...
+# Subtest: calendar helpers preserve dates through daylight saving changes
+ok 2 - calendar helpers preserve dates through daylight saving changes
+  ---
+  duration_ms: 0.144989
+  type: 'test'
+  ...
+# Subtest: daily, weekly and selected-day frequencies generate the exact target
+ok 3 - daily, weekly and selected-day frequencies generate the exact target
+  ---
+  duration_ms: 7.160328
+  type: 'test'
+  ...
+# Subtest: week generation is idempotent
+ok 4 - week generation is idempotent
+  ---
+  duration_ms: 4.826639
+  type: 'test'
+  ...
+# Subtest: completing a task twice never duplicates points
+ok 5 - completing a task twice never duplicates points
+  ---
+  duration_ms: 4.144911
+  type: 'test'
+  ...
+# Subtest: missed-to-done correction reverses the loss and adds the gain
+ok 6 - missed-to-done correction reverses the loss and adds the gain
+  ---
+  duration_ms: 4.130099
+  type: 'test'
+  ...
+# Subtest: return to pending reverses any score
+ok 7 - return to pending reverses any score
+  ---
+  duration_ms: 4.247715
+  type: 'test'
+  ...
+# Subtest: negative weekly scores remain visible, while progress is clamped
+ok 8 - negative weekly scores remain visible, while progress is clamped
+  ---
+  duration_ms: 4.731826
+  type: 'test'
+  ...
+# Subtest: members can only complete or reset their own tasks
+ok 9 - members can only complete or reset their own tasks
+  ---
+  duration_ms: 5.305862
+  type: 'test'
+  ...
+# Subtest: closing a week applies configured pending penalties once
+ok 10 - closing a week applies configured pending penalties once
+  ---
+  duration_ms: 4.670173
+  type: 'test'
+  ...
+# Subtest: closing without penalties preserves pending tasks
+ok 11 - closing without penalties preserves pending tasks
+  ---
+  duration_ms: 4.304512
+  type: 'test'
+  ...
+# Subtest: normal tasks in closed weeks are immutable
+ok 12 - normal tasks in closed weeks are immutable
+  ---
+  duration_ms: 4.064941
+  type: 'test'
+  ...
+# Subtest: recovery contributes points but never increases the objective
+ok 13 - recovery contributes points but never increases the objective
+  ---
+  duration_ms: 5.461126
+  type: 'test'
+  ...
+# Subtest: recovery in an old closed week never changes the current week
+ok 14 - recovery in an old closed week never changes the current week
+  ---
+  duration_ms: 3.830417
+  type: 'test'
+  ...
+# Subtest: incomplete recovery tasks are not automatically penalized at closure
+ok 15 - incomplete recovery tasks are not automatically penalized at closure
+  ---
+  duration_ms: 3.951729
+  type: 'test'
+  ...
+# Subtest: weekly rollover preserves history, resets points, and runs once
+ok 16 - weekly rollover preserves history, resets points, and runs once
+  ---
+  duration_ms: 6.787376
+  type: 'test'
+  ...
+# Subtest: inactive weeks are not populated with invented activity
+ok 17 - inactive weeks are not populated with invented activity
+  ---
+  duration_ms: 18.690257
+  type: 'test'
+  ...
+# Subtest: template changes do not rewrite past or completed task values
+ok 18 - template changes do not rewrite past or completed task values
+  ---
+  duration_ms: 10.724293
+  type: 'test'
+  ...
+# Subtest: manual adjustments affect score, never target
+ok 19 - manual adjustments affect score, never target
+  ---
+  duration_ms: 4.053433
+  type: 'test'
+  ...
+# Subtest: reward unlocks only at its own positive threshold
+ok 20 - reward unlocks only at its own positive threshold
+  ---
+  duration_ms: 11.078807
+  type: 'test'
+  ...
+# Subtest: fixed reward threshold is independent of weekly target
+ok 21 - fixed reward threshold is independent of weekly target
+  ---
+  duration_ms: 4.126143
+  type: 'test'
+  ...
+# Subtest: reward delivery is idempotent and retained after a correction
+ok 22 - reward delivery is idempotent and retained after a correction
+  ---
+  duration_ms: 3.863997
+  type: 'test'
+  ...
+# Subtest: quantities scale and merge without creating duplicate pending ingredients
+ok 23 - quantities scale and merge without creating duplicate pending ingredients
+  ---
+  duration_ms: 4.035857
+  type: 'test'
+  ...
+# Subtest: completed shopping items are not reused as pending ingredients
+ok 24 - completed shopping items are not reused as pending ingredients
+  ---
+  duration_ms: 3.933392
+  type: 'test'
+  ...
+# Subtest: ICS export/import preserves event title, dates and local times
+ok 25 - ICS export/import preserves event title, dates and local times
+  ---
+  duration_ms: 5.846097
+  type: 'test'
+  ...
+# Subtest: ICS all-day multi-day events use an exclusive DTEND on the wire
+ok 26 - ICS all-day multi-day events use an exclusive DTEND on the wire
+  ---
+  duration_ms: 8.456343
+  type: 'test'
+  ...
+# Subtest: ICS escaping and UTF-8 line folding round-trip
+ok 27 - ICS escaping and UTF-8 line folding round-trip
+  ---
+  duration_ms: 11.645653
+  type: 'test'
+  ...
+# Subtest: ICS parser handles an explicit time zone
+ok 28 - ICS parser handles an explicit time zone
+  ---
+  duration_ms: 1.390818
+  type: 'test'
+  ...
+# Subtest: unsupported repeating events are explicitly counted as omitted
+ok 29 - unsupported repeating events are explicitly counted as omitted
+  ---
+  duration_ms: 0.122084
+  type: 'test'
+  ...
+# Subtest: own exported tasks do not get imported as duplicate calendar plans
+ok 30 - own exported tasks do not get imported as duplicate calendar plans
+  ---
+  duration_ms: 10.957865
+  type: 'test'
+  ...
+# Subtest: malformed backup data and injectable IDs are rejected
+ok 31 - malformed backup data and injectable IDs are rejected
+  ---
+  duration_ms: 8.239066
+  type: 'test'
+  ...
+# Subtest: 1000 status changes agree with a fresh derived ledger
+ok 32 - 1000 status changes agree with a fresh derived ledger
+  ---
+  duration_ms: 25.965538
+  type: 'test'
+  ...
+# Subtest: partial residence retains the full 70-point target
+ok 33 - partial residence retains the full 70-point target
+  ---
+  duration_ms: 20.596471
+  type: 'test'
+  ...
+# Subtest: seven days and two days can both earn exactly 100
+ok 34 - seven days and two days can both earn exactly 100
+  ---
+  duration_ms: 10.498312
+  type: 'test'
+  ...
+# Subtest: normalised integer weights add to target with deterministic remainder
+ok 35 - normalised integer weights add to target with deterministic remainder
+  ---
+  duration_ms: 4.864666
+  type: 'test'
+  ...
+# Subtest: base weights are not rewritten
+ok 36 - base weights are not rewritten
+  ---
+  duration_ms: 4.214206
+  type: 'test'
+  ...
+# Subtest: missed/done correction returns accurate compensated delta
+ok 37 - missed/done correction returns accurate compensated delta
+  ---
+  duration_ms: 4.43617
+  type: 'test'
+  ...
+# Subtest: manual adjustments and recovery are not multiplied
+ok 38 - manual adjustments and recovery are not multiplied
+  ---
+  duration_ms: 4.057209
+  type: 'test'
+  ...
+# Subtest: whole absent week is paused not reward unlocked
+ok 39 - whole absent week is paused not reward unlocked
+  ---
+  duration_ms: 4.079281
+  type: 'test'
+  ...
+# Subtest: full week holiday suppresses a fixed allowance
+ok 40 - full week holiday suppresses a fixed allowance
+  ---
+  duration_ms: 5.019991
+  type: 'test'
+  ...
+# Subtest: full absent week suppresses goal and tier allowances including zero-point tier
+ok 41 - full absent week suppresses goal and tier allowances including zero-point tier
+  ---
+  duration_ms: 9.166133
+  type: 'test'
+  ...
+# Subtest: a partial week keeps full fixed allowance
+ok 42 - a partial week keeps full fixed allowance
+  ---
+  duration_ms: 5.181294
+  type: 'test'
+  ...
+# Subtest: paid entries never disappear when presence is changed
+ok 43 - paid entries never disappear when presence is changed
+  ---
+  duration_ms: 3.983979
+  type: 'test'
+  ...
+# Subtest: closed-week target and presence are frozen after new config
+ok 44 - closed-week target and presence are frozen after new config
+  ---
+  duration_ms: 4.510502
+  type: 'test'
+  ...
+# Subtest: legacy historical weeks are not retroactively compensated
+ok 45 - legacy historical weeks are not retroactively compensated
+  ---
+  duration_ms: 4.429461
+  type: 'test'
+  ...
+# Subtest: open-week holiday correction restores pending allowance
+ok 46 - open-week holiday correction restores pending allowance
+  ---
+  duration_ms: 3.982476
+  type: 'test'
+  ...
+# Subtest: no holiday debt is generated for completely unvisited weeks
+ok 47 - no holiday debt is generated for completely unvisited weeks
+  ---
+  duration_ms: 3.52755
+  type: 'test'
+  ...
+# Subtest: future weeks use unchanged target when new tasks are added
+ok 48 - future weeks use unchanged target when new tasks are added
+  ---
+  duration_ms: 4.390392
+  type: 'test'
+  ...
+# Subtest: normalisation survives JSON backup validation
+ok 49 - normalisation survives JSON backup validation
+  ---
+  duration_ms: 12.86401
+  type: 'test'
+  ...
+# Subtest: invalid normalisation state is rejected
+ok 50 - invalid normalisation state is rejected
+  ---
+  duration_ms: 4.802602
+  type: 'test'
+  ...
+# Subtest: child cannot configure the stable target
+ok 51 - child cannot configure the stable target
+  ---
+  duration_ms: 3.474349
+  type: 'test'
+  ...
+# Subtest: no assignments does not create free weekly reward
+ok 52 - no assignments does not create free weekly reward
+  ---
+  duration_ms: 4.212413
+  type: 'test'
+  ...
+# Subtest: routine excludes automatically excused away-day steps
+ok 53 - routine excludes automatically excused away-day steps
+  ---
+  duration_ms: 4.0979
+  type: 'test'
+  ...
+# Subtest: server refuses cross-household principal
+ok 54 - server refuses cross-household principal
+  ---
+  duration_ms: 11.238999
+  type: 'test'
+  ...
+# Subtest: server ignores a forged adult role inside payload
+ok 55 - server ignores a forged adult role inside payload
+  ---
+  duration_ms: 16.936381
+  type: 'test'
+  ...
+# Subtest: server time prevents future task despite forged browser clock
+ok 56 - server time prevents future task despite forged browser clock
+  ---
+  duration_ms: 5.086952
+  type: 'test'
+  ...
+# Subtest: server allows authorized adult deposit with server timestamp
+ok 57 - server allows authorized adult deposit with server timestamp
+  ---
+  duration_ms: 7.6722
+  type: 'test'
+  ...
+# Subtest: server will not execute unknown arbitrary state patches
+ok 58 - server will not execute unknown arbitrary state patches
+  ---
+  duration_ms: 4.542591
+  type: 'test'
+  ...
+# Subtest: server child cannot transfer another child balance
+ok 59 - server child cannot transfer another child balance
+  ---
+  duration_ms: 4.341778
+  type: 'test'
+  ...
+# Subtest: server revoked device denied before operation
+ok 60 - server revoked device denied before operation
+  ---
+  duration_ms: 3.619839
+  type: 'test'
+  ...
+# Subtest: server repeated operation id returns receipt, one money movement
+ok 61 - server repeated operation id returns receipt, one money movement
+  ---
+  duration_ms: 6.532552
+  type: 'test'
+  ...
+# Subtest: server concurrent operations serialize without dropping a deposit
+ok 62 - server concurrent operations serialize without dropping a deposit
+  ---
+  duration_ms: 8.014096
+  type: 'test'
+  ...
+# Subtest: server stale expected revision rejects rather than overwrites
+ok 63 - server stale expected revision rejects rather than overwrites
+  ---
+  duration_ms: 6.815709
+  type: 'test'
+  ...
+# Subtest: server idempotency key cannot be reused with another amount
+ok 64 - server idempotency key cannot be reused with another amount
+  ---
+  duration_ms: 6.92298
+  type: 'test'
+  ...
+# Subtest: server receipt cannot be replayed by another principal
+ok 65 - server receipt cannot be replayed by another principal
+  ---
+  duration_ms: 5.710382
+  type: 'test'
+  ...
+# Subtest: server null payload is explicitly rejected
+ok 66 - server null payload is explicitly rejected
+  ---
+  duration_ms: 3.631757
+  type: 'test'
+  ...
+# Subtest: v1 migration preserves tasks and never invents monetary balances
+ok 67 - v1 migration preserves tasks and never invents monetary balances
+  ---
+  duration_ms: 21.696921
+  type: 'test'
+  ...
+# Subtest: new real family starts without demo finance pantry or vouchers
+ok 68 - new real family starts without demo finance pantry or vouchers
+  ---
+  duration_ms: 9.777886
+  type: 'test'
+  ...
+# Subtest: money represented in integer cents, decimal comma accepted
+ok 69 - money represented in integer cents, decimal comma accepted
+  ---
+  duration_ms: 0.342686
+  type: 'test'
+  ...
+# Subtest: demo balances are conserved across savings pockets
+ok 70 - demo balances are conserved across savings pockets
+  ---
+  duration_ms: 4.74775
+  type: 'test'
+  ...
+# Subtest: saving conserves total and cannot go negative
+ok 71 - saving conserves total and cannot go negative
+  ---
+  duration_ms: 5.626876
+  type: 'test'
+  ...
+# Subtest: children cannot issue credits or touch another wallet
+ok 72 - children cannot issue credits or touch another wallet
+  ---
+  duration_ms: 4.3031
+  type: 'test'
+  ...
+# Subtest: duplicate transaction reference is idempotent
+ok 73 - duplicate transaction reference is idempotent
+  ---
+  duration_ms: 4.925788
+  type: 'test'
+  ...
+# Subtest: no paycheck before payday; no automatic money movement
+ok 74 - no paycheck before payday; no automatic money movement
+  ---
+  duration_ms: 5.566464
+  type: 'test'
+  ...
+# Subtest: adult paycheck once with cent-safe split
+ok 75 - adult paycheck once with cent-safe split
+  ---
+  duration_ms: 5.052781
+  type: 'test'
+  ...
+# Subtest: payday checks permission and calendar date
+ok 76 - payday checks permission and calendar date
+  ---
+  duration_ms: 5.080281
+  type: 'test'
+  ...
+# Subtest: conditional allowance waits for original week goal
+ok 77 - conditional allowance waits for original week goal
+  ---
+  duration_ms: 4.121906
+  type: 'test'
+  ...
+# Subtest: changing allowance preserves existing due snapshots
+ok 78 - changing allowance preserves existing due snapshots
+  ---
+  duration_ms: 3.833692
+  type: 'test'
+  ...
+# Subtest: paused allowance does not invent arrears for paused weeks
+ok 79 - paused allowance does not invent arrears for paused weeks
+  ---
+  duration_ms: 4.125922
+  type: 'test'
+  ...
+# Subtest: spending request does not yet deduct; approval deducts once
+ok 80 - spending request does not yet deduct; approval deducts once
+  ---
+  duration_ms: 4.922243
+  type: 'test'
+  ...
+# Subtest: approval rechecks funds when other requests already spent
+ok 81 - approval rechecks funds when other requests already spent
+  ---
+  duration_ms: 3.76611
+  type: 'test'
+  ...
+# Subtest: declined spending is not debited
+ok 82 - declined spending is not debited
+  ---
+  duration_ms: 3.843687
+  type: 'test'
+  ...
+# Subtest: goal purchase returns excess to general savings
+ok 83 - goal purchase returns excess to general savings
+  ---
+  duration_ms: 4.310931
+  type: 'test'
+  ...
+# Subtest: reversal is additive history and idempotent
+ok 84 - reversal is additive history and idempotent
+  ---
+  duration_ms: 5.630391
+  type: 'test'
+  ...
+# Subtest: ledger import rejects negative balance and unequal internal transfers
+ok 85 - ledger import rejects negative balance and unequal internal transfers
+  ---
+  duration_ms: 8.691678
+  type: 'test'
+  ...
+# Subtest: finance has no effect on weekly point resets
+ok 86 - finance has no effect on weekly point resets
+  ---
+  duration_ms: 5.590261
+  type: 'test'
+  ...
+# Subtest: review requests are worth zero until adult approval
+ok 87 - review requests are worth zero until adult approval
+  ---
+  duration_ms: 5.767428
+  type: 'test'
+  ...
+# Subtest: pending review is preserved without penalty on closing
+ok 88 - pending review is preserved without penalty on closing
+  ---
+  duration_ms: 3.544716
+  type: 'test'
+  ...
+# Subtest: excused task reduces target, not points
+ok 89 - excused task reduces target, not points
+  ---
+  duration_ms: 4.285343
+  type: 'test'
+  ...
+# Subtest: weekly rotation picks exactly one person and cycles
+ok 90 - weekly rotation picks exactly one person and cycles
+  ---
+  duration_ms: 7.561323
+  type: 'test'
+  ...
+# Subtest: routine uses existing same-day assignments only
+ok 91 - routine uses existing same-day assignments only
+  ---
+  duration_ms: 6.383457
+  type: 'test'
+  ...
+# Subtest: absence excuses pending tasks and cancellation restores them
+ok 92 - absence excuses pending tasks and cancellation restores them
+  ---
+  duration_ms: 5.327574
+  type: 'test'
+  ...
+# Subtest: absence applies automatically when next week generated
+ok 93 - absence applies automatically when next week generated
+  ---
+  duration_ms: 3.886682
+  type: 'test'
+  ...
+# Subtest: swap needs receiver agreement then adult, and recomputes targets
+ok 94 - swap needs receiver agreement then adult, and recomputes targets
+  ---
+  duration_ms: 4.813318
+  type: 'test'
+  ...
+# Subtest: stale swap cannot move completed task
+ok 95 - stale swap cannot move completed task
+  ---
+  duration_ms: 3.773862
+  type: 'test'
+  ...
+# Subtest: event preparation has no points and preserves original checklist
+ok 96 - event preparation has no points and preserves original checklist
+  ---
+  duration_ms: 4.406465
+  type: 'test'
+  ...
+# Subtest: pantry comparisons convert units and recognize decimal commas
+ok 97 - pantry comparisons convert units and recognize decimal commas
+  ---
+  duration_ms: 0.785404
+  type: 'test'
+  ...
+# Subtest: shopping subtracts stock AND pending shopping and repeated adds are idempotent
+ok 98 - shopping subtracts stock AND pending shopping and repeated adds are idempotent
+  ---
+  duration_ms: 4.337422
+  type: 'test'
+  ...
+# Subtest: unknown recipe quantities stay manual and expired stock excluded
+ok 99 - unknown recipe quantities stay manual and expired stock excluded
+  ---
+  duration_ms: 3.903256
+  type: 'test'
+  ...
+# Subtest: receiving shopping does not duplicate stock
+ok 100 - receiving shopping does not duplicate stock
+  ---
+  duration_ms: 4.406766
+  type: 'test'
+  ...
+# Subtest: consuming meal only once, no negative stock
+ok 101 - consuming meal only once, no negative stock
+  ---
+  duration_ms: 4.183238
+  type: 'test'
+  ...
+# Subtest: voucher issued once then scheduled once then spent once
+ok 102 - voucher issued once then scheduled once then spent once
+  ---
+  duration_ms: 4.299504
+  type: 'test'
+  ...
+# Subtest: one family vote per person across proposals
+ok 103 - one family vote per person across proposals
+  ---
+  duration_ms: 4.668951
+  type: 'test'
+  ...
+# Subtest: child proposal waits for adult approval and closed meeting cannot vote
+ok 104 - child proposal waits for adult approval and closed meeting cannot vote
+  ---
+  duration_ms: 7.154259
+  type: 'test'
+  ...
+# Subtest: v2 JSON roundtrip preserves financial and household modules
+ok 105 - v2 JSON roundtrip preserves financial and household modules
+  ---
+  duration_ms: 6.212058
+  type: 'test'
+  ...
+# Subtest: no learning simulator APIs are exposed
+ok 106 - no learning simulator APIs are exposed
+  ---
+  duration_ms: 0.127082
+  type: 'test'
+  ...
+# Subtest: old v2 backup retains money and inert learning history
+ok 107 - old v2 backup retains money and inert learning history
+  ---
+  duration_ms: 5.054933
+  type: 'test'
+  ...
+# Subtest: local signup derives encryption key, stores no clear password and signs in
+ok 108 - local signup derives encryption key, stores no clear password and signs in
+  ---
+  duration_ms: 186.538656
+  type: 'test'
+  ...
+# Subtest: encryption authentication rejects wrong key without exposing family
+ok 109 - encryption authentication rejects wrong key without exposing family
+  ---
+  duration_ms: 272.562804
+  type: 'test'
+  ...
+# Subtest: logout removes persistent session and plaintext working cache
+ok 110 - logout removes persistent session and plaintext working cache
+  ---
+  duration_ms: 159.040756
+  type: 'test'
+  ...
+# Subtest: local relogin recovers saved data from vault
+ok 111 - local relogin recovers saved data from vault
+  ---
+  duration_ms: 282.474136
+  type: 'test'
+  ...
+# Subtest: wrong email/password is rejected; no account activated
+ok 112 - wrong email/password is rejected; no account activated
+  ---
+  duration_ms: 274.912382
+  type: 'test'
+  ...
+# Subtest: duplicate local email is rejected case-insensitively
+ok 113 - duplicate local email is rejected case-insensitively
+  ---
+  duration_ms: 137.894246
+  type: 'test'
+  ...
+# Subtest: account switch isolates family and finances
+ok 114 - account switch isolates family and finances
+  ---
+  duration_ms: 280.318274
+  type: 'test'
+  ...
+# Subtest: mismatched or short registration password is rejected
+ok 115 - mismatched or short registration password is rejected
+  ---
+  duration_ms: 4.488069
+  type: 'test'
+  ...
+# Subtest: cloud client refuses a file URL and does not fake a provider login
+ok 116 - cloud client refuses a file URL and does not fake a provider login
+  ---
+  duration_ms: 4.713478
+  type: 'test'
+  ...
+# Subtest: v2.1 migration retains all money and creates no yield
+ok 117 - v2.1 migration retains all money and creates no yield
+  ---
+  duration_ms: 21.426924
+  type: 'test'
+  ...
+# Subtest: unknown schema rejected, null safely rejected
+ok 118 - unknown schema rejected, null safely rejected
+  ---
+  duration_ms: 11.889229
+  type: 'test'
+  ...
+# Subtest: compound interest approximates one full effective period to within one cent
+ok 119 - compound interest approximates one full effective period to within one cent
+  ---
+  duration_ms: 11.016824
+  type: 'test'
+  ...
+# Subtest: interest never credits available spending pocket
+ok 120 - interest never credits available spending pocket
+  ---
+  duration_ms: 5.526193
+  type: 'test'
+  ...
+# Subtest: goal savings earn yield and credits go to main savings
+ok 121 - goal savings earn yield and credits go to main savings
+  ---
+  duration_ms: 5.355987
+  type: 'test'
+  ...
+# Subtest: daily accrual is idempotent with unique references
+ok 122 - daily accrual is idempotent with unique references
+  ---
+  duration_ms: 6.463898
+  type: 'test'
+  ...
+# Subtest: new deposits start the following day, not retroactively
+ok 123 - new deposits start the following day, not retroactively
+  ---
+  duration_ms: 4.841963
+  type: 'test'
+  ...
+# Subtest: withdrawals reduce same-day interest base
+ok 124 - withdrawals reduce same-day interest base
+  ---
+  duration_ms: 8.640055
+  type: 'test'
+  ...
+# Subtest: goal-to-savings transfers do not duplicate interest base
+ok 125 - goal-to-savings transfers do not duplicate interest base
+  ---
+  duration_ms: 3.791999
+  type: 'test'
+  ...
+# Subtest: fractions below a cent survive between calculations
+ok 126 - fractions below a cent survive between calculations
+  ---
+  duration_ms: 4.252954
+  type: 'test'
+  ...
+# Subtest: zero percent never manufactures money
+ok 127 - zero percent never manufactures money
+  ---
+  duration_ms: 3.73259
+  type: 'test'
+  ...
+# Subtest: rate changes settle old periods and never rewrite entries
+ok 128 - rate changes settle old periods and never rewrite entries
+  ---
+  duration_ms: 4.089987
+  type: 'test'
+  ...
+# Subtest: disabled period does not gain yield or catch up later
+ok 129 - disabled period does not gain yield or catch up later
+  ---
+  duration_ms: 3.898339
+  type: 'test'
+  ...
+# Subtest: children cannot change interest rate; malformed rates fail
+ok 130 - children cannot change interest rate; malformed rates fail
+  ---
+  duration_ms: 5.138439
+  type: 'test'
+  ...
+# Subtest: interest ledger entries cannot be reversed with generic correction
+ok 131 - interest ledger entries cannot be reversed with generic correction
+  ---
+  duration_ms: 3.554701
+  type: 'test'
+  ...
+# Subtest: projection handles weekly monthly yearly periods explicitly
+ok 132 - projection handles weekly monthly yearly periods explicitly
+  ---
+  duration_ms: 0.114122
+  type: 'test'
+  ...
+# Subtest: band inclusive boundaries, missing bands and unlimited band
+ok 133 - band inclusive boundaries, missing bands and unlimited band
+  ---
+  duration_ms: 0.168354
+  type: 'test'
+  ...
+# Subtest: overlap and invalid ranges rejected, disjoint gaps accepted
+ok 134 - overlap and invalid ranges rejected, disjoint gaps accepted
+  ---
+  duration_ms: 0.201013
+  type: 'test'
+  ...
+# Subtest: tier allowance waits for completed week and selected next-week payday
+ok 135 - tier allowance waits for completed week and selected next-week payday
+  ---
+  duration_ms: 4.149377
+  type: 'test'
+  ...
+# Subtest: point band payout recalculates pending, splits cents and pays once
+ok 136 - point band payout recalculates pending, splits cents and pays once
+  ---
+  duration_ms: 4.765237
+  type: 'test'
+  ...
+# Subtest: zero payout is completed without zero-value money entry
+ok 137 - zero payout is completed without zero-value money entry
+  ---
+  duration_ms: 4.188987
+  type: 'test'
+  ...
+# Subtest: paid money remains fixed after points or configuration correction
+ok 138 - paid money remains fixed after points or configuration correction
+  ---
+  duration_ms: 3.394609
+  type: 'test'
+  ...
+# Subtest: alternating weeks follow explicit cycle anchor
+ok 139 - alternating weeks follow explicit cycle anchor
+  ---
+  duration_ms: 3.935685
+  type: 'test'
+  ...
+# Subtest: 2+2+3 alternates a balanced fourteen-day pattern
+ok 140 - 2+2+3 alternates a balanced fourteen-day pattern
+  ---
+  duration_ms: 0.599884
+  type: 'test'
+  ...
+# Subtest: vacation exception overrides both repeating cycle and one-off absence
+ok 141 - vacation exception overrides both repeating cycle and one-off absence
+  ---
+  duration_ms: 3.848264
+  type: 'test'
+  ...
+# Subtest: overlapping exceptions rejected; end dates inclusive
+ok 142 - overlapping exceptions rejected; end dates inclusive
+  ---
+  duration_ms: 3.420338
+  type: 'test'
+  ...
+# Subtest: away tasks are excused, not penalized, and excluded from target
+ok 143 - away tasks are excused, not penalized, and excluded from target
+  ---
+  duration_ms: 5.421496
+  type: 'test'
+  ...
+# Subtest: completed tasks and closed weeks survive residence changes
+ok 144 - completed tasks and closed weeks survive residence changes
+  ---
+  duration_ms: 3.719209
+  type: 'test'
+  ...
+# Subtest: removing presence rule restores previous task status
+ok 145 - removing presence rule restores previous task status
+  ---
+  duration_ms: 3.602222
+  type: 'test'
+  ...
+# Subtest: presence permission, cycle length and retroactive config validation
+ok 146 - presence permission, cycle length and retroactive config validation
+  ---
+  duration_ms: 7.287861
+  type: 'test'
+  ...
+# Subtest: food icons are semantic and library insertion is idempotent
+ok 147 - food icons are semantic and library insertion is idempotent
+  ---
+  duration_ms: 4.685066
+  type: 'test'
+  ...
+# Subtest: stock matching combines normalised singular/plural quantities
+ok 148 - stock matching combines normalised singular/plural quantities
+  ---
+  duration_ms: 3.694201
+  type: 'test'
+  ...
+# Subtest: ingredients become shopping items and repeated request is idempotent
+ok 149 - ingredients become shopping items and repeated request is idempotent
+  ---
+  duration_ms: 4.216238
+  type: 'test'
+  ...
+# Subtest: manual amounts are not lost; they are added for review once
+ok 150 - manual amounts are not lost; they are added for review once
+  ---
+  duration_ms: 3.5273
+  type: 'test'
+  ...
+# Subtest: photos survive catalog and recipe shopping, hostile URLs rejected
+ok 151 - photos survive catalog and recipe shopping, hostile URLs rejected
+  ---
+  duration_ms: 4.633538
+  type: 'test'
+  ...
+# Subtest: creates an inclusive multi-day event with location and linked checklist
+ok 152 - creates an inclusive multi-day event with location and linked checklist
+  ---
+  duration_ms: 27.67116
+  type: 'test'
+  ...
+# Subtest: all four requested types have nonempty preparation templates
+ok 153 - all four requested types have nonempty preparation templates
+  ---
+  duration_ms: 0.167572
+  type: 'test'
+  ...
+# Subtest: validates dates including actual calendar dates
+ok 154 - validates dates including actual calendar dates
+  ---
+  duration_ms: 9.713408
+  type: 'test'
+  ...
+# Subtest: rejects same-day backwards times and accepts overnight events
+ok 155 - rejects same-day backwards times and accepts overnight events
+  ---
+  duration_ms: 8.483584
+  type: 'test'
+  ...
+# Subtest: rejects malformed timed values and invalid types
+ok 156 - rejects malformed timed values and invalid types
+  ---
+  duration_ms: 13.552898
+  type: 'test'
+  ...
+# Subtest: rejects unknown or duplicate participants before writing
+ok 157 - rejects unknown or duplicate participants before writing
+  ---
+  duration_ms: 13.075599
+  type: 'test'
+  ...
+# Subtest: does not modify tasks, points, savings, or residence calendars
+ok 158 - does not modify tasks, points, savings, or residence calendars
+  ---
+  duration_ms: 5.256418
+  type: 'test'
+  ...
+# Subtest: event covers every date in range, not adjacent dates
+ok 159 - event covers every date in range, not adjacent dates
+  ---
+  duration_ms: 4.824246
+  type: 'test'
+  ...
+# Subtest: filters multiple participants and whole-family events correctly
+ok 160 - filters multiple participants and whole-family events correctly
+  ---
+  duration_ms: 4.158751
+  type: 'test'
+  ...
+# Subtest: checkbox is idempotent and does not award points
+ok 161 - checkbox is idempotent and does not award points
+  ---
+  duration_ms: 4.878207
+  type: 'test'
+  ...
+# Subtest: member cannot complete another member assigned item
+ok 162 - member cannot complete another member assigned item
+  ---
+  duration_ms: 4.264431
+  type: 'test'
+  ...
+# Subtest: participant can complete a shared item, outsider cannot
+ok 163 - participant can complete a shared item, outsider cannot
+  ---
+  duration_ms: 3.91203
+  type: 'test'
+  ...
+# Subtest: whole family shared item can be completed by either child
+ok 164 - whole family shared item can be completed by either child
+  ---
+  duration_ms: 3.583133
+  type: 'test'
+  ...
+# Subtest: adult can complete any item; inactive actors are denied
+ok 165 - adult can complete any item; inactive actors are denied
+  ---
+  duration_ms: 3.737336
+  type: 'test'
+  ...
+# Subtest: save preserves completed item state when dates or titles change
+ok 166 - save preserves completed item state when dates or titles change
+  ---
+  duration_ms: 3.552788
+  type: 'test'
+  ...
+# Subtest: a copied checklist starts uncompleted with new item identifiers
+ok 167 - a copied checklist starts uncompleted with new item identifiers
+  ---
+  duration_ms: 3.377503
+  type: 'test'
+  ...
+# Subtest: legacy single-owner checklist can still be toggled and edited
+ok 168 - legacy single-owner checklist can still be toggled and edited
+  ---
+  duration_ms: 5.758053
+  type: 'test'
+  ...
+# Subtest: allows empty checklists and 100 entries, never 101
+ok 169 - allows empty checklists and 100 entries, never 101
+  ---
+  duration_ms: 4.858127
+  type: 'test'
+  ...
+# Subtest: empty names and invalid due dates or owners cannot mutate state
+ok 170 - empty names and invalid due dates or owners cannot mutate state
+  ---
+  duration_ms: 14.229619
+  type: 'test'
+  ...
+# Subtest: removing all entries removes only linked checklist
+ok 171 - removing all entries removes only linked checklist
+  ---
+  duration_ms: 7.410726
+  type: 'test'
+  ...
+# Subtest: deleting event cleans its list and preserves unrelated event
+ok 172 - deleting event cleans its list and preserves unrelated event
+  ---
+  duration_ms: 4.156538
+  type: 'test'
+  ...
+# Subtest: children cannot create, edit or delete events
+ok 173 - children cannot create, edit or delete events
+  ---
+  duration_ms: 3.621993
+  type: 'test'
+  ...
+# Subtest: export and import preserve location with punctuation and multi-day range
+ok 174 - export and import preserve location with punctuation and multi-day range
+  ---
+  duration_ms: 4.920671
+  type: 'test'
+  ...
+# Subtest: backup roundtrip preserves checkboxes assignments and due dates
+ok 175 - backup roundtrip preserves checkboxes assignments and due dates
+  ---
+  duration_ms: 4.530873
+  type: 'test'
+  ...
+# Subtest: rejects duplicate check identifiers and invalid imported participant fields
+ok 176 - rejects duplicate check identifiers and invalid imported participant fields
+  ---
+  duration_ms: 7.105866
+  type: 'test'
+  ...
+# Subtest: a v3 legacy state upgrades without injecting demo events
+ok 177 - a v3 legacy state upgrades without injecting demo events
+  ---
+  duration_ms: 9.969896
+  type: 'test'
+  ...
+# Subtest: F01 missed task cannot be reopened by child
+ok 178 - F01 missed task cannot be reopened by child
+  ---
+  duration_ms: 13.762444
+  type: 'test'
+  ...
+# Subtest: F01 child can request adult review without altering points
+ok 179 - F01 child can request adult review without altering points
+  ---
+  duration_ms: 4.909014
+  type: 'test'
+  ...
+# Subtest: F01 accepting a correction is adult only and idempotent
+ok 180 - F01 accepting a correction is adult only and idempotent
+  ---
+  duration_ms: 4.795742
+  type: 'test'
+  ...
+# Subtest: F01 rejecting a correction preserves the missed state
+ok 181 - F01 rejecting a correction preserves the missed state
+  ---
+  duration_ms: 3.880403
+  type: 'test'
+  ...
+# Subtest: F01 another child cannot request a correction
+ok 182 - F01 another child cannot request a correction
+  ---
+  duration_ms: 4.11762
+  type: 'test'
+  ...
+# Subtest: F02 future task blocked for child, adult can authorize
+ok 183 - F02 future task blocked for child, adult can authorize
+  ---
+  duration_ms: 3.825219
+  type: 'test'
+  ...
+# Subtest: F02 early permission cannot be granted by child
+ok 184 - F02 early permission cannot be granted by child
+  ---
+  duration_ms: 4.035175
+  type: 'test'
+  ...
+# Subtest: F03 future presence version preserves current schedule
+ok 185 - F03 future presence version preserves current schedule
+  ---
+  duration_ms: 18.571287
+  type: 'test'
+  ...
+# Subtest: F03 cancelling future version restores previous open end
+ok 186 - F03 cancelling future version restores previous open end
+  ---
+  duration_ms: 4.86739
+  type: 'test'
+  ...
+# Subtest: F03 three versions retain deterministic boundary dates
+ok 187 - F03 three versions retain deterministic boundary dates
+  ---
+  duration_ms: 4.208977
+  type: 'test'
+  ...
+# Subtest: F08 flexible quota limits to available days without changing target
+ok 188 - F08 flexible quota limits to available days without changing target
+  ---
+  duration_ms: 5.027371
+  type: 'test'
+  ...
+# Subtest: F08 flexible tasks are visible before the end of week
+ok 189 - F08 flexible tasks are visible before the end of week
+  ---
+  duration_ms: 5.115304
+  type: 'test'
+  ...
+# Subtest: F08 flexible tasks only once per day and second on next day
+ok 190 - F08 flexible tasks only once per day and second on next day
+  ---
+  duration_ms: 4.261046
+  type: 'test'
+  ...
+# Subtest: F08 repeated presence refresh does not duplicate flexible completions
+ok 191 - F08 repeated presence refresh does not duplicate flexible completions
+  ---
+  duration_ms: 4.63549
+  type: 'test'
+  ...
+# Subtest: F08 new flexible template never creates obligations before effectiveFrom
+ok 192 - F08 new flexible template never creates obligations before effectiveFrom
+  ---
+  duration_ms: 4.492445
+  type: 'test'
+  ...
+# Subtest: F08 month task moves to first day home and generated once
+ok 193 - F08 month task moves to first day home and generated once
+  ---
+  duration_ms: 4.008596
+  type: 'test'
+  ...
+# Subtest: F08 invalid weekly quota rejected
+ok 194 - F08 invalid weekly quota rejected
+  ---
+  duration_ms: 4.026312
+  type: 'test'
+  ...
+# Subtest: M01 weekly series includes final day and separate checklist instances
+ok 195 - M01 weekly series includes final day and separate checklist instances
+  ---
+  duration_ms: 5.154294
+  type: 'test'
+  ...
+# Subtest: M01 editing one occurrence preserves siblings and checklist progress
+ok 196 - M01 editing one occurrence preserves siblings and checklist progress
+  ---
+  duration_ms: 4.291742
+  type: 'test'
+  ...
+# Subtest: M01 repeated series save does not duplicate occurrences
+ok 197 - M01 repeated series save does not duplicate occurrences
+  ---
+  duration_ms: 5.413845
+  type: 'test'
+  ...
+# Subtest: M01 monthly 31st skips months without that day
+ok 198 - M01 monthly 31st skips months without that day
+  ---
+  duration_ms: 0.743611
+  type: 'test'
+  ...
+# Subtest: M01 cannot create overlapping repeated multi-day events
+ok 199 - M01 cannot create overlapping repeated multi-day events
+  ---
+  duration_ms: 3.44808
+  type: 'test'
+  ...
+# Subtest: M01 delete single or future series retains other records
+ok 200 - M01 delete single or future series retains other records
+  ---
+  duration_ms: 4.234696
+  type: 'test'
+  ...
+# Subtest: M02 all-day and checklist reminders have stable ids
+ok 201 - M02 all-day and checklist reminders have stable ids
+  ---
+  duration_ms: 5.237929
+  type: 'test'
+  ...
+# Subtest: M02 disabling notifications suppresses the reminder list
+ok 202 - M02 disabling notifications suppresses the reminder list
+  ---
+  duration_ms: 4.547909
+  type: 'test'
+  ...
+# Subtest: M04 copying menu fills gaps, adapts servings, never overwrites
+ok 203 - M04 copying menu fills gaps, adapts servings, never overwrites
+  ---
+  duration_ms: 3.733149
+  type: 'test'
+  ...
+# Subtest: M04 saved menus can be reused without duplicate occupied slots
+ok 204 - M04 saved menus can be reused without duplicate occupied slots
+  ---
+  duration_ms: 4.327246
+  type: 'test'
+  ...
+# Subtest: M05 separate shopping lists preserve product association
+ok 205 - M05 separate shopping lists preserve product association
+  ---
+  duration_ms: 3.703195
+  type: 'test'
+  ...
+# Subtest: M05 setting purchase state twice is idempotent
+ok 206 - M05 setting purchase state twice is idempotent
+  ---
+  duration_ms: 3.896817
+  type: 'test'
+  ...
+# Subtest: M05 habitual products remain after purchased list is cleared
+ok 207 - M05 habitual products remain after purchased list is cleared
+  ---
+  duration_ms: 3.410854
+  type: 'test'
+  ...
+# Subtest: M06 invalid attachment type and missing event rejected
+ok 208 - M06 invalid attachment type and missing event rejected
+  ---
+  duration_ms: 4.009056
+  type: 'test'
+  ...
+# Subtest: M07 approval inbox combines review and financial requests
+ok 209 - M07 approval inbox combines review and financial requests
+  ---
+  duration_ms: 3.815865
+  type: 'test'
+  ...
+# Subtest: M09 parses structured recipe without executing HTML
+ok 210 - M09 parses structured recipe without executing HTML
+  ---
+  duration_ms: 1.116704
+  type: 'test'
+  ...
+# Subtest: M09 supports graph and missing numeric ingredient quantities are manual
+ok 211 - M09 supports graph and missing numeric ingredient quantities are manual
+  ---
+  duration_ms: 0.363368
+  type: 'test'
+  ...
+# Subtest: M09 missing recipe rejects rather than fabricates
+ok 212 - M09 missing recipe rejects rather than fabricates
+  ---
+  duration_ms: 0.133712
+  type: 'test'
+  ...
+# Subtest: Sync merges changes to different records without overwriting
+ok 213 - Sync merges changes to different records without overwriting
+  ---
+  duration_ms: 0.397119
+  type: 'test'
+  ...
+# Subtest: Sync conflicting changes to same field require resolution
+ok 214 - Sync conflicting changes to same field require resolution
+  ---
+  duration_ms: 0.123797
+  type: 'test'
+  ...
+# Subtest: Sync merge deletion versus edit is a conflict
+ok 215 - Sync merge deletion versus edit is a conflict
+  ---
+  duration_ms: 0.240813
+  type: 'test'
+  ...
+# Subtest: Sync unrelated additions both survive
+ok 216 - Sync unrelated additions both survive
+  ---
+  duration_ms: 0.143847
+  type: 'test'
+  ...
+# Subtest: Sync updating a shopping record creates a small entity patch
+ok 217 - Sync updating a shopping record creates a small entity patch
+  ---
+  duration_ms: 4.883084
+  type: 'test'
+  ...
+# Subtest: Web5 fields roundtrip backup without demo data injection
+ok 218 - Web5 fields roundtrip backup without demo data injection
+  ---
+  duration_ms: 4.063798
+  type: 'test'
+  ...
+# Subtest: M05 recipe requirements ignore products pending on another list
+ok 219 - M05 recipe requirements ignore products pending on another list
+  ---
+  duration_ms: 4.603513
+  type: 'test'
+  ...
+# Subtest: M05 pantry receives supermarket purchases, not school supplies
+ok 220 - M05 pantry receives supermarket purchases, not school supplies
+  ---
+  duration_ms: 4.079562
+  type: 'test'
+  ...
+1..220
+# tests 220
+# suites 0
+# pass 220
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1851.959747

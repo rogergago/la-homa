@@ -1,0 +1,47 @@
+{
+  "kind": "static build sizes, not a network benchmark",
+  "files": [
+    {
+      "name": "app.js",
+      "bytes": 301217,
+      "gzipBytes": 91842
+    },
+    {
+      "name": "asset-store.js",
+      "bytes": 2429,
+      "gzipBytes": 1207
+    },
+    {
+      "name": "config.js",
+      "bytes": 162,
+      "gzipBytes": 155
+    },
+    {
+      "name": "core.js",
+      "bytes": 120897,
+      "gzipBytes": 35836
+    },
+    {
+      "name": "entity-sync.js",
+      "bytes": 2860,
+      "gzipBytes": 1227
+    },
+    {
+      "name": "index.html",
+      "bytes": 1340,
+      "gzipBytes": 614
+    },
+    {
+      "name": "recipe-import.js",
+      "bytes": 3004,
+      "gzipBytes": 1433
+    },
+    {
+      "name": "styles.css",
+      "bytes": 91185,
+      "gzipBytes": 19476
+    }
+  ],
+  "rawBytes": 523094,
+  "gzipBytes": 151790
+}

@@ -1,0 +1,132 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Web primero. Coste controlado.</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f6f4fa;color:#30273d;font:16px/1.65 system-ui,-apple-system,sans-serif}header{background:#594077;color:white;padding:44px max(22px,calc((100vw - 1080px)/2))}header h1{font-size:38px;line-height:1.15;letter-spacing:-1.2px;margin:12px 0}header p{margin:0;color:#efe5fb;max-width:820px}.tag{font-size:12px;text-transform:uppercase;letter-spacing:1.7px;color:#e5d4f7}main{max-width:1140px;margin:28px auto;padding:28px 38px 65px;background:white;border:1px solid #e5dced;border-radius:22px}h1{font-size:30px;line-height:1.2}h2{font-size:24px;line-height:1.3;margin-top:42px;padding-top:18px;border-top:1px solid #e6dfed}h3{font-size:19px}a{color:#654092;text-underline-offset:3px}p,li,td{overflow-wrap:anywhere}table{border-collapse:collapse;width:100%;font-size:14px;margin:22px 0}td,th{border:1px solid #e3ddeb;text-align:left;vertical-align:top;padding:12px}th{background:#f0eaf7}tr:nth-child(even){background:#fcfafe}.table-scroll{overflow-x:auto}code{background:#f3eff8;border-radius:5px;padding:2px 5px;font-size:.9em}pre{background:#292235;color:#f1e9f9;border-radius:14px;padding:20px;overflow:auto;line-height:1.7}pre code{background:none;padding:0}.intro{border-left:4px solid #8a68b4;padding:15px 20px;background:#f4eef9}.links{display:flex;gap:10px;flex-wrap:wrap}.links a{padding:9px 14px;min-height:44px;border:1px solid #ded2eb;background:#f8f4fd;border-radius:10px;font-weight:650;text-decoration:none}footer{font-size:13px;color:#6e607d;margin-top:35px}@media(max-width:650px){header{padding:27px 20px}header h1{font-size:31px}main{margin:12px 8px;padding:20px 17px 35px;border-radius:15px}body{font-size:15px}h2{font-size:22px}table{min-width:700px}td,th{padding:10px}pre{font-size:12px}h1{font-size:27px}}@media print{body{background:white}header{background:white;color:black;padding:0}header p,.tag{color:black}main{border:0;margin:0;padding:0}.links{display:none}h2{break-after:avoid}tr{break-inside:avoid}a{color:inherit}}</style></head><body><header><span class="tag">LA HOMA / WEB BETA 5 / 03 OCT 2026</span><h1>Web primero. Coste controlado.</h1><p>Servicios, costes, pasos y condiciones para publicar sin bloquear la futura app.</p></header><main><h1>La Homa · web primero, coste controlado</h1>
+<p><strong>Guía preparada el 3 de octubre de 2026.</strong> Los precios son referencias públicas en USD, sin conversión, impuestos, dominios premium ni sobreconsumos. La recomendación de arquitectura es una propuesta para este proyecto; no es un benchmark comparativo de proveedores.</p>
+<h2>1. La decisión</h2>
+<p><strong>Cloudflare Pages para servir la web; Supabase para cuentas, datos y archivos; GitHub para el código; Resend para correos.</strong> Un dominio propio cuando vayamos a enviar correos a usuarios y fijar la dirección estable. No hace falta contratar hosting WordPress, un servidor VPS o las tiendas de apps para esta fase.</p>
+<p>La web local puede publicarse como demostración estática. <strong>El servicio multidispositivo todavía necesita desarrollo, no solo configuración.</strong> Consulta <code>ESTADO.md</code>: API de hogares, transporte y sincronización, permisos de dispositivo, entrega de avisos y calendarios externos no están completos. La configuración actual evita activar por error el almacenamiento antiguo de una familia por cuenta.</p>
+<h2>2. Qué contratar, y cuándo</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+  <th>Componente</th>
+  <th>Prueba inicial</th>
+  <th>Uso real recomendado</th>
+  <th>Observación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Cloudflare Pages</td>
+  <td>Free: 0 USD/mes</td>
+  <td>Mantener Free mientras alcance</td>
+  <td>500 compilaciones/mes. Las peticiones estáticas no tienen coste; las funciones tienen sus propias cuotas. <a href="https://www.cloudflare.com/en-gb/developer-platform/products/pages/">Fuente</a></td>
+</tr>
+<tr>
+  <td>Supabase</td>
+  <td>Free: 0 USD/mes</td>
+  <td>Pro desde 25 USD/mes cuando sea el registro cotidiano</td>
+  <td>Free: 500 MB de base, 1 GB de archivos, pausa tras una semana inactivo, sin backups automáticos. Pro incluye el primer proyecto; extras/consumos pueden sumar. <a href="https://supabase.com/pricing">Fuente</a></td>
+</tr>
+<tr>
+  <td>GitHub</td>
+  <td>Free</td>
+  <td>Free al empezar</td>
+  <td>Repositorios privados incluidos; 2.000 minutos/mes de Actions en el plan publicado. <a href="https://github.com/pricing">Fuente</a></td>
+</tr>
+<tr>
+  <td>Resend</td>
+  <td>Free</td>
+  <td>Free mientras alcance</td>
+  <td>3.000 correos/mes, límite de 100/día. No confundir correo transaccional con un buzón de soporte. <a href="https://resend.com/pricing">Fuente</a></td>
+</tr>
+<tr>
+  <td>Dominio .app</td>
+  <td>Opcional para ver la demo</td>
+  <td>Dirección y correo de marca</td>
+  <td>Porkbun publica 8,75 USD promocionales el primer año y 14,93 USD de renovación estándar; confirmar checkout y nombre concreto. <a href="https://porkbun.com/tld/app">Fuente</a></td>
+</tr>
+<tr>
+  <td>Copia externa de datos y archivos</td>
+  <td>Obligatoria antes de datos reales</td>
+  <td>Definir destino y retención</td>
+  <td>Coste según volumen. Una copia SQL no incluye las fotos. <a href="https://supabase.com/docs/guides/platform/backups">Fuente</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Presupuesto de arranque:</strong> los servicios pueden costar 0 USD/mes para desarrollo con sus límites, más el dominio al registrarlo. <strong>Referencia para el primer uso cotidiano:</strong> base de 25 USD/mes más dominio y posibles copias, excesos o correo. No es un precio cerrado ni incluye trabajo de desarrollo/mantenimiento. No pagar Pro mientras solo estemos probando pantallas.</p>
+<p>Evitar gastos iniciales innecesarios: otro proyecto Pro sin necesidad, dominio personalizado del endpoint de Supabase, copias por segundo, log drains y planes de equipo grandes. Usar un entorno de pruebas separado, local o dentro de la asignación gratuita disponible, sin copiar datos familiares reales allí. Mantener avisos de cuota y revisar consumo; un aviso de presupuesto no siempre equivale a un bloqueo de gasto.</p>
+<h2>3. Por qué no elegir otra cosa ahora</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+  <th>Opción</th>
+  <th>Comparación para este proyecto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Cloudflare + Supabase</td>
+  <td>Encaja con la base ya desarrollada, separa web/datos y permite empezar sin servidor propio. Es la opción propuesta, no una garantía de mejor latencia en todos los escenarios.</td>
+</tr>
+<tr>
+  <td>Firebase</td>
+  <td>Alternativa válida con servicios gestionados. Cloud Storage requiere el plan Blaze y una cuenta de facturación; aún puede haber uso sin coste dentro de asignaciones. Cambiar el modelo actual requiere trabajo, por lo que no lo elegiría solo para ahorrar al inicio. <a href="https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024">Fuente</a></td>
+</tr>
+<tr>
+  <td>Vercel Hobby</td>
+  <td>Cómodo para demos personales, pero su uso gratuito está restringido a proyectos personales no comerciales. No lo tomaría como base gratuita de un producto que puede crecer comercialmente. <a href="https://vercel.com/docs/plans/hobby">Fuente</a></td>
+</tr>
+<tr>
+  <td>VPS autogestionado</td>
+  <td>Puede reducir la factura nominal, pero obliga a asumir actualizaciones, base, correo, copias y recuperación. Prefiero ahorrar primero en servicios que no hacen falta, no trasladar esa operación al usuario. Sin presupuesto comparativo actual de VPS.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. Dominio y titularidad</h2>
+<p>Mi candidato sigue siendo <code>lahoma.app</code>. Alternativa: <code>somoslahoma.com</code>. <strong>No se ha confirmado la disponibilidad de ninguno ni realizado una revisión registral de marca.</strong> La tarifa de una extensión no demuestra que un nombre concreto esté libre o cueste esa cantidad.</p>
+<p>Comprar solo el dominio, sin paquetes de hosting añadidos. Registrar a nombre del titular, activar doble factor y renovación según la decisión del titular. Separar después web informativa y producto con <code>app.TU-DOMINIO</code>; mantener <code>staging.TU-DOMINIO</code> sin datos reales y con acceso restringido.</p>
+<p>Antes de comprar es posible publicar la demo bajo el subdominio que ofrece Pages. No es necesario cambiar el nombre del producto ni crear una app de tienda para utilizar un dominio <code>.app</code>.</p>
+<h2>5. Preparar el repositorio</h2>
+<p>Crear una cuenta GitHub del titular y un repositorio <strong>privado</strong> llamado <code>la-homa</code>, inicialmente vacío. El ZIP incluye <code>.gitignore</code>, fuentes, pruebas y la definición de CI; todavía no hay repositorio remoto.</p>
+<p>Desde la carpeta descomprimida, con Node 22 y Git instalados:</p>
+<pre><code class="language-sh">npm ci --ignore-scripts
+npm run check
+node scripts/check-package.cjs
+git init -b main
+git status --short
+git add .
+git status --short
+git commit -m &quot;La Homa web beta 5&quot;
+git remote add origin https://github.com/TU-USUARIO/la-homa.git
+git push -u origin main
+</code></pre>
+<p>Sustituir solo <code>TU-USUARIO</code> por la cuenta correcta. Revisar antes del commit que no aparezcan copias familiares, fotos personales, secretos ni <code>.env</code> reales. No compartir contraseñas entre colaboradores; dar acceso a sus propias cuentas. El workflow ejecuta la construcción y pruebas de Node. <strong>No contiene despliegue automático de backend y no se ha ejecutado remotamente.</strong></p>
+<h2>6. Publicar la web de pruebas en Cloudflare</h2>
+<p>Este paso publica <strong>la web local/demo</strong>, no activa almacenamiento multidispositivo.</p>
+<p>Crear cuenta Cloudflare, abrir Workers &amp; Pages, crear proyecto Pages y conectar solo el repositorio <code>la-homa</code>. Elegir rama <code>main</code>, sin framework específico, comando <code>npm run build</code> y carpeta de salida <code>web</code>. Usar Node 22. Pages admite integración Git con despliegues al subir commits. <a href="https://developers.cloudflare.com/pages/configuration/git-integration/">Guía oficial</a>.</p>
+<p>No subir <code>supabase/</code>, <code>server/</code>, <code>tests/</code>, <code>.env</code>, copias ni toda la carpeta del ZIP como sitio. No añadir claves de servicio en variables públicas de compilación. <code>config.js</code> contiene solo valores públicos y debe mantenerse vacío mientras falte el adaptador seguro.</p>
+<p>Abrir la URL de Pages en móvil y escritorio y verificar navegación/lectura. Añadir el dominio desde la configuración del proyecto siguiendo sus instrucciones DNS. No inventar un registro o una IP: usar los valores que indique el proveedor para ese proyecto.</p>
+<h2>7. Crear los servicios de datos, sin abrir altas todavía</h2>
+<p>Crear Supabase Free para integración, con un proyecto en una región europea disponible y contraseña de base generada y guardada en un gestor. La región cercana es una elección de rendimiento; no sustituye el análisis de privacidad del servicio.</p>
+<p>El SQL incluido es <strong>un candidato para un proyecto de pruebas vacío</strong>. Sus tablas tienen lectura acotada y escrituras de cliente denegadas, deliberadamente: no hay un servicio de comandos desplegado que las gestione. <strong>No pegar ese SQL y declarar que la nube ya funciona.</strong> Completar primero API HTTP autenticada, transacciones y recibos, hogares/invitaciones, permisos de tablet, transporte por entidades, archivos privados, borrado y migración.</p>
+<p>El adaptador debe comprobar la identidad desde tokens del servicio, nunca desde un campo <code>role</code> enviado por el navegador. Las operaciones de paga deben confirmarse una sola vez aunque se reintenten. Un dispositivo de niños no debe portar una sesión adulta con escritura ilimitada.</p>
+<h2>8. Correo, registro y acceso</h2>
+<p>Crear Resend Free y verificar un dominio controlado. Configurar los registros DNS exactos que indique Resend para autenticar el remitente. Usar sus credenciales SMTP en el panel de Auth de Supabase, no en el código público.</p>
+<p>El correo predeterminado de Supabase no sirve para un alta pública: restringe destinatarios al equipo y actualmente limita a dos mensajes por hora. Se necesita SMTP propio para confirmaciones y recuperaciones reales. <a href="https://supabase.com/docs/guides/auth/auth-smtp">Documentación</a>.</p>
+<p>Configurar la URL principal de la web y la lista exacta de retornos de prueba/producción. Probar confirmación, enlace caducado, reenvío, cambio/olvido de contraseña, renovación y cierre de sesión. No permitir redirecciones arbitrarias. <a href="https://supabase.com/docs/guides/auth/redirect-urls">Retornos de Auth</a>.</p>
+<p>Para Google, crear/configurar el cliente web OAuth, consentimiento, orígenes y callback de Supabase, con los permisos mínimos. El acceso a Google Calendar requiere autorización y código adicionales; el botón de login no lo concede. <a href="https://supabase.com/docs/guides/auth/social-login/auth-google">Acceso con Google</a>.</p>
+<p><strong>Apple sigue en el alcance, pero es una configuración independiente de construir la app iOS.</strong> Su acceso web requiere la cuenta e identificadores de Apple y mantenimiento del secreto OAuth cada seis meses. La membresía está publicada a 99 USD/año o importe local. No contratarla ahora para ver la web: puede activarse después de completar el acceso por correo y Google. <a href="https://supabase.com/docs/guides/auth/social-login/auth-apple">Configuración Apple</a> · <a href="https://developer.apple.com/programs/enroll/">Membresía</a>.</p>
+<h2>9. Guardar realmente todo</h2>
+<p>Separar datos de negocio, archivos privados y credenciales. Conservar perfiles, fotografías, ingredientes/unidades, listas, menús, convivencias, eventos/checklists/documentos, semanas históricas y movimientos de dinero. No incluir contraseñas, sesiones ni tokens de terceros en una exportación familiar.</p>
+<p>El backup diario de una base Supabase de pago no copia los objetos de Storage. Hay que respaldar <strong>base y archivos</strong> a un destino separado y ensayar la restauración de ambos. Definir frecuencia, retención, cifrado y tiempo de recuperación antes de altas reales. La promesa “no perder nada” no se sustituye por un plan Pro. <a href="https://supabase.com/docs/guides/platform/backups">Alcance de las copias</a>.</p>
+<p>El primer ensayo debe restaurar en un entorno vacío y comparar saldos, número de tareas/eventos/recetas y acceso a las fotos/adjuntos. Probar que importar dos veces no duplica monederos. Documentar la retirada de permisos y eliminación de archivos huérfanos.</p>
+<h2>10. Responsive y rendimiento</h2>
+<p>Esta versión se ha revisado entre 320 y 1.920 píxeles: cinco destinos principales, subnavegación desplazable, formularios de una columna en móvil, controles más grandes y textos secundarios reforzados. No hubo desbordamiento horizontal en 112 muestras de vistas y anchuras. Las tablas extensas usan su propio desplazamiento.</p>
+<p>La salida actual suma aproximadamente <strong>152 kB con gzip</strong> para HTML/CSS/JS propios de arranque, sin iconos, fotografías, documentos ni el futuro cliente de nube. Es una medida de tamaño local, no tiempo de carga real ni puntuación Lighthouse. El detalle está en <code>test-output/bundle-sizes.json</code>.</p>
+<p>Antes del lanzamiento, medir en la dirección HTTPS real con conexión móvil, caché fría, datos reales anonimizados de tamaño representativo y un dispositivo de gama media. Paginación de historial, fotos reducidas, peticiones pequeñas y carga diferida importan más que contratar un plan grande sin medir. No hay SLA de velocidad prometido por este documento.</p>
+<h2>11. Mantener abierta la futura app</h2>
+<p>Conservar reglas reutilizables, API documentada, credenciales fuera de la interfaz y una compilación web portable. Postgres evita atar el modelo de negocio a documentos propietarios, aunque migrar proveedor siempre tendría coste de adaptación.</p>
+<p>Capacitor permite integrar una base web moderna en Android/iOS, pero más adelante habrá que adaptar permisos, cámara, almacenamiento seguro, login/retornos, firma y ciclo de vida. No se ha creado ni probado un paquete móvil en esta entrega. <a href="https://capacitorjs.com/docs">Documentación</a>.</p>
+<h2>12. Antes de llamar a esto producción</h2>
+<p>Dos cuentas adultas deben compartir un hogar sin compartir contraseña. Un tercero no puede acceder a datos o fotos; un niño no puede elevar permisos. Dos dispositivos conservan cambios simultáneos. Reintentar un pago no duplica euros. Semanas fuera no crean paga; semanas parciales conservan objetivo. Los cambios sobreviven a cierre y actualización. Registro, recuperación y revocación funcionan. Una copia completa se restaura realmente. Chrome Android y Safari se prueban en dispositivos reales, junto con teclado/zoom y un ciclo de convivencia.</p>
+<p><strong>Situación actual: no se ha superado esta puerta de salida.</strong> El siguiente paso técnico sigue siendo terminar el bloque de nube, sin nuevas decisiones de producto pendientes por tu parte. Las cuentas gratuitas pueden prepararse ahora; la contratación de pago puede esperar.</p>
+<footer>Entrega de trabajo. No se han contratado servicios ni publicado repositorios o sitios.</footer></main></body></html>

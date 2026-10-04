@@ -1,0 +1,32 @@
+PASS Account landing distinguishes local from unavailable providers
+PASS Manual registration form asks for repeated password
+PASS Cloud signup remains disabled without service configuration
+PASS Guest mode loads v3 without cloud traffic
+PASS Adult can enable one compounded savings rate
+PASS Savings panel shows total savings and chosen period
+PASS Allowance band form saves inclusive point ranges
+PASS Allowance ranges can be added and removed
+PASS Overlapping ranges cannot be committed
+PASS Recurring 2+2+3 residence pattern saves fourteen days
+PASS Vacation stay overrides regular schedule
+PASS Existing vacation can be edited without duplicate exception
+PASS Residence calendar browses future cycles
+PASS Profile photo is resized and saved
+PASS Saved profile picture replaces avatar in family view
+PASS Structured recipe stores quantities, store, product and photos
+PASS Recipe scales servings and displays catalog ingredient photos
+PASS Recipe ingredients reach shopping with scaled quantity and store
+PASS Reusable ingredient catalog shares saved photos
+PASS Shopping shows photos and remembers supermarket preference
+PASS Recipe editor adds and removes ingredient rows
+PASS Pantry accepts practical package units
+PASS Selected tablet profile returns without adult login
+PASS Child wallet returns directly to tablet
+PASS Adult tablet tile does not silently grant administrator privileges
+PASS Existing parent entry remains accessible
+PASS Seven updated pages fit at 390px
+PASS Seven updated pages fit at 768px
+PASS Seven updated pages fit at 1024px
+PASS Seven updated pages fit at 1440px
+PASS No uncaught browser errors in tested flows
+TOTAL 31

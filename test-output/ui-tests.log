@@ -1,0 +1,40 @@
+PASS Access page renders
+PASS Five grouped adult navigation entries
+PASS Renders home
+PASS Renders inbox
+PASS Renders notifications
+PASS Renders tasks
+PASS Renders routines
+PASS Renders history
+PASS Renders calendar
+PASS Renders events
+PASS Renders organize
+PASS Renders recipes
+PASS Renders shopping
+PASS Renders pantry
+PASS Renders family
+PASS Renders money
+PASS Renders rewards
+PASS Renders settings
+PASS Route reflects current page
+PASS Browser Back returns to previous page
+PASS Browser Forward restores page
+PASS Flexible template saved
+PASS Dirty form cannot close silently
+PASS Keep editing preserves input
+PASS Escape asks before discarding
+PASS Back protects a dirty form and restores current route
+PASS Keeping a draft cancels queued navigation
+PASS New list saved
+PASS Product associated with chosen list
+PASS Recurring event editor present
+PASS Event series saved
+PASS Imported recipe opens reviewable draft
+PASS 16 pages fit width 320
+PASS 16 pages fit width 360
+PASS 16 pages fit width 390
+PASS 16 pages fit width 768
+PASS 16 pages fit width 1024
+PASS 16 pages fit width 1440
+PASS 16 pages fit width 1920
+PASS No uncaught browser exceptions

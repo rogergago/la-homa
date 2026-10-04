@@ -1,0 +1,30 @@
+{
+  "version": "5.0.0-beta.1",
+  "hash": "7d25ed38d169",
+  "files": {
+    "core.js": {
+      "bytes": 120897,
+      "sha256": "16c21b9d27545af05cb04f5f90488266acbab8b5cfdb2b62825a1312e59abb0c"
+    },
+    "app.js": {
+      "bytes": 301217,
+      "sha256": "68a2cf9cbae2e9db9004d911495d12e886f98000135cb459f6710a61c5062bbc"
+    },
+    "styles.css": {
+      "bytes": 91185,
+      "sha256": "c83d05a570073f57e3de91fa10e5ab6f01477ef4af58fda7f58e8f01276cee29"
+    },
+    "asset-store.js": {
+      "bytes": 2429,
+      "sha256": "66b9b12c67d29c5b480757d8f4af6fc046484a7299a45b82036d88f8dbe8e63b"
+    },
+    "entity-sync.js": {
+      "bytes": 2860,
+      "sha256": "30a9f3444018ac5957e4304f1484ba12ffb3387d608914c48e9c6fef3468b99c"
+    },
+    "recipe-import.js": {
+      "bytes": 3004,
+      "sha256": "54cd0dfdfbe7c7e87e676d6ce793bbc57472c6fef11b429e60387421e6ba6a61"
+    }
+  }
+}

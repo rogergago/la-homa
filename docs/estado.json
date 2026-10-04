@@ -1,0 +1,176 @@
+[
+  {
+    "id": "F01",
+    "status": "Implementado local",
+    "included": "Rectificar una tarea no realizada exige adulto; el niño solicita revisión sin cambiar puntos.",
+    "remaining": "La misma regla está en el reductor; falta verificarla a través de API real."
+  },
+  {
+    "id": "F02",
+    "status": "Implementado local",
+    "included": "Tareas futuras bloqueadas al menor salvo permiso expreso; fecha de ventana para cuotas.",
+    "remaining": "El navegador local no es reloj fiable para producción; conectar reloj del hogar en servidor."
+  },
+  {
+    "id": "F03",
+    "status": "Implementado y probado",
+    "included": "Planes de convivencia con vigencias sucesivas; programar futuro no desactiva hoy; cancelar restaura la vigencia previa.",
+    "remaining": "Ensayo con calendario familiar real."
+  },
+  {
+    "id": "F04",
+    "status": "Implementado y probado",
+    "included": "Rutas de pantalla, atrás/adelante y vista recuperable mediante fragmentos.",
+    "remaining": "Verificar también Safari y retorno real desde autenticación."
+  },
+  {
+    "id": "F05",
+    "status": "Implementado local",
+    "included": "Cerrar o pulsar Escape pide confirmación cuando hay cambios. Errores conservan el formulario.",
+    "remaining": "No hay borrador persistente después de cerrar el navegador."
+  },
+  {
+    "id": "F06",
+    "status": "Mejorado, no certificado",
+    "included": "Texto secundario más legible, mayor contraste, foco, salto al contenido y controles táctiles.",
+    "remaining": "Auditoría completa WCAG, lectores de pantalla, zoom y dispositivos reales."
+  },
+  {
+    "id": "F07",
+    "status": "Implementado",
+    "included": "Cinco áreas adultas; herramientas infantiles reducidas y subnavegación.",
+    "remaining": "Pruebas de uso con familias."
+  },
+  {
+    "id": "F08",
+    "status": "Implementado",
+    "included": "Cuota semanal en días presentes y tareas mensuales. Máximo una realización de la cuota por día.",
+    "remaining": "Mensual permite días 1–28 y mueve a siguiente estancia dentro del mes. No es un motor RRULE arbitrario."
+  },
+  {
+    "id": "F09",
+    "status": "Parcial",
+    "included": "Guía inicial de personas, convivencia, tareas y paga; se explica cuenta frente a perfil.",
+    "remaining": "Alta real de hogar compartido e invitación de otro adulto."
+  },
+  {
+    "id": "F10",
+    "status": "Implementado local",
+    "included": "Bandeja adulta: tareas a revisar, rectificaciones, gastos y vales.",
+    "remaining": "Identificar acciones por cuenta real cuando exista el backend."
+  },
+  {
+    "id": "M01",
+    "status": "Implementado local",
+    "included": "Eventos diarios/semanales/mensuales, intervalo, fin, editar fecha o futuras fechas de la serie.",
+    "remaining": "Se materializan hasta 366 ocurrencias y 730 días. Verificar intercambio externo de series."
+  },
+  {
+    "id": "M02",
+    "status": "Parcial",
+    "included": "Bandeja interna y ajustes de aviso/silencio guardados.",
+    "remaining": "Faltan suscripción push, programador y entrega de correo/notificaciones con la web cerrada."
+  },
+  {
+    "id": "M03",
+    "status": "Pendiente",
+    "included": "Se conserva intercambio ICS.",
+    "remaining": "Sincronización real Google Calendar e integración/suscripción Apple no implementadas."
+  },
+  {
+    "id": "M04",
+    "status": "Implementado local",
+    "included": "Raciones sugeridas por presencia, copiar menú, guardar y volver a usar menús.",
+    "remaining": "Confirmación adulta; no estima consumo individual ni necesidades dietéticas."
+  },
+  {
+    "id": "M05",
+    "status": "Implementado local",
+    "included": "Listas separadas, habituales, marcado reversible y cantidades pendientes por lista. Solo supermercado pasa a despensa.",
+    "remaining": "Sincronizar cambios entre dispositivos cuando esté la API."
+  },
+  {
+    "id": "M06",
+    "status": "Código local, validación nativa pendiente",
+    "included": "Adjuntos PDF, imagen o texto por evento, hasta 5 MB; exportación con archivos.",
+    "remaining": "IndexedDB no probado nativamente. Fecha de revisión no borra por sí sola. Almacenamiento privado en nube pendiente."
+  },
+  {
+    "id": "M07",
+    "status": "Parcial",
+    "included": "Bandeja de aprobaciones y actividad local reciente.",
+    "remaining": "Auditoría remota con identidad verificada, retención y permisos de lectura."
+  },
+  {
+    "id": "M08",
+    "status": "Implementado local",
+    "included": "Plantillas, duplicación y cuotas flexibles compatibles con convivencia.",
+    "remaining": "Ajustar las tareas a cada familia; no inferir obligaciones por edad."
+  },
+  {
+    "id": "M09",
+    "status": "Parcial",
+    "included": "Importar JSON-LD/HTML pegado, revisar ingredientes antes de guardar, etiquetas alimentarias manuales.",
+    "remaining": "La descarga desde URL no existe aún; no se verifica seguridad alimentaria ni disponibilidad del supermercado."
+  },
+  {
+    "id": "N01",
+    "status": "Esquema candidato",
+    "included": "Tablas por hogar, membresías, invitaciones y dispositivos.",
+    "remaining": "Implementar y probar creación, caducidad, aceptación y revocación."
+  },
+  {
+    "id": "N02",
+    "status": "Reductor probado en aislamiento",
+    "included": "Permisos y tipos de operación controlados por identidad inyectada; escrituras directas de cliente denegadas en SQL.",
+    "remaining": "API debe autenticar esa identidad; probar aislamiento real y credenciales restringidas de tablet."
+  },
+  {
+    "id": "N03",
+    "status": "Algoritmo probado, transporte pendiente",
+    "included": "Fusión a tres bandas, diferencias por entidad, detección de conflicto.",
+    "remaining": "Falta transporte, suscripciones, cola offline persistente y resolución remota visible."
+  },
+  {
+    "id": "N04",
+    "status": "Parcial",
+    "included": "Adjuntos nuevos separados localmente del JSON.",
+    "remaining": "Migrar fotos existentes y adjuntos a archivos privados; cuota y limpieza remotas."
+  },
+  {
+    "id": "N05",
+    "status": "Pendiente de integración",
+    "included": "Cuenta local conservada y pantallas de integración bloqueadas.",
+    "remaining": "Registro/recuperación real, verificación, Google/Apple, sesiones, invitaciones y borrado."
+  },
+  {
+    "id": "N06",
+    "status": "Motor candidato probado",
+    "included": "Comandos de paga/ahorro y comprobación de idempotencia con repositorio simulado.",
+    "remaining": "Implementar transacciones reales, recibos persistentes, programación y reloj del hogar en servidor."
+  },
+  {
+    "id": "N07",
+    "status": "Pendiente de nube",
+    "included": "Exportación local ampliada y plan de restauración documentado.",
+    "remaining": "Backup automático separado de datos y archivos, cifrado externo y ensayo real."
+  },
+  {
+    "id": "N08",
+    "status": "Parcial",
+    "included": "Construcción reproducible, npm sin dependencias, salida web separada y CI definido.",
+    "remaining": "Crear repositorio remoto y staging; pipeline remoto y despliegue no ejecutados. Refactor incremental pendiente."
+  },
+  {
+    "id": "N09",
+    "status": "Aplazado por el usuario",
+    "included": "La web y las reglas siguen separadas de servicios; no se crea app móvil ahora.",
+    "remaining": "Futuros adaptadores nativos y autenticación/almacenamiento móviles."
+  },
+  {
+    "id": "N10",
+    "status": "Pendiente de operación",
+    "included": "Condiciones de salida y limitaciones documentadas.",
+    "remaining": "Privacidad/borrado, soporte, registros seguros, alertas de gasto y respuesta a incidentes del servicio real."
+  }
+]

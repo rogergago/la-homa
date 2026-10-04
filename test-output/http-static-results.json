@@ -1,0 +1,41 @@
+{
+  "passed": 7,
+  "checks": [
+    {
+      "route": "/",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "route": "/app.js",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "route": "/manifest.webmanifest",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "route": "/README.md",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "route": "/supabase/migrations/0001_households_review.sql",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "route": "/.env",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "route": "/",
+      "status": 405,
+      "method": "POST"
+    }
+  ],
+  "note": "Static development server only. Not a cloud API test."
+}
