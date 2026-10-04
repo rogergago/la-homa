@@ -51,7 +51,8 @@ test('admin is a noindex operator panel without a secret', () => {
   assert.match(source, /homa_admin_dashboard/);
   assert.match(source, /homa_admin_delete_household/);
   assert.match(source, /mfa\.challengeAndVerify|mfa\.enroll/);
-  assert.match(source, /aal2|getAuthenticatorAssuranceLevel/);
+  assert.match(source, /hasAal2|tokenAal/);
+  assert.match(source, /requireMfa/);
   assert.doesNotMatch(source, /style="/);
   assert.match(headers, /Strict-Transport-Security/);
   assert.doesNotMatch(headers, /jsdelivr/);

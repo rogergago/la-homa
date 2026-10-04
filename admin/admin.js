@@ -41,10 +41,24 @@
     INVALID_TIMEZONE: 'Esa zona horaria no existe.',
     CANNOT_DELETE_SELF: 'No puedes borrar tu propia cuenta desde el panel.',
     CANNOT_DELETE_OPERATOR: 'Las cuentas operadoras no se borran desde el panel.',
-    MFA_REQUIRED: 'Hace falta el código de verificación. Vuelve a entrar.'
+    MFA_REQUIRED: 'Hace falta el código de verificación.'
   };
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  function tokenAal(sess) {
+    try {
+      const part = String(sess?.access_token || '').split('.')[1];
+      if (!part) return '';
+      const json = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/')));
+      return String(json.aal || '');
+    } catch {
+      return '';
+    }
+  }
+  const hasAal2 = sess => tokenAal(sess) === 'aal2';
+  function errorText(error) {
+    return [error?.message, error?.details, error?.hint, error?.code, error].filter(Boolean).join(' ');
+  }
   const norm = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const slugify = value => norm(value).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
   const valid = value => value && !Number.isNaN(new Date(value).getTime());
@@ -84,14 +98,32 @@
   }
 
   function explain(error) {
-    const text = String(error?.message || error || '');
+    const text = errorText(error);
     const code = Object.keys(ERRORS).find(key => text.includes(key));
-    return code ? ERRORS[code] : (text || 'Algo ha fallado. Vuelve a intentarlo.');
+    return code ? ERRORS[code] : (error?.message || text || 'Algo ha fallado. Vuelve a intentarlo.');
+  }
+
+  async function requireMfa(notice) {
+    try {
+      await prepareMfa();
+      mfaGate(notice || '');
+    } catch (err) {
+      gate('Activa la verificación en dos pasos', `
+        <p class="lede">${esc(err.message || 'No se pudo preparar el segundo factor.')}</p>
+        <p class="help">En Supabase: Authentication → Multi-Factor → Enable TOTP. Luego vuelve a entrar.</p>
+        <div class="actions"><button class="quiet" type="button" data-action="logout">Salir</button></div>`);
+    }
   }
 
   async function rpc(name, args) {
     const result = await client.rpc(name, args);
-    if (result.error) throw new Error(explain(result.error));
+    if (result.error) {
+      if (errorText(result.error).includes('MFA_REQUIRED')) {
+        await requireMfa('Escribe el código de tu app de verificación para continuar.');
+        throw new Error(ERRORS.MFA_REQUIRED);
+      }
+      throw new Error(explain(result.error));
+    }
     return result.data;
   }
 
@@ -610,6 +642,7 @@
         resumenView();
       }
     } catch (err) {
+      if (/MFA_REQUIRED|código de verificación/i.test(String(err.message || ''))) return;
       say(err.message, true);
       if (section === 'familia') { data.detail = null; location.hash = '#/familias'; return; }
       layout('No se pudieron leer los datos', '', '<div class="card empty"><p class="help">Comprueba la conexión y pulsa Actualizar.</p></div>');
@@ -618,7 +651,13 @@
 
   async function loadPosts() {
     const result = await client.from('site_posts').select('id,slug,title,excerpt,body,seo_title,seo_description,status,published_at,updated_at').order('updated_at', { ascending: false });
-    if (result.error) throw new Error(explain(result.error));
+    if (result.error) {
+      if (errorText(result.error).includes('MFA_REQUIRED') || /policy|permission|rls|42501/i.test(errorText(result.error))) {
+        await requireMfa('Escribe el código de tu app de verificación para continuar.');
+        throw new Error(ERRORS.MFA_REQUIRED);
+      }
+      throw new Error(explain(result.error));
+    }
     data.posts = result.data || [];
   }
 
@@ -836,6 +875,15 @@
       const verified = await client.auth.mfa.challengeAndVerify({ factorId: mfa.factorId, code });
       if (verified.error) { mfaGate('Ese código no vale. Espera al siguiente y vuelve a probar.', true); return; }
       mfa = null;
+      session = verified.data.session || (await client.auth.getSession()).data.session;
+      if (!hasAal2(session)) {
+        const refreshed = await client.auth.refreshSession();
+        if (refreshed.error || !hasAal2(refreshed.data.session)) {
+          mfaGate('El código valió, pero la sesión no se ha elevado. Prueba otro código o vuelve a entrar.', true);
+          return;
+        }
+        session = refreshed.data.session;
+      }
       await boot();
       return;
     }
@@ -912,9 +960,8 @@
       return;
     }
     if (!role.data) { denied(); return; }
-    const level = await client.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (level.error || level.data.currentLevel !== 'aal2') {
-      try { await prepareMfa(); mfaGate(''); } catch (err) { gate('No se pudo comprobar el acceso', `<p class="lede">${esc(err.message)}</p><div class="actions"><button class="quiet" type="button" data-action="logout">Salir</button></div>`); }
+    if (!hasAal2(session)) {
+      await requireMfa('');
       return;
     }
     touch();
@@ -946,7 +993,12 @@
   });
   dialog.addEventListener('close', () => closeDialog(null));
   dialog.addEventListener('click', event => { if (event.target === dialog) closeDialog(null); });
-  window.addEventListener('hashchange', () => { if (session) { editing = null; show(); } });
+  window.addEventListener('hashchange', () => {
+    if (!session) return;
+    editing = null;
+    if (!hasAal2(session)) { requireMfa(''); return; }
+    show();
+  });
 
   boot();
 })();
