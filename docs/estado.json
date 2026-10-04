@@ -141,7 +141,7 @@
     "id": "N05",
     "status": "Pendiente de integración",
     "included": "Cuenta local conservada y pantallas de integración bloqueadas.",
-    "remaining": "Registro/recuperación real, verificación, Google/Apple, sesiones, invitaciones y borrado."
+    "remaining": "Registro/recuperación real, verificación, Google, sesiones, invitaciones y borrado. El acceso con Apple queda fuera."
   },
   {
     "id": "N06",

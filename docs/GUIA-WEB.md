@@ -89,7 +89,7 @@ Configurar la URL principal de la web y la lista exacta de retornos de prueba/pr
 
 Para Google, crear/configurar el cliente web OAuth, consentimiento, orígenes y callback de Supabase, con los permisos mínimos. El acceso a Google Calendar requiere autorización y código adicionales; el botón de login no lo concede. [Acceso con Google](https://supabase.com/docs/guides/auth/social-login/auth-google).
 
-**Apple sigue en el alcance, pero es una configuración independiente de construir la app iOS.** Su acceso web requiere la cuenta e identificadores de Apple y mantenimiento del secreto OAuth cada seis meses. La membresía está publicada a 99 USD/año o importe local. No contratarla ahora para ver la web: puede activarse después de completar el acceso por correo y Google. [Configuración Apple](https://supabase.com/docs/guides/auth/social-login/auth-apple) · [Membresía](https://developer.apple.com/programs/enroll/).
+El inicio de sesión es con correo o con Google. Apple no forma parte del acceso.
 
 ## 9. Guardar realmente todo
 
@@ -118,3 +118,27 @@ Capacitor permite integrar una base web moderna en Android/iOS, pero más adelan
 Dos cuentas adultas deben compartir un hogar sin compartir contraseña. Un tercero no puede acceder a datos o fotos; un niño no puede elevar permisos. Dos dispositivos conservan cambios simultáneos. Reintentar un pago no duplica euros. Semanas fuera no crean paga; semanas parciales conservan objetivo. Los cambios sobreviven a cierre y actualización. Registro, recuperación y revocación funcionan. Una copia completa se restaura realmente. Chrome Android y Safari se prueban en dispositivos reales, junto con teclado/zoom y un ciclo de convivencia.
 
 **Situación actual: no se ha superado esta puerta de salida.** El siguiente paso técnico sigue siendo terminar el bloque de nube, sin nuevas decisiones de producto pendientes por tu parte. Las cuentas gratuitas pueden prepararse ahora; la contratación de pago puede esperar.
+
+## 13. Web comercial y panel
+
+La app sigue en el proyecto de Pages que ya publica `app.lahoma.app`. La web y el panel son otros dos proyectos del mismo repositorio, con otra carpeta raíz cada uno, para que sus funciones no se mezclen con la app.
+
+Antes de crear los proyectos, ejecuta en el editor SQL de Supabase el archivo `supabase/migrations/0003_site_and_operators.sql`.
+
+Proyecto de la web:
+
+- Directorio raíz: `site`
+- Comando de compilación: `node build.cjs`
+- Directorio de salida: `dist`
+- Dominios: `lahoma.app` y, si quieres, `www.lahoma.app` redirigido al anterior
+
+Proyecto del panel:
+
+- Directorio raíz: `admin`
+- Comando de compilación: `node build.cjs`
+- Directorio de salida: `dist`
+- Dominio: `admin.lahoma.app`
+
+En Supabase, Authentication, URL configuration, añade `https://admin.lahoma.app/**` a las redirecciones permitidas. Si entras al panel con Google, añade también `https://admin.lahoma.app` como origen autorizado en el cliente de Google.
+
+El primer acceso al panel, con la misma cuenta de la app, muestra la sentencia SQL que marca esa cuenta como operadora. Hay que pegarla en el editor SQL. A partir de ahí se publican artículos y se ven las casas por nombre, tamaño y actividad.

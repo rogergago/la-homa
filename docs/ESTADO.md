@@ -31,7 +31,7 @@ La conexión de nube permanece desactivada porque todavía no existe `HomaCloudT
 | N02 | Reductor probado en aislamiento | Permisos y tipos de operación controlados por identidad inyectada; escrituras directas de cliente denegadas en SQL. | API debe autenticar esa identidad; probar aislamiento real y credenciales restringidas de tablet. |
 | N03 | Algoritmo probado, transporte pendiente | Fusión a tres bandas, diferencias por entidad, detección de conflicto. | Falta transporte, suscripciones, cola offline persistente y resolución remota visible. |
 | N04 | Parcial | Adjuntos nuevos separados localmente del JSON. | Migrar fotos existentes y adjuntos a archivos privados; cuota y limpieza remotas. |
-| N05 | Pendiente de integración | Cuenta local conservada y pantallas de integración bloqueadas. | Registro/recuperación real, verificación, Google/Apple, sesiones, invitaciones y borrado. |
+| N05 | Pendiente de integración | Cuenta local conservada y pantallas de integración bloqueadas. | Registro/recuperación real, verificación, Google, sesiones, invitaciones y borrado. El acceso con Apple queda fuera. |
 | N06 | Motor candidato probado | Comandos de paga/ahorro y comprobación de idempotencia con repositorio simulado. | Implementar transacciones reales, recibos persistentes, programación y reloj del hogar en servidor. |
 | N07 | Pendiente de nube | Exportación local ampliada y plan de restauración documentado. | Backup automático separado de datos y archivos, cifrado externo y ensayo real. |
 | N08 | Parcial | Construcción reproducible, npm sin dependencias, salida web separada y CI definido. | Crear repositorio remoto y staging; pipeline remoto y despliegue no ejecutados. Refactor incremental pendiente. |
@@ -49,7 +49,7 @@ La conexión de nube permanece desactivada porque todavía no existe `HomaCloudT
 ## Orden recomendado del siguiente bloque técnico
 
 1. Terminar API de hogares y permisos, transacciones y el adaptador web. No usar la instantánea antigua por usuario como sustituto.
-2. Implementar alta compartida y dispositivo infantil restringido, correo y Google; completar Apple cuando esté su cuenta configurada.
+2. Implementar alta compartida y dispositivo infantil restringido, correo y Google. El acceso con Apple queda fuera.
 3. Conectar archivos privados, operaciones por entidad, conflictos y cola offline.
 4. Programar cierres/intereses/avisos; añadir Google Calendar e importador remoto de recetas con validación de URLs.
 5. Validar migración y restauración completas, dos adultos más una tablet, Safari/Android y un ciclo de convivencia.

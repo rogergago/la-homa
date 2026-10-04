@@ -5,6 +5,9 @@
   "description": "La Homa - web familiar responsive",
   "scripts": {
     "build": "node scripts/build.cjs",
+    "build:site": "node site/build.cjs",
+    "build:admin": "node admin/build.cjs",
+    "build:public": "node site/build.cjs && node admin/build.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:browser": "python3 tests/web5-browser.py",
     "check": "npm run build && npm test",
