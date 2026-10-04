@@ -27,11 +27,11 @@
   }
   function appendTemplate(w,t,members,minDate=null,state=null) {
     if(['flexible','monthly'].includes(t.frequency)){flexAppend(w,t,members,minDate,state);return;}
-    const eligible=t.memberIds.filter(id=>members.some(m=>m.id===id&&m.active!==false));
+    const eligible=t.memberIds.filter(id=>members.some(m=>m.id===id&&m.active!==false&&m.role!=='pet'));
     const wi=Math.round((Date.parse(w.start+'T00:00:00Z')-Date.parse((t.rotationStart||'2026-01-05')+'T00:00:00Z'))/604800000);
     const assigned=t.rotation&&eligible.length?[eligible[((wi%eligible.length)+eligible.length)%eligible.length]]:t.memberIds;
     for(const mid of assigned) {
-      if (!members.some(m=>m.id===mid && m.active!==false)) continue;
+      if (!members.some(m=>m.id===mid && m.active!==false && m.role!=='pet')) continue;
       if (!w.members.some(m=>m.id===mid)) w.members.push(memberSnapshot(members.find(m=>m.id===mid)));
       for (const day of [...new Set(t.days)].sort()) {
         const d=addDays(w.start,day), id=`${w.id}_${t.id}_${mid}_${day}`;
@@ -86,6 +86,7 @@
   }
   function addRecovery(w, input) {
     if(!w.members.some(m=>m.id===input.memberId)) throw new Error('Miembro no disponible en esta semana.');
+    if(w.members.find(m=>m.id===input.memberId)?.role==='pet') throw new Error('Las mascotas no suman puntos.');
     if(!Number.isInteger(input.points)||input.points<=0||input.points>1000) throw new Error('Los puntos deben estar entre 1 y 1000.');
     const task={id:uid('recovery'),templateId:null,memberId:input.memberId,title:input.title,description:input.description||'',points:input.points,date:input.date||iso(),category:'Recuperación',icon:'sparkles',kind:'recovery',status:'pending',changedAt:null};
     w.tasks.push(task);return task;
@@ -1220,6 +1221,7 @@ function seedEvents31(s,today){
     return homaWeightMap(w,t.memberId)?.get(t.id)??t.points;
   }
   function stats(w,mid) {
+    if(w.members?.find(m=>m.id===mid)?.role==='pet')return {points:0,target:0,earned:0,lost:0,remaining:0,percent:0,done:0,pending:0,review:0,excused:0,missed:0,recovery:0,total:0,paused:false};
     const result=legacyHomaStats(w,mid),cfg=w.homa?.members?.[mid];
     if(!cfg)return result;
     if(cfg.paused)return {...result,points:0,target:0,earned:0,lost:0,remaining:0,percent:0,paused:true,weeklyTarget:cfg.target,presentDays:0};
