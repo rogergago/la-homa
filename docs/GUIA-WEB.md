@@ -141,4 +141,15 @@ Proyecto del panel:
 
 El panel se abre con el correo y la contraseña de la cuenta operadora. No usa Google y no necesita una redirección nueva en Supabase.
 
-El primer acceso al panel, con la misma cuenta de la app, muestra la sentencia SQL que marca esa cuenta como operadora. Hay que pegarla en el editor SQL. A partir de ahí se publican artículos y se ven las casas por nombre, tamaño y actividad.
+El primer acceso al panel, con la misma cuenta de la app, muestra la sentencia SQL que marca esa cuenta como operadora. Hay que pegarla en el editor SQL.
+
+El panel necesita `supabase/migrations/0004_operator_panel.sql` y la función `supabase/functions/homa-admin-purge`. Con ellas tiene:
+
+- Resumen: altas por semana, familias activas, cuentas sin casa para contactar, familias sin actividad y qué módulos se usan.
+- Familias: buscador, filtros y exportación CSV. Cada ficha tiene el contacto del titular (nombre, apellidos, correo, teléfono, etiquetas y notas internas), el nombre y la zona horaria de la casa, cuántas cosas usa, las cuentas con acceso, las invitaciones y los dispositivos.
+- Acciones: editar el contacto y la casa, quitar o devolver el acceso a una cuenta, anular invitaciones, desconectar dispositivos, eliminar una familia (escribiendo su nombre) y eliminar cuentas (escribiendo su correo).
+- Registro: cada cambio y cada borrado hecho desde el panel, con quién y cuándo.
+
+El contacto se rellena al principio con la cuenta que creó la casa. Lo que se edita se guarda en `homa_household_contacts` y no cambia el correo con el que esa persona entra en la app. Al borrar una familia, sus archivos pasan a `homa_storage_trash` y `homa-admin-purge` los borra del almacenamiento privado con la clave de servicio, que solo vive en Supabase.
+
+El panel nunca abre el contenido de una casa: ni nombres de niños, ni tareas, ni dinero, ni convivencia, ni fotos. Solo cuenta cuántas cosas hay.

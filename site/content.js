@@ -19,7 +19,7 @@ const faq = [
   },
   {
     q: '¿Quién puede ver los datos de mi familia?',
-    a: 'Solo los adultos que pertenecen a tu casa. Quien administra La Homa ve cuántas casas hay y cuándo se usaron por última vez, pero no los nombres de tus hijos, el dinero ni las fotos.'
+    a: 'Solo los adultos que pertenecen a tu casa. Quien administra La Homa ve los datos de contacto de las cuentas adultas para poder ayudaros, pero no los nombres de tus hijos, el dinero ni las fotos.'
   },
   {
     q: '¿Sirve si los niños viven en dos casas?',
@@ -516,8 +516,8 @@ const privacyBody = `
     <h2>Los datos de la casa</h2>
     <p>Las tareas, los puntos, el dinero, el calendario, la cocina y las fichas de la familia se guardan en la nube, en servidores de Supabase en la Unión Europea. Cada casa solo la pueden leer las cuentas adultas que pertenecen a ella.</p>
     <h2>Lo que ve quien administra La Homa</h2>
-    <p>Para saber si el servicio funciona, quien lo administra ve el nombre de cada casa, cuántos adultos, niños y mascotas tiene, cuántas cuentas están unidas a ella y cuándo se usó por última vez. También ve el correo de las cuentas adultas que se han dado de alta recientemente.</p>
-    <p>El panel de administración no abre los nombres de las personas, la paga, los ahorros, la convivencia ni las fotos. Tampoco permite cambiar nada dentro de una casa ni entrar en ella haciéndose pasar por un adulto.</p>
+    <p>Para dar soporte y saber si el servicio funciona, quien administra La Homa ve el nombre de cada casa y los datos de contacto de las cuentas adultas: nombre, apellidos, correo y teléfono, si lo hay. También ve cuántos adultos, niños y mascotas tiene la casa, cuántas cosas usa (por ejemplo, cuántas tareas o recetas hay) y cuándo se usó por última vez.</p>
+    <p>El panel de administración no abre los nombres de los niños, el contenido de las tareas, la paga, los ahorros, la convivencia ni las fotos. Tampoco permite entrar en una casa haciéndose pasar por un adulto. Sí permite corregir los datos de contacto, quitar el acceso a una cuenta y borrar una casa entera con todo lo que contiene, por ejemplo cuando la familia lo pide.</p>
     <h2>Las fotos</h2>
     <p>Las fotos de la familia solo se ven dentro de la casa. No aparecen en esta web, ni en el blog, ni en el panel de administración.</p>
     <h2>Esta web</h2>

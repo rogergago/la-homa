@@ -44,8 +44,25 @@ test('admin is a noindex operator panel without a secret', () => {
   assert.doesNotMatch(config + source, /sb_secret|service_role/);
   assert.doesNotMatch(source, /signInWithOAuth/);
   assert.match(source, /homa_is_operator/);
-  assert.match(source, /homa_operator_overview/);
+  assert.match(source, /homa_admin_dashboard/);
+  assert.match(source, /homa_admin_delete_household/);
+  assert.doesNotMatch(source, /style="/);
   assert.match(fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8'), /Disallow: \//);
+});
+
+test('operator panel SQL guards every action and never opens the inside of a house', () => {
+  const sql = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '0004_operator_panel.sql'), 'utf8');
+  const publicFunctions = [...sql.matchAll(/grant execute on function public\.(homa_admin_\w+)\(/g)].map(match => match[1]);
+  assert.ok(publicFunctions.length >= 10);
+  for (const name of publicFunctions) {
+    const body = sql.split(`create or replace function public.${name}(`)[1].split('$$;')[0];
+    assert.match(body, /homa_admin_guard\(\)/, `${name} must check the operator`);
+    assert.match(sql, new RegExp(`revoke all on function public\\.${name}\\([^)]*\\) from public, anon;`));
+  }
+  assert.match(sql, /revoke all on function public\.homa_admin_household_card\(public\.homa_households\) from public, anon, authenticated/);
+  assert.match(sql, /revoke all on public\.homa_household_contacts, public\.homa_operator_log, public\.homa_storage_trash from public, anon, authenticated/);
+  assert.match(sql, /raise exception 'CONFIRM_MISMATCH'/);
+  assert.doesNotMatch(sql, /data->>'name'|data->'photo'|data->>'photo'|data->>'amount'|data->>'balance'|service_role/);
 });
 
 test('operator SQL counts people and does not return the inside of a house', () => {
