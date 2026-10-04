@@ -1,14 +1,14 @@
 {
   "version": "5.0.0-beta.1",
-  "hash": "075364fed763",
+  "hash": "fae030f0ee54",
   "files": {
     "core.js": {
       "bytes": 120897,
       "sha256": "16c21b9d27545af05cb04f5f90488266acbab8b5cfdb2b62825a1312e59abb0c"
     },
     "app.js": {
-      "bytes": 301904,
-      "sha256": "b846186d7cf32bb48ac57c1d7945b53b5e9ebc9b585bdd5d38cb30f37db6a28b"
+      "bytes": 300161,
+      "sha256": "b4f507aa7cc816cc22bc8d4f63d7e709e531f2bcda7aad5d81caa45798de98cd"
     },
     "styles.css": {
       "bytes": 91185,
