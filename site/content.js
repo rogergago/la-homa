@@ -14,16 +14,16 @@ const faq = [
     a: 'Sí. Quien crea la casa invita al otro adulto, que entra con su propia cuenta y ve la misma casa. Nadie tiene que compartir su contraseña.'
   },
   {
-    q: '¿Sirve si tenemos custodia compartida?',
-    a: 'Sí, y está pensada para eso. En el calendario de convivencia marcas qué días está cada niño en esta casa, y las tareas, el menú y la paga se ajustan a esos días.'
-  },
-  {
     q: '¿Los puntos se convierten en dinero?',
     a: 'No. Los puntos sirven para llegar al objetivo de la semana y desbloquear recompensas. La paga puede depender de alcanzar ese objetivo, pero se apunta aparte y los puntos nunca se cambian por euros.'
   },
   {
     q: '¿Quién puede ver los datos de mi familia?',
     a: 'Solo los adultos que pertenecen a tu casa. Quien administra La Homa ve cuántas casas hay y cuándo se usaron por última vez, pero no los nombres de tus hijos, el dinero ni las fotos.'
+  },
+  {
+    q: '¿Sirve si los niños viven en dos casas?',
+    a: 'Sí, aunque no hace falta para usar La Homa. Si tenéis custodia compartida, el calendario de convivencia marca qué días está cada niño en la vuestra, y las tareas, el menú y la paga se ajustan a esos días. Si no lo necesitáis, no tenéis que configurarlo.'
   }
 ];
 
@@ -133,16 +133,16 @@ const moneyMock = `
 </div>`;
 
 const calendarMock = `
-<div class="mock-card" role="img" aria-label="Semana de convivencia de Pablo, en casa de lunes a miércoles y con su padre el resto, y una excursión con su lista de preparación.">
-  <div class="mc-head"><b>Convivencia de Pablo</b><span class="m-pill rose">Custodia compartida</span></div>
+<div class="mock-card" role="img" aria-label="Calendario de la semana de la familia, con los planes de cada día y una excursión con su lista de preparación.">
+  <div class="mc-head"><b>Calendario de la familia</b><span class="m-pill rose">Esta semana</span></div>
   <div class="m-presence">
-    <div class="home"><small>L</small><b>5</b><span>En casa</span></div>
-    <div class="home"><small>M</small><b>6</b><span>En casa</span></div>
-    <div class="home"><small>X</small><b>7</b><span>En casa</span></div>
-    <div class="away"><small>J</small><b>8</b><span>Con papá</span></div>
-    <div class="away"><small>V</small><b>9</b><span>Con papá</span></div>
-    <div class="away"><small>S</small><b>10</b><span>Con papá</span></div>
-    <div class="away"><small>D</small><b>11</b><span>Con papá</span></div>
+    <div class="away"><small>L</small><b>5</b><span>—</span></div>
+    <div class="home"><small>M</small><b>6</b><span>Inglés</span></div>
+    <div class="home"><small>X</small><b>7</b><span>Excursión</span></div>
+    <div class="home"><small>J</small><b>8</b><span>Inglés</span></div>
+    <div class="home"><small>V</small><b>9</b><span>Dentista</span></div>
+    <div class="home"><small>S</small><b>10</b><span>Cumple</span></div>
+    <div class="away"><small>D</small><b>11</b><span>—</span></div>
   </div>
   <div class="mc-event">
     <span class="mc-icon rose">🚌</span>
@@ -163,7 +163,7 @@ const kitchenMock = `
     <div><small>LUN</small><span>🥘</span><b>Lentejas</b></div>
     <div><small>MAR</small><span>🍝</span><b>Macarrones</b></div>
     <div><small>MIÉ</small><span>🐟</span><b>Merluza al horno</b></div>
-    <div><small>JUE</small><span>🥗</span><b>Ensalada de garbanzos</b><em>3 raciones</em></div>
+    <div><small>JUE</small><span>🥗</span><b>Ensalada de garbanzos</b></div>
   </div>
   <div class="m-shop">
     <div class="mc-head"><b>Lista del súper</b><span class="m-muted">Sale del menú</span></div>
@@ -252,13 +252,13 @@ const home = `
 
   <article class="feature tint-rose">
     <div class="feature-copy">
-      <p class="eyebrow">Calendario y convivencia</p>
+      <p class="eyebrow">Calendario</p>
       <h3>Los planes llegan preparados, no a última hora.</h3>
       <p>Apunta las citas, las excursiones y los cumpleaños con su fecha y quién va. Lo que se repite, como la extraescolar de los martes, se crea una vez.</p>
       <p>Un plan especial puede llevar su lista de preparación: la autorización firmada, la mochila con el almuerzo, el regalo. Cada cosa tiene un responsable y se tacha cuando está lista.</p>
-      <p>Si la custodia es compartida, el calendario de convivencia marca qué días está cada niño en esta casa. Las tareas y las raciones del menú se ajustan a esos días, y no se acumula paga en las semanas que pasa enteras fuera.</p>
       <ul class="checks">
         ${check('Puedes pasar los planes a Google Calendar o al Calendario de Apple con un archivo .ics.')}
+        ${check('Si los niños viven en dos casas, puedes marcar qué días está cada uno en la vuestra, y las tareas y el menú se ajustan a esos días.')}
       </ul>
     </div>
     ${calendarMock}
@@ -318,7 +318,7 @@ const home = `
     <ul>
       <li><b>Sin clasificaciones entre hermanos.</b> Cada niño se compara solo con su propio objetivo.</li>
       <li><b>Sin chat.</b> Para hablar ya tenéis la mesa de la cocina.</li>
-      <li><b>Sin localización en tiempo real.</b> La Homa sabe qué días está cada niño en casa porque lo dice el calendario, no un GPS.</li>
+      <li><b>Sin localización en tiempo real.</b> La Homa no sabe ni pregunta dónde está nadie.</li>
       <li><b>Sin monedas inventadas.</b> Los puntos son puntos y el dinero es dinero.</li>
     </ul>
   </div>
@@ -392,7 +392,7 @@ const timeline = [
   {
     when: 'Jueves',
     title: 'La cena ya está decidida',
-    text: 'El menú dice ensalada de garbanzos, y esta vez son tres raciones porque Pablo está con su padre. Los garbanzos ya estaban en la lista desde el domingo. Al marcarlos como comprados, pasan a la despensa.'
+    text: 'El menú dice ensalada de garbanzos, y nadie tiene que preguntar a las siete qué se cena. Los garbanzos ya estaban en la lista desde el domingo. Al marcarlos como comprados, pasan a la despensa.'
   },
   {
     when: 'Viernes',
@@ -410,7 +410,7 @@ const howBody = `
 <section class="wrap page-hero">
   <p class="eyebrow">Cómo funciona</p>
   <h1>Una semana con La Homa, de lunes a domingo.</h1>
-  <p class="lede">La mejor forma de entender La Homa es ver una semana normal. El ejemplo es una casa con dos adultos, Marta y Jorge, dos hijos, Lucía y Pablo, y Kira, la perra. Pablo pasa una parte de la semana con su padre.</p>
+  <p class="lede">La mejor forma de entender La Homa es ver una semana normal. El ejemplo es una casa con dos adultos, Marta y Jorge, dos hijos, Lucía y Pablo, y Kira, la perra.</p>
 </section>
 
 <section class="wrap timeline">
@@ -443,8 +443,8 @@ const howBody = `
       <p>Cambiar un ajuste no modifica las semanas que ya se cerraron ni el dinero que ya se pagó. Una corrección queda como un apunte nuevo.</p>
     </article>
     <article>
-      <h3>La presencia manda</h3>
-      <p>El calendario de convivencia dice quién está en casa. Con eso se reparten las tareas y se proponen las raciones, sin preguntar a nadie dónde está.</p>
+      <h3>Empiezas por lo que necesitas</h3>
+      <p>Puedes usar solo las tareas y añadir la paga, el menú o el calendario cuando os venga bien. Lo que no uséis no hace falta configurarlo.</p>
     </article>
   </div>
 </section>
@@ -461,7 +461,7 @@ const familiesBody = `
 <section class="wrap page-hero">
   <p class="eyebrow">Para quién es</p>
   <h1>Para casas reales, que no se parecen entre sí.</h1>
-  <p class="lede">Hay casas con dos adultos y casas con uno, niños que pasan la mitad de la semana fuera y perros que también son de la familia. La Homa se adapta a cómo es tu casa, y no al revés.</p>
+  <p class="lede">Hay casas con dos adultos y casas con uno, con niños pequeños o que ya manejan su dinero, y con perros que también son de la familia. La Homa se adapta a cómo es tu casa, y no al revés.</p>
 </section>
 
 <section class="wrap families">
@@ -469,11 +469,6 @@ const familiesBody = `
     <span class="role-icon">👫</span>
     <h2>Dos adultos que se reparten la casa</h2>
     <p>Cada uno entra con su cuenta y ve lo mismo: qué ha hecho cada niño, qué plan viene y qué falta en la despensa. Ya no hace falta preguntar al otro si alguien ha puesto la lavadora o si la autorización está firmada.</p>
-  </article>
-  <article class="tint-rose">
-    <span class="role-icon">🗓️</span>
-    <h2>Custodia compartida</h2>
-    <p>El calendario de convivencia marca los días que cada niño pasa en esta casa, también con turnos que se repiten o cambios puntuales. Las tareas se reparten en esos días, el menú cuenta con quien come y la paga no se acumula en las semanas que el niño pasa enteras fuera.</p>
   </article>
   <article class="tint-sand">
     <span class="role-icon">🧸</span>
@@ -485,7 +480,7 @@ const familiesBody = `
     <h2>Niños que empiezan a manejar dinero</h2>
     <p>Su hucha separa lo que gastan, lo que ahorran y lo que guardan para un objetivo. Con los intereses que decidas, ven crecer lo que no gastan. Y pueden negociar con sus hermanos un cambio de tareas sin pedir permiso a nadie.</p>
   </article>
-  <article class="tint-sage">
+  <article class="tint-rose">
     <span class="role-icon">🐶</span>
     <h2>Casas con mascotas</h2>
     <p>La mascota aparece en la familia con su nombre y su foto. Sus cuidados son tareas de las personas: quien saca a Kira de paseo es quien suma los puntos. Las mascotas no suman puntos, no tienen paga y no cuentan en las raciones del menú.</p>
@@ -494,6 +489,11 @@ const familiesBody = `
     <span class="role-icon">🏠</span>
     <h2>Un solo adulto</h2>
     <p>La Homa funciona igual con una sola cuenta adulta. Para quien organiza la casa sin ayuda, tenerlo todo en un sitio ya quita mucho trabajo.</p>
+  </article>
+  <article class="tint-sand">
+    <span class="role-icon">🗓️</span>
+    <h2>Custodia compartida</h2>
+    <p>Si los niños viven en dos casas, el calendario de convivencia marca qué días está cada uno en la vuestra. Las tareas, el menú y la paga se ajustan a esos días. Es una opción: si no la necesitáis, no tenéis que configurarla.</p>
   </article>
 </section>
 
@@ -530,7 +530,7 @@ export const pages = [
     path: '/',
     file: 'index.html',
     title: 'La Homa · Tu vida familiar, organizada',
-    description: 'Tareas con puntos, paga y ahorro, calendario con custodia compartida y menú con lista de la compra. Toda la organización de tu casa en un mismo sitio.',
+    description: 'Tareas con puntos, paga y ahorro, calendario con listas de preparación y menú con lista de la compra. Toda la organización de tu casa en un mismo sitio.',
     jsonLd: {
       '@context': 'https://schema.org',
       '@graph': [
@@ -572,7 +572,7 @@ export const pages = [
     path: '/familias',
     file: 'familias/index.html',
     title: 'Para quién es',
-    description: 'La Homa para dos adultos, custodia compartida, niños pequeños, niños que empiezan a manejar dinero, casas con mascotas y familias con un solo adulto.',
+    description: 'La Homa para dos adultos o uno solo, niños pequeños, niños que empiezan a manejar dinero, casas con mascotas y, si hace falta, custodia compartida.',
     body: familiesBody
   },
   {
