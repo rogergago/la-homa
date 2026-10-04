@@ -66,6 +66,14 @@ body{font-size:15px;line-height:1.55}button,input,select,textarea{font-size:inhe
 .guide-steps{display:flex;gap:8px;margin:0 0 18px}.guide-steps span{flex:1;height:4px;border-radius:99px;background:#e6e0ef}.guide-steps span.on{background:var(--purple)}.guide-row{display:grid;grid-template-columns:minmax(0,1fr) 148px 44px;gap:8px;align-items:end;margin-bottom:10px}.guide-row .field{margin:0}.guide-actions{display:flex;gap:10px;margin-top:18px}.guide-actions .btn{flex:1}
 @media(max-width:580px){.guide-row{grid-template-columns:minmax(0,1fr) 44px}.guide-row .field:nth-child(2){grid-column:1}.guide-row .icon-btn{grid-column:2;grid-row:1 / span 2}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.tour-layer{position:fixed;inset:auto 16px 16px;z-index:60;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)}
+.tour-card{pointer-events:auto;width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 60px -28px #39255b66}
+.tour-card .eyebrow{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:750}
+.tour-card h2{margin:0 0 8px;font-size:22px;letter-spacing:-.03em}
+.tour-card p{margin:0;color:#6c5e7d;font-size:15px;line-height:1.5}
+.tour-progress{display:flex;gap:6px;margin:0 0 14px}.tour-progress span{flex:1;height:4px;border-radius:99px;background:#e6e0ef}.tour-progress span.on{background:var(--purple)}
+.tour-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+@media(max-width:850px){.tour-layer{bottom:90px}}
 
 /* Keep the family label readable in narrow headers without squeezing controls. */
 @media(max-width:580px){.topbar>div:first-child{flex:1;min-width:0;max-width:none}.topbar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;letter-spacing:.7px}.topbar>.flex{flex-shrink:0;gap:5px}.topbar>.icon-btn{display:none}.topbar .notification-button{min-width:36px;width:36px}.topbar .mode-btn{white-space:nowrap}.topbar-date{white-space:nowrap}}
@@ -80,6 +88,464 @@ body{font-size:15px;line-height:1.55}button,input,select,textarea{font-size:inhe
 <input id="calendar-file" type="file" accept="text/calendar,.ics" hidden>
 <noscript>La Homa necesita JavaScript para funcionar. Act&iacute;valo en tu navegador.</noscript>
 <script>window.FAMILY_STANDALONE=true;</script>
+<script>
+/* La Homa locales. Spain languages first, then en/fr/it/de. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.HomaI18n = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const STORAGE = 'lahoma-locale';
+  const LOCALES = [
+    { code: 'es', label: 'Español', native: 'Español', bcp: 'es-ES' },
+    { code: 'ca', label: 'Català', native: 'Català', bcp: 'ca-ES' },
+    { code: 'va', label: 'Valencià', native: 'Valencià', bcp: 'ca-ES-valencia' },
+    { code: 'eu', label: 'Euskara', native: 'Euskara', bcp: 'eu-ES' },
+    { code: 'gl', label: 'Galego', native: 'Galego', bcp: 'gl-ES' },
+    { code: 'en', label: 'English', native: 'English', bcp: 'en-GB' },
+    { code: 'fr', label: 'Français', native: 'Français', bcp: 'fr-FR' },
+    { code: 'it', label: 'Italiano', native: 'Italiano', bcp: 'it-IT' },
+    { code: 'de', label: 'Deutsch', native: 'Deutsch', bcp: 'de-DE' }
+  ];
+  const codes = new Set(LOCALES.map(l => l.code));
+
+  const es = {
+    lang: 'Idioma',
+    chooseLang: 'Elige el idioma',
+    brandSub: 'Organización familiar',
+    authEyebrow: 'Vuestro espacio familiar',
+    authTitleLogin: 'Qué bien veros.',
+    authTitleRegister: 'Empezamos en familia.',
+    authSub: 'Correo o Google. La familia se guarda en la nube y está en tus dispositivos.',
+    name: 'Tu nombre (adulto)',
+    email: 'Correo electrónico',
+    password: 'Contraseña',
+    repeat: 'Repite la contraseña',
+    invite: 'Código de invitación, si te han invitado',
+    login: 'Iniciar sesión',
+    register: 'Crear cuenta',
+    haveAccount: 'Ya tengo cuenta.',
+    noAccount: 'Todavía no tengo cuenta.',
+    orContinue: 'O continúa con',
+    kidsNote: 'Los niños y las mascotas viven en la familia. No necesitan su propia cuenta.',
+    sessionNote: 'Hace falta iniciar sesión. La sesión se mantiene hasta que la cierres.',
+    whatIs: 'Qué es La Homa',
+    checking: 'Comprobando...',
+    guideEyebrow: 'Vuestra familia',
+    guideStoryTitle: 'La casa se construye con nombres.',
+    guideStoryText: 'Primero quiénes sois. Después, las tareas, la paga y la compra.',
+    guideStep: 'Paso {n} de 3',
+    guideTitle0: 'Cómo se llama vuestra casa',
+    guideTitle1: 'Quién vive aquí',
+    guideTitle2: 'Las mascotas también',
+    familyName: 'Nombre de la casa',
+    adultName: 'Tu nombre',
+    guideAdultHint: 'Tú eres quien administra. Los demás no necesitan correo.',
+    guidePeopleHint: 'Niños y otros adultos. Si hoy estás solo, continúa: podrás añadirlos después.',
+    guidePetsHint: 'Un perro, un gato o quien consideréis de la familia. No inician sesión ni cuentan como un plato en la mesa.',
+    personName: 'Nombre',
+    personIs: 'Es',
+    child: 'Niño o niña',
+    adult: 'Adulto',
+    addPerson: 'Añadir otra persona',
+    addPet: 'Añadir otra mascota',
+    animal: 'Animal',
+    dog: 'Perro',
+    cat: 'Gato',
+    other: 'Otro',
+    remove: 'Quitar',
+    back: 'Atrás',
+    continue: 'Continuar',
+    enterHome: 'Entrar en casa',
+    guideNeedNames: 'Escribe el nombre de la casa y el tuyo.',
+    familyReady: 'La familia está lista.',
+    navHome: 'Hoy',
+    navTasks: 'Tareas',
+    navCalendar: 'Agenda',
+    navKitchen: 'Cocina',
+    navFamily: 'Familia',
+    navShared: 'Espacio compartido',
+    tabletView: 'Vista tablet',
+    skipContent: 'Saltar al contenido',
+    setupTitle: 'Dejad La Homa a vuestra medida',
+    hideGuide: 'Ocultar guía',
+    setupPeople: 'Personas',
+    setupPresence: 'Convivencia (opcional)',
+    setupTasks: 'Tareas',
+    setupMoney: 'Paga (opcional)',
+    setupNote: 'Una cuenta es para un adulto. Los niños tienen perfiles, sin correo propio.',
+    todayHome: 'Hoy en casa',
+    noPresence: 'No hay convivencia prevista hoy.',
+    tourTitle: 'Te enseñamos La Homa',
+    tourSkip: 'Saltar tutorial',
+    tourNext: 'Siguiente',
+    tourDone: 'Empezar a usar La Homa',
+    tour1Title: 'Vuestra casa ya está lista',
+    tour1Text: 'En unos pasos te mostramos dónde está cada cosa. Puedes saltarlo cuando quieras.',
+    tour2Title: 'Personas de la familia',
+    tour2Text: 'Aquí añades niños, otros adultos y mascotas, y editas sus fichas.',
+    tour3Title: 'Tareas de la semana',
+    tour3Text: 'Crea las tareas recurrentes, asígnalas y sigue los puntos de cada uno.',
+    tour4Title: 'Agenda y planes',
+    tour4Text: 'Citas, excursiones y, si lo necesitáis, los días de convivencia.',
+    tour5Title: 'Cocina',
+    tour5Text: 'Recetas, menú de la semana y la lista de la compra que sale de él.',
+    tour6Title: 'Paga y ahorro',
+    tour6Text: 'La paga semanal y las huchas de cada niño. Es opcional: configúralo cuando os venga bien.',
+    settingsLang: 'Idioma de la app',
+    settingsLangHelp: 'Cambia los textos de La Homa en este dispositivo. Se guarda con tu cuenta en la nube.',
+    saveLang: 'Guardar idioma'
+  };
+
+  function copy(base, patch) { return Object.assign({}, base, patch); }
+
+  const dict = {
+    es,
+    ca: copy(es, {
+      lang: 'Idioma', chooseLang: 'Tria l’idioma', brandSub: 'Organització familiar',
+      authEyebrow: 'El vostre espai familiar', authTitleLogin: 'Que bé veure-us.', authTitleRegister: 'Comencem en família.',
+      authSub: 'Correu o Google. La família es desa al núvol i és als vostres dispositius.',
+      name: 'El teu nom (adult)', email: 'Correu electrònic', password: 'Contrasenya', repeat: 'Repeteix la contrasenya',
+      invite: 'Codi d’invitació, si t’han convidat', login: 'Inicia la sessió', register: 'Crea el compte',
+      haveAccount: 'Ja tinc compte.', noAccount: 'Encara no tinc compte.', orContinue: 'O continua amb',
+      kidsNote: 'Els infants i les mascotes viuen a la família. No necessiten el seu propi compte.',
+      sessionNote: 'Cal iniciar la sessió. La sessió es manté fins que la tanquis.', whatIs: 'Què és La Homa', checking: 'Comprovant...',
+      guideEyebrow: 'La vostra família', guideStoryTitle: 'La casa es construeix amb noms.',
+      guideStoryText: 'Primer qui sou. Després, les tasques, la paga i la compra.',
+      guideStep: 'Pas {n} de 3', guideTitle0: 'Com es diu la vostra casa', guideTitle1: 'Qui viu aquí', guideTitle2: 'Les mascotes també',
+      familyName: 'Nom de la casa', adultName: 'El teu nom', guideAdultHint: 'Tu ets qui administra. La resta no necessiten correu.',
+      guidePeopleHint: 'Infants i altres adults. Si avui ets sol, continua: els podràs afegir després.',
+      guidePetsHint: 'Un gos, un gat o qui considereu de la família. No inicien sessió ni compten com un plat a taula.',
+      personName: 'Nom', personIs: 'És', child: 'Nen o nena', adult: 'Adult', addPerson: 'Afegeix una altra persona',
+      addPet: 'Afegeix una altra mascota', animal: 'Animal', dog: 'Gos', cat: 'Gat', other: 'Altre', remove: 'Treu',
+      back: 'Enrere', continue: 'Continua', enterHome: 'Entra a casa', guideNeedNames: 'Escriu el nom de la casa i el teu.',
+      familyReady: 'La família està a punt.',
+      navHome: 'Avui', navTasks: 'Tasques', navCalendar: 'Agenda', navKitchen: 'Cuina', navFamily: 'Família',
+      navShared: 'Espai compartit', tabletView: 'Vista tauleta', skipContent: 'Salta al contingut',
+      setupTitle: 'Deixeu La Homa a la vostra mida', hideGuide: 'Amaga la guia',
+      setupPeople: 'Persones', setupPresence: 'Convivència (opcional)', setupTasks: 'Tasques', setupMoney: 'Paga (opcional)',
+      setupNote: 'Un compte és per a un adult. Els infants tenen perfils, sense correu propi.',
+      todayHome: 'Avui a casa', noPresence: 'No hi ha convivència prevista avui.',
+      tourTitle: 'Us ensenyem La Homa', tourSkip: 'Salta el tutorial', tourNext: 'Següent', tourDone: 'Comença a fer servir La Homa',
+      tour1Title: 'La vostra casa ja està a punt', tour1Text: 'En uns passos us mostrem on és cada cosa. Podeu saltar-ho quan vulgueu.',
+      tour2Title: 'Persones de la família', tour2Text: 'Aquí afegiu infants, altres adults i mascotes, i editeu les seves fitxes.',
+      tour3Title: 'Tasques de la setmana', tour3Text: 'Creeu les tasques recurrents, assigneu-les i seguiu els punts de cadascú.',
+      tour4Title: 'Agenda i plans', tour4Text: 'Cites, excursions i, si us cal, els dies de convivència.',
+      tour5Title: 'Cuina', tour5Text: 'Receptes, menú de la setmana i la llista de la compra que en surt.',
+      tour6Title: 'Paga i estalvi', tour6Text: 'La paga setmanal i les guardioles de cada infant. És opcional.',
+      settingsLang: 'Idioma de l’app', settingsLangHelp: 'Canvia els textos de La Homa en aquest dispositiu. Es desa amb el compte al núvol.',
+      saveLang: 'Desa l’idioma'
+    }),
+    va: copy(es, {
+      lang: 'Idioma', chooseLang: 'Tria l’idioma', brandSub: 'Organització familiar',
+      authEyebrow: 'El vostre espai familiar', authTitleLogin: 'Que bé veure-vos.', authTitleRegister: 'Comencem en família.',
+      authSub: 'Correu o Google. La família es guarda al núvol i està als vostres dispositius.',
+      name: 'El teu nom (adult)', email: 'Correu electrònic', password: 'Contrasenya', repeat: 'Repeteix la contrasenya',
+      invite: 'Codi d’invitació, si t’han convidat', login: 'Inicia la sessió', register: 'Crea el compte',
+      haveAccount: 'Ja tinc compte.', noAccount: 'Encara no tinc compte.', orContinue: 'O continua amb',
+      kidsNote: 'Els xiquets i les mascotes viuen a la família. No necessiten el seu propi compte.',
+      sessionNote: 'Cal iniciar la sessió. La sessió es manté fins que la tanques.', whatIs: 'Què és La Homa', checking: 'Comprovant...',
+      guideEyebrow: 'La vostra família', guideStoryTitle: 'La casa es construïx amb noms.',
+      guideStoryText: 'Primer qui sou. Després, les faenes, la paga i la compra.',
+      guideStep: 'Pas {n} de 3', guideTitle0: 'Com es diu la vostra casa', guideTitle1: 'Qui viu ací', guideTitle2: 'Les mascotes també',
+      familyName: 'Nom de la casa', adultName: 'El teu nom', guideAdultHint: 'Tu eres qui administra. La resta no necessiten correu.',
+      guidePeopleHint: 'Xiquets i altres adults. Si hui estàs sol, continua: els podràs afegir després.',
+      guidePetsHint: 'Un gos, un gat o qui considereu de la família. No inicien sessió ni conten com un plat a taula.',
+      personName: 'Nom', personIs: 'És', child: 'Xiquet o xiqueta', adult: 'Adult', addPerson: 'Afig una altra persona',
+      addPet: 'Afig una altra mascota', animal: 'Animal', dog: 'Gos', cat: 'Gat', other: 'Un altre', remove: 'Treu',
+      back: 'Arrere', continue: 'Continua', enterHome: 'Entra a casa', guideNeedNames: 'Escriu el nom de la casa i el teu.',
+      familyReady: 'La família està llesta.',
+      navHome: 'Hui', navTasks: 'Faenes', navCalendar: 'Agenda', navKitchen: 'Cuina', navFamily: 'Família',
+      navShared: 'Espai compartit', tabletView: 'Vista tauleta', skipContent: 'Salta al contingut',
+      setupTitle: 'Deixeu La Homa a la vostra mida', hideGuide: 'Amaga la guia',
+      setupPeople: 'Persones', setupPresence: 'Convivència (opcional)', setupTasks: 'Faenes', setupMoney: 'Paga (opcional)',
+      setupNote: 'Un compte és per a un adult. Els xiquets tenen perfils, sense correu propi.',
+      todayHome: 'Hui a casa', noPresence: 'No hi ha convivència prevista hui.',
+      tourTitle: 'Us ensenyem La Homa', tourSkip: 'Salta el tutorial', tourNext: 'Següent', tourDone: 'Comença a usar La Homa',
+      tour1Title: 'La vostra casa ja està llesta', tour1Text: 'En uns passos us mostrem on és cada cosa. Podeu saltar-ho quan vulgueu.',
+      tour2Title: 'Persones de la família', tour2Text: 'Ací afegiu xiquets, altres adults i mascotes, i editeu les seues fitxes.',
+      tour3Title: 'Faenes de la setmana', tour3Text: 'Creeu les faenes recurrents, assigneu-les i seguiu els punts de cadascú.',
+      tour4Title: 'Agenda i plans', tour4Text: 'Cites, excursions i, si us cal, els dies de convivència.',
+      tour5Title: 'Cuina', tour5Text: 'Receptes, menú de la setmana i la llista de la compra que en ix.',
+      tour6Title: 'Paga i estalvi', tour6Text: 'La paga setmanal i les guardioles de cada xiquet. És opcional.',
+      settingsLang: 'Idioma de l’app', settingsLangHelp: 'Canvia els textos de La Homa en este dispositiu. Es guarda amb el compte al núvol.',
+      saveLang: 'Guarda l’idioma'
+    }),
+    eu: copy(es, {
+      lang: 'Hizkuntza', chooseLang: 'Aukeratu hizkuntza', brandSub: 'Familia antolaketa',
+      authEyebrow: 'Zuen familia gunea', authTitleLogin: 'Pozik ikusten zaituztegu.', authTitleRegister: 'Familian hasiko gara.',
+      authSub: 'Posta edo Google. Familia hodeian gordetzen da eta zuen gailuetan dago.',
+      name: 'Zure izena (heldua)', email: 'Helbide elektronikoa', password: 'Pasahitza', repeat: 'Errepikatu pasahitza',
+      invite: 'Gonbidapen kodea, gonbidatu bazaituzte', login: 'Hasi saioa', register: 'Sortu kontua',
+      haveAccount: 'Badut kontua.', noAccount: 'Oraindik ez dut konturik.', orContinue: 'Edo jarraitu honekin',
+      kidsNote: 'Haurrak eta animaliak familian bizi dira. Ez dute kontu propiorik behar.',
+      sessionNote: 'Saioa hasi behar da. Saioa itxi arte mantentzen da.', whatIs: 'Zer da La Homa', checking: 'Egiaztatzen...',
+      guideEyebrow: 'Zuen familia', guideStoryTitle: 'Etxea izenekin eraikitzen da.',
+      guideStoryText: 'Lehenik nor zareten. Gero, lanak, dirua eta erosketak.',
+      guideStep: '{n}/3 urratsa', guideTitle0: 'Nola deitzen da zuen etxea', guideTitle1: 'Nor bizi da hemen', guideTitle2: 'Animaliak ere',
+      familyName: 'Etxearen izena', adultName: 'Zure izena', guideAdultHint: 'Zu zara kudeatzailea. Besteek ez dute postarik behar.',
+      guidePeopleHint: 'Haurrak eta beste helduak. Gaur bakarrik bazaude, jarraitu: geroago gehi ditzakezu.',
+      guidePetsHint: 'Txakurra, katua edo familiakotzat dituzuenak. Ez dute saiorik hasten.',
+      personName: 'Izena', personIs: 'Da', child: 'Umea', adult: 'Heldua', addPerson: 'Gehitu beste pertsona bat',
+      addPet: 'Gehitu beste animalia bat', animal: 'Animalia', dog: 'Txakurra', cat: 'Katua', other: 'Beste bat', remove: 'Kendu',
+      back: 'Atzera', continue: 'Jarraitu', enterHome: 'Sartu etxean', guideNeedNames: 'Idatzi etxearen izena eta zurea.',
+      familyReady: 'Familia prest dago.',
+      navHome: 'Gaur', navTasks: 'Lana', navCalendar: 'Agenda', navKitchen: 'Sukaldea', navFamily: 'Familia',
+      navShared: 'Espazio partekatua', tabletView: 'Tableta ikuspegia', skipContent: 'Joan edukira',
+      setupTitle: 'Egokitu La Homa zuen neurrian', hideGuide: 'Ezkutatu gida',
+      setupPeople: 'Pertsonak', setupPresence: 'Bizikidetza (aukerakoa)', setupTasks: 'Lana', setupMoney: 'Dirua (aukerakoa)',
+      setupNote: 'Kontu bat heldu batentzat da. Haurrak profilekin daude, postarik gabe.',
+      todayHome: 'Gaur etxean', noPresence: 'Gaur ez dago bizikidetzarik aurreikusita.',
+      tourTitle: 'La Homa erakutsiko dizuegu', tourSkip: 'Saltatu tutoriala', tourNext: 'Hurrengoa', tourDone: 'Hasi La Homa erabiltzen',
+      tour1Title: 'Zuen etxea prest dago', tour1Text: 'Urrats gutxitan non dagoen bakoitza erakutsiko dizuegu. Nahi duzuenean salto egin dezakezue.',
+      tour2Title: 'Familia kideak', tour2Text: 'Hemen haurrak, beste helduak eta animaliak gehitzen dituzue.',
+      tour3Title: 'Asteko lanak', tour3Text: 'Sortu lan errepikakorrak, esleitu eta jarraitu puntuak.',
+      tour4Title: 'Agenda eta planak', tour4Text: 'Hitzorduak, irteerak eta, behar baduzue, bizikidetza egunak.',
+      tour5Title: 'Sukaldea', tour5Text: 'Errezetak, asteko menua eta erosketa zerrenda.',
+      tour6Title: 'Dirua eta aurrezpena', tour6Text: 'Asteko dirua eta haurren kutxak. Aukerakoa da.',
+      settingsLang: 'Apparen hizkuntza', settingsLangHelp: 'Aldatu La Homaren testuak gailu honetan. Zure kontuarekin gordetzen da.',
+      saveLang: 'Gorde hizkuntza'
+    }),
+    gl: copy(es, {
+      lang: 'Idioma', chooseLang: 'Escolle o idioma', brandSub: 'Organización familiar',
+      authEyebrow: 'O voso espazo familiar', authTitleLogin: 'Que ben vervos.', authTitleRegister: 'Comezamos en familia.',
+      authSub: 'Correo ou Google. A familia gárdase na nube e está nos vosos dispositivos.',
+      name: 'O teu nome (adulto)', email: 'Correo electrónico', password: 'Contrasinal', repeat: 'Repite o contrasinal',
+      invite: 'Código de convite, se te convidaron', login: 'Iniciar sesión', register: 'Crear conta',
+      haveAccount: 'Xa teño conta.', noAccount: 'Aínda non teño conta.', orContinue: 'Ou continúa con',
+      kidsNote: 'Os nenos e as mascotas viven na familia. Non necesitan a súa propia conta.',
+      sessionNote: 'Hai que iniciar sesión. A sesión mantense ata que a peches.', whatIs: 'Que é La Homa', checking: 'Comprobando...',
+      guideEyebrow: 'A vosa familia', guideStoryTitle: 'A casa constrúese con nomes.',
+      guideStoryText: 'Primeiro quen sodes. Despois, as tarefas, a paga e a compra.',
+      guideStep: 'Paso {n} de 3', guideTitle0: 'Como se chama a vosa casa', guideTitle1: 'Quen vive aquí', guideTitle2: 'As mascotas tamén',
+      familyName: 'Nome da casa', adultName: 'O teu nome', guideAdultHint: 'Ti es quen administra. Os demais non necesitan correo.',
+      guidePeopleHint: 'Nenos e outros adultos. Se hoxe estás só, continúa: poderás engadilos despois.',
+      guidePetsHint: 'Un can, un gato ou quen considereades da familia. Non inician sesión.',
+      personName: 'Nome', personIs: 'É', child: 'Neno ou nena', adult: 'Adulto', addPerson: 'Engadir outra persoa',
+      addPet: 'Engadir outra mascota', animal: 'Animal', dog: 'Can', cat: 'Gato', other: 'Outro', remove: 'Quitar',
+      back: 'Atrás', continue: 'Continuar', enterHome: 'Entrar na casa', guideNeedNames: 'Escribe o nome da casa e o teu.',
+      familyReady: 'A familia está lista.',
+      navHome: 'Hoxe', navTasks: 'Tarefas', navCalendar: 'Axenda', navKitchen: 'Cociña', navFamily: 'Familia',
+      navShared: 'Espazo compartido', tabletView: 'Vista tableta', skipContent: 'Saltar ao contido',
+      setupTitle: 'Deixade La Homa á vosa medida', hideGuide: 'Agochar guía',
+      setupPeople: 'Persoas', setupPresence: 'Convivencia (opcional)', setupTasks: 'Tarefas', setupMoney: 'Paga (opcional)',
+      setupNote: 'Unha conta é para un adulto. Os nenos teñen perfís, sen correo propio.',
+      todayHome: 'Hoxe na casa', noPresence: 'Non hai convivencia prevista hoxe.',
+      tourTitle: 'Ensinámosvos La Homa', tourSkip: 'Saltar o tutorial', tourNext: 'Seguinte', tourDone: 'Comezar a usar La Homa',
+      tour1Title: 'A vosa casa xa está lista', tour1Text: 'Nuns pasos mostrámosvos onde está cada cousa. Podedes saltalo cando queirades.',
+      tour2Title: 'Persoas da familia', tour2Text: 'Aquí engadides nenos, outros adultos e mascotas.',
+      tour3Title: 'Tarefas da semana', tour3Text: 'Creades as tarefas recorrentes, asígnadelas e seguide os puntos.',
+      tour4Title: 'Axenda e plans', tour4Text: 'Citas, excursións e, se o necesitades, os días de convivencia.',
+      tour5Title: 'Cociña', tour5Text: 'Receitas, menú da semana e a lista da compra.',
+      tour6Title: 'Paga e aforro', tour6Text: 'A paga semanal e as huchas de cada neno. É opcional.',
+      settingsLang: 'Idioma da app', settingsLangHelp: 'Cambia os textos de La Homa neste dispositivo. Gárdase coa conta na nube.',
+      saveLang: 'Gardar idioma'
+    }),
+    en: copy(es, {
+      lang: 'Language', chooseLang: 'Choose language', brandSub: 'Family organisation',
+      authEyebrow: 'Your family space', authTitleLogin: 'Good to see you.', authTitleRegister: 'Let’s start as a family.',
+      authSub: 'Email or Google. Your family is saved in the cloud and on your devices.',
+      name: 'Your name (adult)', email: 'Email', password: 'Password', repeat: 'Repeat password',
+      invite: 'Invite code, if you were invited', login: 'Sign in', register: 'Create account',
+      haveAccount: 'I already have an account.', noAccount: 'I don’t have an account yet.', orContinue: 'Or continue with',
+      kidsNote: 'Children and pets live in the family. They don’t need their own account.',
+      sessionNote: 'You need to sign in. Your session stays until you sign out.', whatIs: 'What is La Homa', checking: 'Checking...',
+      guideEyebrow: 'Your family', guideStoryTitle: 'A home is built with names.',
+      guideStoryText: 'First who you are. Then chores, pocket money and shopping.',
+      guideStep: 'Step {n} of 3', guideTitle0: 'What is your home called', guideTitle1: 'Who lives here', guideTitle2: 'Pets too',
+      familyName: 'Home name', adultName: 'Your name', guideAdultHint: 'You manage the home. Others don’t need email.',
+      guidePeopleHint: 'Children and other adults. If you’re alone today, continue — you can add them later.',
+      guidePetsHint: 'A dog, a cat, or anyone you count as family. They don’t sign in or count as a plate at the table.',
+      personName: 'Name', personIs: 'Is', child: 'Child', adult: 'Adult', addPerson: 'Add another person',
+      addPet: 'Add another pet', animal: 'Animal', dog: 'Dog', cat: 'Cat', other: 'Other', remove: 'Remove',
+      back: 'Back', continue: 'Continue', enterHome: 'Enter home', guideNeedNames: 'Enter the home name and yours.',
+      familyReady: 'Your family is ready.',
+      navHome: 'Today', navTasks: 'Tasks', navCalendar: 'Calendar', navKitchen: 'Kitchen', navFamily: 'Family',
+      navShared: 'Shared space', tabletView: 'Tablet view', skipContent: 'Skip to content',
+      setupTitle: 'Make La Homa fit your home', hideGuide: 'Hide guide',
+      setupPeople: 'People', setupPresence: 'Custody days (optional)', setupTasks: 'Tasks', setupMoney: 'Pocket money (optional)',
+      setupNote: 'An account is for an adult. Children have profiles, without their own email.',
+      todayHome: 'Home today', noPresence: 'No one is expected home today.',
+      tourTitle: 'A quick tour of La Homa', tourSkip: 'Skip tutorial', tourNext: 'Next', tourDone: 'Start using La Homa',
+      tour1Title: 'Your home is ready', tour1Text: 'We’ll show you where everything is. You can skip anytime.',
+      tour2Title: 'Family members', tour2Text: 'Add children, other adults and pets, and edit their profiles.',
+      tour3Title: 'Weekly tasks', tour3Text: 'Create recurring tasks, assign them and track points.',
+      tour4Title: 'Calendar and plans', tour4Text: 'Appointments, trips and, if needed, custody days.',
+      tour5Title: 'Kitchen', tour5Text: 'Recipes, the weekly menu and the shopping list that comes from it.',
+      tour6Title: 'Pocket money and saving', tour6Text: 'Weekly allowance and each child’s jar. Optional — set it up when you like.',
+      settingsLang: 'App language', settingsLangHelp: 'Change La Homa’s texts on this device. Saved with your cloud account.',
+      saveLang: 'Save language'
+    }),
+    fr: copy(es, {
+      lang: 'Langue', chooseLang: 'Choisir la langue', brandSub: 'Organisation familiale',
+      authEyebrow: 'Votre espace familial', authTitleLogin: 'Content de vous revoir.', authTitleRegister: 'On commence en famille.',
+      authSub: 'E-mail ou Google. La famille est enregistrée dans le cloud et sur vos appareils.',
+      name: 'Votre nom (adulte)', email: 'E-mail', password: 'Mot de passe', repeat: 'Répéter le mot de passe',
+      invite: 'Code d’invitation, si on vous a invité', login: 'Se connecter', register: 'Créer un compte',
+      haveAccount: 'J’ai déjà un compte.', noAccount: 'Je n’ai pas encore de compte.', orContinue: 'Ou continuer avec',
+      kidsNote: 'Les enfants et les animaux vivent dans la famille. Ils n’ont pas besoin de compte.',
+      sessionNote: 'Il faut se connecter. La session reste jusqu’à la déconnexion.', whatIs: 'Qu’est-ce que La Homa', checking: 'Vérification...',
+      guideEyebrow: 'Votre famille', guideStoryTitle: 'La maison se construit avec des noms.',
+      guideStoryText: 'D’abord qui vous êtes. Ensuite les tâches, l’argent de poche et les courses.',
+      guideStep: 'Étape {n} sur 3', guideTitle0: 'Comment s’appelle votre maison', guideTitle1: 'Qui vit ici', guideTitle2: 'Les animaux aussi',
+      familyName: 'Nom de la maison', adultName: 'Votre nom', guideAdultHint: 'C’est vous qui administrez. Les autres n’ont pas besoin d’e-mail.',
+      guidePeopleHint: 'Enfants et autres adultes. Si vous êtes seul aujourd’hui, continuez — vous pourrez les ajouter plus tard.',
+      guidePetsHint: 'Un chien, un chat ou qui vous considérez de la famille. Ils ne se connectent pas.',
+      personName: 'Nom', personIs: 'Est', child: 'Enfant', adult: 'Adulte', addPerson: 'Ajouter une personne',
+      addPet: 'Ajouter un animal', animal: 'Animal', dog: 'Chien', cat: 'Chat', other: 'Autre', remove: 'Retirer',
+      back: 'Retour', continue: 'Continuer', enterHome: 'Entrer à la maison', guideNeedNames: 'Écrivez le nom de la maison et le vôtre.',
+      familyReady: 'La famille est prête.',
+      navHome: 'Aujourd’hui', navTasks: 'Tâches', navCalendar: 'Agenda', navKitchen: 'Cuisine', navFamily: 'Famille',
+      navShared: 'Espace partagé', tabletView: 'Vue tablette', skipContent: 'Aller au contenu',
+      setupTitle: 'Adaptez La Homa à votre maison', hideGuide: 'Masquer le guide',
+      setupPeople: 'Personnes', setupPresence: 'Garde partagée (optionnel)', setupTasks: 'Tâches', setupMoney: 'Argent de poche (optionnel)',
+      setupNote: 'Un compte est pour un adulte. Les enfants ont des profils, sans e-mail.',
+      todayHome: 'À la maison aujourd’hui', noPresence: 'Personne n’est prévu à la maison aujourd’hui.',
+      tourTitle: 'On vous montre La Homa', tourSkip: 'Passer le tutoriel', tourNext: 'Suivant', tourDone: 'Commencer à utiliser La Homa',
+      tour1Title: 'Votre maison est prête', tour1Text: 'En quelques étapes, on vous montre où est chaque chose. Vous pouvez passer quand vous voulez.',
+      tour2Title: 'Personnes de la famille', tour2Text: 'Ajoutez enfants, autres adultes et animaux, et modifiez leurs fiches.',
+      tour3Title: 'Tâches de la semaine', tour3Text: 'Créez les tâches récurrentes, assignez-les et suivez les points.',
+      tour4Title: 'Agenda et projets', tour4Text: 'Rendez-vous, sorties et, si besoin, les jours de garde.',
+      tour5Title: 'Cuisine', tour5Text: 'Recettes, menu de la semaine et liste de courses.',
+      tour6Title: 'Argent de poche et épargne', tour6Text: 'L’argent de la semaine et les tirelires. Optionnel.',
+      settingsLang: 'Langue de l’app', settingsLangHelp: 'Change les textes de La Homa sur cet appareil. Enregistré avec votre compte cloud.',
+      saveLang: 'Enregistrer la langue'
+    }),
+    it: copy(es, {
+      lang: 'Lingua', chooseLang: 'Scegli la lingua', brandSub: 'Organizzazione familiare',
+      authEyebrow: 'Il vostro spazio familiare', authTitleLogin: 'Che bello rivedervi.', authTitleRegister: 'Iniziamo in famiglia.',
+      authSub: 'Email o Google. La famiglia si salva nel cloud e sui vostri dispositivi.',
+      name: 'Il tuo nome (adulto)', email: 'Email', password: 'Password', repeat: 'Ripeti la password',
+      invite: 'Codice di invito, se ti hanno invitato', login: 'Accedi', register: 'Crea account',
+      haveAccount: 'Ho già un account.', noAccount: 'Non ho ancora un account.', orContinue: 'O continua con',
+      kidsNote: 'I bambini e gli animali vivono nella famiglia. Non serve un loro account.',
+      sessionNote: 'Serve accedere. La sessione resta finché non esci.', whatIs: 'Cos’è La Homa', checking: 'Controllo...',
+      guideEyebrow: 'La vostra famiglia', guideStoryTitle: 'La casa si costruisce con i nomi.',
+      guideStoryText: 'Prima chi siete. Poi i compiti, la paghetta e la spesa.',
+      guideStep: 'Passo {n} di 3', guideTitle0: 'Come si chiama la vostra casa', guideTitle1: 'Chi vive qui', guideTitle2: 'Anche gli animali',
+      familyName: 'Nome della casa', adultName: 'Il tuo nome', guideAdultHint: 'Tu amministri. Gli altri non hanno bisogno di email.',
+      guidePeopleHint: 'Bambini e altri adulti. Se oggi sei solo, continua: potrai aggiungerli dopo.',
+      guidePetsHint: 'Un cane, un gatto o chi considerate di famiglia. Non accedono e non contano come un posto a tavola.',
+      personName: 'Nome', personIs: 'È', child: 'Bambino o bambina', adult: 'Adulto', addPerson: 'Aggiungi un’altra persona',
+      addPet: 'Aggiungi un altro animale', animal: 'Animale', dog: 'Cane', cat: 'Gatto', other: 'Altro', remove: 'Rimuovi',
+      back: 'Indietro', continue: 'Continua', enterHome: 'Entra in casa', guideNeedNames: 'Scrivi il nome della casa e il tuo.',
+      familyReady: 'La famiglia è pronta.',
+      navHome: 'Oggi', navTasks: 'Compiti', navCalendar: 'Agenda', navKitchen: 'Cucina', navFamily: 'Famiglia',
+      navShared: 'Spazio condiviso', tabletView: 'Vista tablet', skipContent: 'Vai al contenuto',
+      setupTitle: 'Adattate La Homa alla vostra casa', hideGuide: 'Nascondi guida',
+      setupPeople: 'Persone', setupPresence: 'Affidamento (opzionale)', setupTasks: 'Compiti', setupMoney: 'Paghetta (opzionale)',
+      setupNote: 'Un account è per un adulto. I bambini hanno profili, senza email propria.',
+      todayHome: 'Oggi a casa', noPresence: 'Nessuna presenza prevista oggi.',
+      tourTitle: 'Vi mostriamo La Homa', tourSkip: 'Salta il tutorial', tourNext: 'Avanti', tourDone: 'Inizia a usare La Homa',
+      tour1Title: 'La vostra casa è pronta', tour1Text: 'In pochi passi vi mostriamo dove sta ogni cosa. Potete saltare quando volete.',
+      tour2Title: 'Persone della famiglia', tour2Text: 'Qui aggiungete bambini, altri adulti e animali.',
+      tour3Title: 'Compiti della settimana', tour3Text: 'Create i compiti ricorrenti, assegnateli e seguite i punti.',
+      tour4Title: 'Agenda e piani', tour4Text: 'Appuntamenti, gite e, se serve, i giorni di affidamento.',
+      tour5Title: 'Cucina', tour5Text: 'Ricette, menu della settimana e lista della spesa.',
+      tour6Title: 'Paghetta e risparmio', tour6Text: 'La paghetta settimanale e i salvadanai. È opzionale.',
+      settingsLang: 'Lingua dell’app', settingsLangHelp: 'Cambia i testi di La Homa su questo dispositivo. Si salva con l’account cloud.',
+      saveLang: 'Salva lingua'
+    }),
+    de: copy(es, {
+      lang: 'Sprache', chooseLang: 'Sprache wählen', brandSub: 'Familienorganisation',
+      authEyebrow: 'Euer Familienraum', authTitleLogin: 'Schön, euch zu sehen.', authTitleRegister: 'Wir starten als Familie.',
+      authSub: 'E-Mail oder Google. Die Familie wird in der Cloud und auf euren Geräten gespeichert.',
+      name: 'Dein Name (Erwachsener)', email: 'E-Mail', password: 'Passwort', repeat: 'Passwort wiederholen',
+      invite: 'Einladungscode, falls du eingeladen wurdest', login: 'Anmelden', register: 'Konto erstellen',
+      haveAccount: 'Ich habe schon ein Konto.', noAccount: 'Ich habe noch kein Konto.', orContinue: 'Oder weiter mit',
+      kidsNote: 'Kinder und Haustiere gehören zur Familie. Sie brauchen kein eigenes Konto.',
+      sessionNote: 'Du musst dich anmelden. Die Sitzung bleibt, bis du dich abmeldest.', whatIs: 'Was ist La Homa', checking: 'Prüfen...',
+      guideEyebrow: 'Eure Familie', guideStoryTitle: 'Das Zuhause entsteht mit Namen.',
+      guideStoryText: 'Zuerst wer ihr seid. Dann Aufgaben, Taschengeld und Einkauf.',
+      guideStep: 'Schritt {n} von 3', guideTitle0: 'Wie heißt euer Zuhause', guideTitle1: 'Wer wohnt hier', guideTitle2: 'Auch Haustiere',
+      familyName: 'Name des Zuhauses', adultName: 'Dein Name', guideAdultHint: 'Du verwaltest. Die anderen brauchen keine E-Mail.',
+      guidePeopleHint: 'Kinder und andere Erwachsene. Wenn du heute allein bist, mach weiter — du kannst sie später hinzufügen.',
+      guidePetsHint: 'Hund, Katze oder wen ihr zur Familie zählt. Sie melden sich nicht an.',
+      personName: 'Name', personIs: 'Ist', child: 'Kind', adult: 'Erwachsener', addPerson: 'Weitere Person hinzufügen',
+      addPet: 'Weiteres Haustier hinzufügen', animal: 'Tier', dog: 'Hund', cat: 'Katze', other: 'Anderes', remove: 'Entfernen',
+      back: 'Zurück', continue: 'Weiter', enterHome: 'Ins Zuhause', guideNeedNames: 'Gib den Namen des Zuhauses und deinen ein.',
+      familyReady: 'Die Familie ist bereit.',
+      navHome: 'Heute', navTasks: 'Aufgaben', navCalendar: 'Kalender', navKitchen: 'Küche', navFamily: 'Familie',
+      navShared: 'Gemeinsamer Bereich', tabletView: 'Tablet-Ansicht', skipContent: 'Zum Inhalt springen',
+      setupTitle: 'Passt La Homa an euer Zuhause an', hideGuide: 'Hilfe ausblenden',
+      setupPeople: 'Personen', setupPresence: 'Wechselmodell (optional)', setupTasks: 'Aufgaben', setupMoney: 'Taschengeld (optional)',
+      setupNote: 'Ein Konto ist für einen Erwachsenen. Kinder haben Profile ohne eigene E-Mail.',
+      todayHome: 'Heute zu Hause', noPresence: 'Heute ist niemand zu Hause geplant.',
+      tourTitle: 'Wir zeigen euch La Homa', tourSkip: 'Tutorial überspringen', tourNext: 'Weiter', tourDone: 'La Homa nutzen',
+      tour1Title: 'Euer Zuhause ist bereit', tour1Text: 'In wenigen Schritten zeigen wir, wo alles ist. Ihr könnt jederzeit überspringen.',
+      tour2Title: 'Familienmitglieder', tour2Text: 'Hier fügt ihr Kinder, andere Erwachsene und Haustiere hinzu.',
+      tour3Title: 'Wochenaufgaben', tour3Text: 'Erstellt wiederkehrende Aufgaben, weist sie zu und verfolgt Punkte.',
+      tour4Title: 'Kalender und Pläne', tour4Text: 'Termine, Ausflüge und bei Bedarf Wechselmodell-Tage.',
+      tour5Title: 'Küche', tour5Text: 'Rezepte, Wochenmenü und die Einkaufsliste daraus.',
+      tour6Title: 'Taschengeld und Sparen', tour6Text: 'Wöchentliches Taschengeld und die Sparschweine. Optional.',
+      settingsLang: 'App-Sprache', settingsLangHelp: 'Ändert die Texte von La Homa auf diesem Gerät. Wird mit dem Cloud-Konto gespeichert.',
+      saveLang: 'Sprache speichern'
+    })
+  };
+
+  function normalize(code) {
+    const c = String(code || '').toLowerCase();
+    if (codes.has(c)) return c;
+    if (c.startsWith('ca-valencia') || c === 'ca-valencia') return 'va';
+    const short = c.split('-')[0];
+    return codes.has(short) ? short : 'es';
+  }
+
+  function detect() {
+    try {
+      const stored = localStorage.getItem(STORAGE);
+      if (stored) return normalize(stored);
+    } catch (_) {}
+    try {
+      const nav = (navigator.languages || [navigator.language || 'es']).map(x => String(x).toLowerCase());
+      for (const item of nav) {
+        if (item.startsWith('ca') && (item.includes('valencia') || item.includes('vc'))) return 'va';
+        const n = normalize(item);
+        if (n !== 'es' || item.startsWith('es')) return n === 'es' && !item.startsWith('es') ? normalize(item) : n;
+      }
+      for (const item of nav) {
+        const n = normalize(item);
+        if (codes.has(n)) return n;
+      }
+    } catch (_) {}
+    return 'es';
+  }
+
+  let current = 'es';
+  try { current = detect(); } catch (_) { current = 'es'; }
+
+  function setLocale(code, persist = true) {
+    current = normalize(code);
+    if (persist) {
+      try { localStorage.setItem(STORAGE, current); } catch (_) {}
+    }
+    try { document.documentElement.lang = current === 'va' ? 'ca' : current; } catch (_) {}
+    return current;
+  }
+
+  function t(key, vars) {
+    const table = dict[current] || es;
+    let text = table[key] ?? es[key] ?? key;
+    if (vars) for (const [k, v] of Object.entries(vars)) text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), String(v));
+    return text;
+  }
+
+  function bcp() {
+    return (LOCALES.find(l => l.code === current) || LOCALES[0]).bcp;
+  }
+
+  function langOptions(selected) {
+    const sel = normalize(selected || current);
+    return LOCALES.map(l => `<option value="${l.code}" ${l.code === sel ? 'selected' : ''}>${l.native}</option>`).join('');
+  }
+
+  setLocale(current, false);
+
+  return { LOCALES, STORAGE, normalize, detect, setLocale, getLocale: () => current, t, bcp, langOptions, dict };
+});
+
+</script>
 <script>
 /* Transport-independent three-way merge. No network or storage dependency. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.HomaSync=api;})(globalThis,function(){'use strict';
@@ -1705,8 +2171,9 @@ function ensureWeb5(s) {
   s.taskReviewRequests ||= []; s.savedMenus ||= []; s.eventFiles ||= []; s.notifications ||= [];
   s.settings.notifications ||= {enabled:true,events:true,checklists:true,approvals:true,allowance:true,leadMinutes:60,quietStart:'21:00',quietEnd:'08:00'};
   for (const x of s.shopping||[]) x.listId ||= 'groceries';
-  s.settings.onboardingDismissed ??= false; s.usualProducts ||= [];
+  s.settings.onboardingDismissed ??= false; s.settings.tutorialDismissed ??= !!s.settings.familyReady; s.settings.locale ||= (globalThis.HomaI18n?.getLocale?.() || 'es'); s.usualProducts ||= [];
   if(typeof s.settings.familyReady!=='boolean'){const people=(s.members||[]).filter(m=>m.active!==false);s.settings.familyReady=!!(s.demo||people.length>1||(s.templates||[]).some(t=>t.active!==false));}
+  if(globalThis.HomaI18n&&s.settings.locale)globalThis.HomaI18n.setLocale(s.settings.locale,false);
   for(const x of s.shopping||[])if(x.checked&&!s.usualProducts.some(y=>foodKey(y.name)===foodKey(x.name)))s.usualProducts.push({...copy(x),id:uid('usual')});
   return s;
 }
@@ -1872,6 +2339,8 @@ function validateWeb5(s){
 'use strict';
 const C=window.FamilyCore;let KEY='family-points-v3-guest',BACKUP=KEY+'-previous';
 const $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const t=(k,v)=>window.HomaI18n?window.HomaI18n.t(k,v):k;
+const localeBcp=()=>window.HomaI18n?window.HomaI18n.bcp():'es-ES';
 const paths={house:'M3 10 12 3l9 7M5 9v12h14V9M9 21v-7h6v7',grid:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',check:'m5 12 4 4L19 6',tasks:'M9 5h12M9 12h12M9 19h12m-19-14 1 1 2-3m-3 9 1 1 2-3m-3 9 1 1 2-3',calendar:'M4 5h16v16H4zM16 3v4M8 3v4M4 10h16M8 14h2m4 0h2m-8 3h2',bag:'M5 7h14l2 14H3L5 7ZM8 8V6a4 4 0 0 1 8 0v2',book:'M12 5c-4-3-8-2-10-1v15c3-2 7-1 10 1 3-2 7-3 10-1V4c-3-1-7-2-10 1Zm0 0v15',users:'M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM2 21v-2a6 6 0 0 1 12 0v2M16 4a4 4 0 0 1 0 8m1 4a5 5 0 0 1 5 5',gift:'M3 8h18v4H3zM5 12v9h14v-9M12 8v13M12 8H7a3 3 0 1 1 3-3l2 3Zm0 0h5a3 3 0 1 0-3-3l-2 3Z',history:'M3 11a9 9 0 1 1 2.6 7M3 4v7h7m2-5v6l4 2',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM9 3l-1 3-3 1-2 3 2 2-1 4 3 2 3-1 2 3 3-1 1-3 3-1 1-3-2-2 1-3-3-2-3 1-2-3Z',chevron:'m9 5 7 7-7 7',left:'m15 5-7 7 7 7',down:'m6 9 6 6 6-6',plus:'M12 5v14M5 12h14',more:'M5 12h.01M12 12h.01M19 12h.01',star:'m12 3 2.8 5.7L21 9.6l-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.6l6.2-.9L12 3Z',heart:'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z',shield:'M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Zm-4 9 3 3 5-6',clock:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 4v5l3 2',bed:'M3 5v15m18-10v10M3 17h18M3 10h18v7M6 10V7h6v3',utensils:'M4 3v7m3-7v7m3-7v7M4 8v2c0 3 6 3 6 0V8m-3 5v8M20 3c-4 2-5 6-5 10h5m0-10v18',blocks:'M3 12h9v9H3zM12 12h9v9h-9M8 3h9v9H8z',leaf:'M20 3C8 1 2 8 6 16c8 4 15-2 14-13ZM3 21 16 8',trash:'M3 6h18M9 3h6M5 6l1 15h12l1-15M10 10v7m4-7v7',shirt:'m8 3-6 4 3 5 3-2v11h8V10l3 2 3-5-6-4c-1 3-7 3-8 0Z',paw:'M8 14c-5 4-2 9 4 6 6 3 9-2 4-6-2-3-6-3-8 0ZM6 4a2 3 0 1 0 0 6 2 3 0 0 0 0-6Zm12 0a2 3 0 1 0 0 6 2 3 0 0 0 0-6ZM12 2a2 3 0 1 0 0 6 2 3 0 0 0 0-6Z',sparkles:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3ZM20 2v4m-2-2h4',trophy:'M7 3h10v7a5 5 0 0 1-10 0V3Zm0 2H3v4c0 3 2 4 5 4m9-8h4v4c0 3-2 4-5 4m-4 2v5m-4 1h8',edit:'m15 4 5 5M3 21l5-1L21 7l-5-5L3 15v6Z',close:'m6 6 12 12M6 18 18 6',download:'M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6',upload:'M12 16V4m-5 5 5-5 5 5M4 15v6h16v-6',link:'M10 14a5 5 0 0 0 7 0l4-4a5 5 0 0 0-7-7l-2 2M14 10a5 5 0 0 0-7 0l-4 4a5 5 0 0 0 7 7l2-2',lock:'M5 10h14v11H5zM8 10V6a4 4 0 0 1 8 0v4m-4 5v2',search:'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm5 12 6 6',arrow:'M4 12h16m-6-6 6 6-6 6',refresh:'M20 7a9 9 0 0 0-16 1M4 3v5h5M4 17a9 9 0 0 0 16-1m0 5v-5h-5',copy:'M8 8h13v13H8zM16 8V3H3v13h5',info:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 8v6m0-10h.01',logout:'M9 3H3v18h6m5-15 6 6-6 6m-7-6h13',chef:'M7 13a5 5 0 1 1 1-10 5 5 0 0 1 8 0 5 5 0 1 1 1 10v8H7v-8Zm0 4h10',minus:'M5 12h14'};
 const icon=(name,cls='')=>`<svg class="icon ${cls}" aria-hidden="true" viewBox="0 0 24 24"><path d="${paths[name]||paths.house}"/></svg>`;
 const btn=(label,action,data='',type='primary',ic='')=>`<button type="button" class="btn ${type}" data-action="${action}" ${data}>${ic?icon(ic):''}${label}</button>`;
@@ -1892,7 +2361,7 @@ catch(e){corruptRaw=lastSavedJSON;storageIssue=lastSavedJSON?'No se ha podido le
 let actor={role:'adult',memberId:null};
 if(state.settings.pin)actor={role:'member',memberId:state.members.find(m=>m.role==='member'&&m.active!==false)?.id||state.members.find(m=>m.active!==false)?.id};
 try{const a=JSON.parse(sessionStorage.getItem(KEY+'-profile')||'null');if(a?.role==='member'&&state.members.some(m=>m.id===a.memberId&&m.active!==false))actor=a;}catch(_){}
-const ui={view:'home',taskTab:'assignments',taskStatus:'all',taskPerson:'all',taskDay:'all',query:'',selectedWeek:C.monday(),recipeTab:'recipes',recipeFilter:'all',recipeQuery:'',calendarMonth:C.iso().slice(0,7)+'-01',selectedDate:C.iso(),calendarPerson:'all',menuStart:C.monday(),memberId:null,profileWeek:null,historyWeek:null};
+const ui={view:'home',taskTab:'assignments',taskStatus:'all',taskPerson:'all',taskDay:'all',query:'',selectedWeek:C.monday(),recipeTab:'recipes',recipeFilter:'all',recipeQuery:'',calendarMonth:C.iso().slice(0,7)+'-01',selectedDate:C.iso(),calendarPerson:'all',menuStart:C.monday(),memberId:null,profileWeek:null,historyWeek:null,guide:null,tour:null};
 let modalSubmit=null,modalContext={},deferredInstall=null,pinAttempts=0,pinLockUntil=0;
 const isAdult=()=>actor.role==='adult', activeMembers=()=>state.members.filter(m=>m.active!==false), current=()=>state.weeks.find(w=>w.start===C.monday())||state.weeks.at(-1), getWeek=id=>state.weeks.find(w=>w.id===id)||current();
 function member(mid,w=null){return w?.members.find(m=>m.id===mid)||state.members.find(m=>m.id===mid)||{id:mid,name:'Miembro',avatar:'\u{1F464}',color:'#8b6ce0',role:'member'};}
@@ -2185,6 +2654,7 @@ document.addEventListener('click',async event=>{
 });
 document.addEventListener('input',event=>{const d=event.target.dataset;if(d.input==='task-search'){ui.query=event.target.value;render();}if(d.input==='recipe-search'){ui.recipeQuery=event.target.value;render();}});
 document.addEventListener('change',event=>{const el=event.target,d=el.dataset;try{if(v2Change(el))return;switch(d.change){
+ case 'app-locale':if(window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else if(state?.settings)state.settings.locale=code;render();}break;
  case 'task-week':ui.selectedWeek=el.value;render();break;
  case 'task-person':ui.taskPerson=el.value;render();break;
  case 'task-day':ui.taskDay=el.value;render();break;
@@ -2472,7 +2942,9 @@ function cloudConfigured(){const c=cloudConfig();return !!(c.url&&c.anonKey&&win
 function cloudOriginReady(){return location.protocol==='https:'||(['localhost','127.0.0.1'].includes(location.hostname)&&location.protocol==='http:');}
 function renderAuth(){
  const signup=access.tab==='register',cloud=access.target==='cloud',configured=cloudConfigured()&&cloudOriginReady(),cfg=cloudConfig();
- return `<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>Organizaci&oacute;n familiar</small></span></div><span class="auth-eyebrow">VUESTRO ESPACIO FAMILIAR</span><h1>Cada peque&ntilde;o gesto<br>cuenta.</h1><p>Responsabilidades, paga, ahorro y organizaci&oacute;n. Un lugar para todo lo que constru&iacute;s juntos.</p><div class="auth-features"><div>${icon('wallet')} Paga y ahorro que crece</div><div>${icon('calendar')} Semanas a vuestra medida</div><div>${icon('chef')} De la receta a la compra</div></div><div class="auth-note">Los ni&ntilde;os y las mascotas tienen su sitio en la familia. No necesitan correo.</div></section><section class="auth-panel"><div class="auth-card"><span class="pill green">Cuenta</span><h2>${signup?'Empezamos en familia.':'Qu&eacute; bien veros.'}</h2><p class="auth-sub">Correo o Google. La familia se guarda en la nube y est&aacute; en tus dispositivos.</p>${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}${cloud&&!configured?`<div class="note warning mb">No se ha podido activar la cuenta en la nube.${location.protocol==='file:'?' Abre la direcci&oacute;n https://app.lahoma.app, no el archivo descargado.':' Recarga la p&aacute;gina. Si sigue igual, borra los datos de este sitio en el navegador.'}</div>`:''}<form id="access-form"><input type="hidden" name="target" value="${access.target}">${signup?field('Tu nombre (adulto)','name','','text','required maxlength="60" autocomplete="given-name"'):''}${field('Correo electr&oacute;nico','email','','email','required maxlength="254" autocomplete="username"')}${field('Contrase&ntilde;a','password','','password',`required minlength="${signup?10:1}" maxlength="200" autocomplete="${signup?'new-password':'current-password'}"`)}${signup?`${field('Repite la contrase&ntilde;a','repeat','','password','required minlength="10" maxlength="200" autocomplete="new-password"')}${cloud?field('C&oacute;digo de invitaci&oacute;n, si te han invitado','invite','','text','maxlength="32" autocomplete="off" placeholder="Opcional"'):''}${!cloud&&!state.demo?'<label class="check-label"><input type="checkbox" name="keep">Conservar en esta cuenta los datos abiertos en este dispositivo.</label>':''}`:''}<button type="submit" class="btn primary wide" ${access.busy||(cloud&&!configured)?'disabled':''}>${access.busy?'Comprobando...':signup?'Crear cuenta':'Iniciar sesi&oacute;n'}</button></form><div class="auth-switch">${signup?'Ya tengo cuenta.':'Todav&iacute;a no tengo cuenta.'} <button type="button" class="text-btn" data-action="access-tab" data-tab="${signup?'login':'register'}">${signup?'Iniciar sesi&oacute;n':'Crear cuenta'}</button></div><div class="auth-divider"><span>O contin&uacute;a con</span></div><div class="social-buttons"><button type="button" class="btn secondary" data-action="access-oauth" data-provider="google" ${!configured?'disabled':''}><b>G</b> Google</button></div><p class="tiny muted center mt">Los ni&ntilde;os y las mascotas viven en la familia. No necesitan su propia cuenta.</p><div class="auth-bottom">${configured?'':btn('Configurar nube','access-config','','ghost small','settings')}</div><p class="tiny muted">Hace falta iniciar sesi&oacute;n. La sesi&oacute;n se mantiene hasta que la cierres.</p><p class="tiny muted center mt"><a href="https://lahoma.app">Qu&eacute; es La Homa</a></p></div></section></div>`;
+ const lang=window.HomaI18n?window.HomaI18n.getLocale():'es';
+ const title=signup?t('authTitleRegister'):t('authTitleLogin');
+ return `<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t('authEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(t('authSub'))}</p></section><section class="auth-panel"><div class="auth-card"><label class="field"><span>${esc(t('chooseLang'))}</span><select name="locale" data-change="app-locale" aria-label="${esc(t('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(lang):'<option value="es">Español</option>'}</select></label><h2>${esc(title)}</h2><p class="auth-sub">${esc(t('authSub'))}</p>${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}${cloud&&!configured?`<div class="note warning mb">No se ha podido activar la cuenta en la nube.${location.protocol==='file:'?' Abre https://app.lahoma.app.':' Recarga la página.'}</div>`:''}<form id="access-form"><input type="hidden" name="target" value="${access.target}">${signup?field(t('name'),'name','','text','required maxlength="60" autocomplete="given-name"'):''}${field(t('email'),'email','','email','required maxlength="254" autocomplete="username"')}${field(t('password'),'password','','password',`required minlength="${signup?10:1}" maxlength="200" autocomplete="${signup?'new-password':'current-password'}"`)}${signup?`${field(t('repeat'),'repeat','','password','required minlength="10" maxlength="200" autocomplete="new-password"')}${cloud?field(t('invite'),'invite','','text','maxlength="32" autocomplete="off"'):''}`:''}<button type="submit" class="btn primary wide" ${access.busy||(cloud&&!configured)?'disabled':''}>${access.busy?esc(t('checking')):signup?esc(t('register')):esc(t('login'))}</button></form><div class="auth-switch">${signup?esc(t('haveAccount')):esc(t('noAccount'))} <button type="button" class="text-btn" data-action="access-tab" data-tab="${signup?'login':'register'}">${signup?esc(t('login')):esc(t('register'))}</button></div><div class="auth-divider"><span>${esc(t('orContinue'))}</span></div><div class="social-buttons"><button type="button" class="btn secondary" data-action="access-oauth" data-provider="google" ${!configured?'disabled':''}><b>G</b> Google</button></div><p class="tiny muted center mt">${esc(t('kidsNote'))}</p><p class="tiny muted">${esc(t('sessionNote'))}</p><p class="tiny muted center mt"><a href="https://lahoma.app">${esc(t('whatIs'))}</a></p></div></section></div>`;
 }
 function accountCard(){return `<div class="settings-group account-card"><div class="flex between wrap"><div><span class="eyebrow">CUENTA Y GUARDADO</span><h3>${esc(access.user?.email||'Sin cuenta')}</h3><p>${access.mode==='cloud'?'Cuenta en la nube':access.mode==='local'?'Cuenta local, solo en este navegador':'Los datos se guardan en este navegador'}</p></div><span class="pill ${access.saveError?'coral':'green'}">${esc(accessStatus())}</span></div>${access.saveError?`<div class="note warning mt">${esc(access.saveError)}. No cierres sin conservar una copia.</div>`:''}<div class="flex wrap mt">${access.user?btn('Cerrar sesi&oacute;n','access-logout','','secondary','logout'):btn('Crear cuenta / acceder','access-open','','primary','users')}${access.mode==='cloud'?btn('Recargar desde la nube','access-reload','','secondary','refresh')+btn('Reintentar guardado','access-retry','','secondary','upload')+btn('Invitar a otro adulto','access-invite','','secondary','users'):window.FAMILY_CLOUD?.url?'':btn('Conectar la nube','access-config','','secondary','cloud')}${btn('Exportar copia','backup-export','','secondary','download')}</div><p class="tiny muted mt">${access.mode==='local'?'El correo identifica esta cuenta local, no est&aacute; verificado. La clave de sesi&oacute;n se conserva en el dispositivo mientras sigas conectado. No es un servicio remoto ni una garant&iacute;a contra quien acceda a tu navegador.':'La cuenta identifica al adulto. Los perfiles infantiles no son cuentas independientes.'}</p></div>`;}
 async function activateLocal(record,key,remember=true){
@@ -2721,10 +3193,12 @@ function homaAction(a,d){
 window.LaHoma=window.FamilyPoints;
 /* La Homa 5 - responsive navigation, reviewed actions and everyday workflows. */
 const web5={initialHash:location.hash,initializedRoute:false,routeApplying:false,lastRoute:'',modalInitial:'',modalDirty:false,queued:null,shoppingList:'groceries',diet:'all',wizard:null,objectURLs:new Map()};
-const GROUPS5=[{id:'home',name:'Hoy',icon:'house',views:['home','inbox','notifications']},{id:'tasks',name:'Tareas',icon:'tasks',views:['tasks','routines','history']},{id:'calendar',name:'Agenda',icon:'calendar',views:['calendar','events','organize']},{id:'recipes',name:'Cocina',icon:'chef',views:['recipes','shopping','pantry']},{id:'family',name:'Familia',icon:'users',views:['family','member','money','rewards','settings']}];
+const t5=(k,v)=>window.HomaI18n?window.HomaI18n.t(k,v):k;
+function groups5(){return[{id:'home',name:t5('navHome'),icon:'house',views:['home','inbox','notifications']},{id:'tasks',name:t5('navTasks'),icon:'tasks',views:['tasks','routines','history']},{id:'calendar',name:t5('navCalendar'),icon:'calendar',views:['calendar','events','organize']},{id:'recipes',name:t5('navKitchen'),icon:'chef',views:['recipes','shopping','pantry']},{id:'family',name:t5('navFamily'),icon:'users',views:['family','member','money','rewards','settings']}];}
+const GROUPS5=groups5();
 const CHILD_VIEWS5=['member','tasks','routines','money','rewards','events','calendar','kitchen'];
 function viewAllowed5(v){return isAdult()||CHILD_VIEWS5.includes(v);}
-function group5(){return GROUPS5.find(g=>g.views.includes(ui.view))||GROUPS5[0];}
+function group5(){const G=groups5();return G.find(g=>g.views.includes(ui.view))||G[0];}
 function currentRoute5(){const p=new URLSearchParams();if(ui.view==='member'&&ui.memberId)p.set('person',ui.memberId);if(ui.view==='recipes'&&ui.recipeTab!=='recipes')p.set('tab',ui.recipeTab);if(ui.view==='tasks'&&ui.taskTab!=='assignments')p.set('tab',ui.taskTab);return '#/'+ui.view+(p.size?'?'+p:'');}
 function writeRoute5(replace=false){if(web5.routeApplying||access.blocked)return;const r=currentRoute5();if(r===web5.lastRoute)return;try{history[replace?'replaceState':'pushState']({homa:true},'',r);web5.lastRoute=r;}catch(_){web5.lastRoute=r;}}
 function readRoute5(){if(access.blocked)return;const [path,query]=location.hash.replace(/^#\/?/,'').split('?');if(!path||path.includes('='))return;const valid=[...navigation.map(x=>x[0]),'member','settings','inbox','notifications'];if(!valid.includes(path))return;web5.routeApplying=true;ui.view=viewAllowed5(path)?path:'member';const q=new URLSearchParams(query||'');if(ui.view==='member')ui.memberId=isAdult()&&state.members.some(m=>m.id===q.get('person'))?q.get('person'):actor.memberId||activeMembers()[0]?.id;if(ui.view==='recipes'&&['recipes','menu','ingredients'].includes(q.get('tab')))ui.recipeTab=q.get('tab');if(ui.view==='tasks'&&['assignments','templates'].includes(q.get('tab')))ui.taskTab=q.get('tab');render();web5.lastRoute=currentRoute5();web5.routeApplying=false;}
@@ -2746,7 +3220,7 @@ function readGuide(form){
 }
 function finishGuide(){
  const g=guideDraft(),family=g.familyName.trim(),adultName=g.adultName.trim();
- if(!family||!adultName)throw new Error('Escribe el nombre de la casa y el tuyo.');
+ if(!family||!adultName)throw new Error(t5('guideNeedNames'));
  const petEmoji={perro:'\u{1F436}',gato:'\u{1F431}',otro:'\u{1F43E}'};
  const ok=transact(s=>{
   s.settings.familyName=family.slice(0,80);s.settings.familyReady=true;
@@ -2756,17 +3230,33 @@ function finishGuide(){
   for(const p of g.pets){const name=p.name.trim();if(!name)continue;const species=['perro','gato','otro'].includes(p.species)?p.species:'otro';s.members.push({id:C.uid('member'),name:name.slice(0,80),role:'pet',species,avatar:petEmoji[species],color:colors[n%colors.length],age:null,active:true});n++;}
   const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
   if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
- },'La familia est\u00e1 lista.');
+ },t5('familyReady'));
  if(!ok)return;
- ui.guide=null;ui.view='home';render();
+ ui.guide=null;ui.view='home';ui.tour={step:0};render();
 }
 function renderFamilyGuide(){
- const g=guideDraft(),step=g.step,titles=['C\u00f3mo se llama vuestra casa','Qui\u00e9n vive aqu\u00ed','Las mascotas tambi\u00e9n'];
- const body=step===0?`${field('Nombre de la casa','familyName',g.familyName,'text','required maxlength="80" placeholder="Familia Garc\u00eda"')}${field('Tu nombre','adultName',g.adultName,'text','required maxlength="80" placeholder="C\u00f3mo te llaman en casa"')}<p class="small muted">T\u00fa eres quien administra. Los dem\u00e1s no necesitan correo.</p>`
-  :step===1?`<p class="small muted mb">Ni\u00f1os y otros adultos. Si hoy est\u00e1s solo, contin\u00faa: podr\u00e1s a\u00f1adirlos despu\u00e9s.</p>${g.people.map((p,i)=>`<div class="guide-row" data-guide-person><label class="field"><span>Nombre</span><input name="personName" value="${esc(p.name)}" maxlength="80" placeholder="Nombre"></label><label class="field"><span>Es</span><select name="personRole"><option value="member" ${p.role!=='adult'?'selected':''}>Ni\u00f1o o ni\u00f1a</option><option value="adult" ${p.role==='adult'?'selected':''}>Adulto</option></select></label>${iconBtn('trash','guide-remove','Quitar',`data-kind="person" data-index="${i}"`)}</div>`).join('')}${btn('A\u00f1adir otra persona','guide-add','data-kind="person"','secondary','plus')}`
-  :`<p class="small muted mb">Un perro, un gato o quien consider\u00e9is de la familia. No inician sesi\u00f3n ni cuentan como un plato en la mesa.</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet><label class="field"><span>Nombre</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>Animal</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>Perro</option><option value="gato" ${p.species==='gato'?'selected':''}>Gato</option><option value="otro" ${p.species==='otro'?'selected':''}>Otro</option></select></label>${iconBtn('trash','guide-remove','Quitar',`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn('A\u00f1adir otra mascota','guide-add','data-kind="pet"','secondary','plus')}`;
- $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>Organizaci&oacute;n familiar</small></span></div><span class="auth-eyebrow">VUESTRA FAMILIA</span><h1>La casa se construye con nombres.</h1><p>Primero qui\u00e9nes sois. Despu\u00e9s, las tareas, la paga y la compra.</p></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">Paso ${step+1} de 3</span><h2>${titles[step]}</h2>${body}<div class="guide-actions">${step?btn('Atr\u00e1s','guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?'Entrar en casa':'Continuar'}</button></div></form></section></div>`;
+ const g=guideDraft(),step=g.step,titles=[t5('guideTitle0'),t5('guideTitle1'),t5('guideTitle2')];
+ const body=step===0?`${field(t5('familyName'),'familyName',g.familyName,'text','required maxlength="80" placeholder="Familia"')}${field(t5('adultName'),'adultName',g.adultName,'text','required maxlength="80"')}<p class="small muted">${esc(t5('guideAdultHint'))}</p>`
+  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p>${g.people.map((p,i)=>`<div class="guide-row" data-guide-person><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRole"><option value="member" ${p.role!=='adult'?'selected':''}>${esc(t5('child'))}</option><option value="adult" ${p.role==='adult'?'selected':''}>${esc(t5('adult'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
+  :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
+ $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('guideEyebrow'))}</span><h1>${esc(t5('guideStoryTitle'))}</h1><p>${esc(t5('guideStoryText'))}</p><label class="field mt"><span>${esc(t5('chooseLang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(window.HomaI18n.getLocale()):'<option value="es">Español</option>'}</select></label></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">${esc(t5('guideStep',{n:step+1}))}</span><h2>${esc(titles[step])}</h2>${body}<div class="guide-actions">${step?btn(t5('back'),'guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?esc(t5('enterHome')):esc(t5('continue'))}</button></div></form></section></div>`;
 }
+
+const TOUR_STEPS=[{view:'home',title:'tour1Title',text:'tour1Text'},{view:'family',title:'tour2Title',text:'tour2Text'},{view:'tasks',title:'tour3Title',text:'tour3Text'},{view:'calendar',title:'tour4Title',text:'tour4Text'},{view:'recipes',title:'tour5Title',text:'tour5Text'},{view:'money',title:'tour6Title',text:'tour6Text'}];
+function clearTour(persist){ui.tour=null;if(persist)transact(s=>{s.settings.tutorialDismissed=true;},null);}
+function renderTour(){
+ if(!ui.tour||access.blocked||!state.settings.familyReady||state.settings.tutorialDismissed)return;
+ const step=Math.max(0,Math.min(ui.tour.step|0,TOUR_STEPS.length-1));
+ const item=TOUR_STEPS[step];
+ if(ui.view!==item.view){ui.view=item.view;}
+ const last=step===TOUR_STEPS.length-1;
+ const progress=[...Array(TOUR_STEPS.length)].map((_,i)=>`<span class="${i<=step?'on':''}"></span>`).join('');
+ let layer=document.querySelector('.tour-layer');
+ if(!layer){layer=document.createElement('div');layer.className='tour-layer';layer.setAttribute('role','dialog');layer.setAttribute('aria-modal','false');document.body.appendChild(layer);}
+ layer.innerHTML=`<div class="tour-card"><div class="tour-progress">${progress}</div><p class="eyebrow">${esc(t5('tourTitle'))}</p><h2>${esc(t5(item.title))}</h2><p>${esc(t5(item.text))}</p><div class="tour-actions">${btn(t5('tourSkip'),'tour-skip','','ghost small')}${btn(last?t5('tourDone'):t5('tourNext'),'tour-next','','primary small')}</div></div>`;
+}
+function removeTourDom(){document.querySelector('.tour-layer')?.remove();}
+
 function render(){
   C.ensureWeb5(state);
   if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
@@ -2775,8 +3265,8 @@ function render(){
   if(access.blocked){enhanceAuth5();return;}
   if(ui.view==='kitchen'){writeRoute5();return;}
   const group=group5(),nav=$('.sidebar-nav');
-  if(nav){const groups=isAdult()?GROUPS5:[{id:'member',name:'Mis tareas',icon:'tasks',views:['member','tasks','routines']},{id:'money',name:'Mi dinero',icon:'wallet',views:['money']},{id:'rewards',name:'Recompensas',icon:'gift',views:['rewards']},{id:'events',name:'Mis planes',icon:'calendar',views:['events','calendar']}];nav.innerHTML=groups.map(g=>`<button type="button" class="nav-link ${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}${g.name}</button>`).join('')+`<div class="nav-label">ESPACIO COMPARTIDO</div><button type="button" class="nav-link" data-action="nav" data-view="kitchen">${icon('tablet')}Vista tablet</button>`;}
-  const mobile=$('.bottom-nav');if(mobile){const groups=isAdult()?GROUPS5:[{id:'member',name:'Tareas',icon:'tasks',views:['member','tasks','routines']},{id:'money',name:'Dinero',icon:'wallet',views:['money']},{id:'rewards',name:'Premios',icon:'gift',views:['rewards']},{id:'events',name:'Planes',icon:'calendar',views:['events','calendar']}];mobile.innerHTML=groups.map(g=>`<button type="button" class="${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}<span>${g.name}</span></button>`).join('');}
+  if(nav){const groups=isAdult()?groups5():[{id:'member',name:t5('navTasks'),icon:'tasks',views:['member','tasks','routines']},{id:'money',name:t5('setupMoney'),icon:'wallet',views:['money']},{id:'rewards',name:'★',icon:'gift',views:['rewards']},{id:'events',name:t5('navCalendar'),icon:'calendar',views:['events','calendar']}];nav.innerHTML=groups.map(g=>`<button type="button" class="nav-link ${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}${esc(g.name)}</button>`).join('')+`<div class="nav-label">${esc(t5('navShared'))}</div><button type="button" class="nav-link" data-action="nav" data-view="kitchen">${icon('tablet')}${esc(t5('tabletView'))}</button>`;}
+  const mobile=$('.bottom-nav');if(mobile){const groups=isAdult()?groups5():[{id:'member',name:t5('navTasks'),icon:'tasks',views:['member','tasks','routines']},{id:'money',name:t5('setupMoney'),icon:'wallet',views:['money']},{id:'rewards',name:'★',icon:'gift',views:['rewards']},{id:'events',name:t5('navCalendar'),icon:'calendar',views:['events','calendar']}];mobile.innerHTML=groups.map(g=>`<button type="button" class="${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}<span>${esc(g.name)}</span></button>`).join('');}
   const main=$('#main-content');
   if(main){main.setAttribute('tabindex','-1');let views=isAdult()?group.views.filter(v=>v!=='member'):ui.view==='member'||ui.view==='tasks'||ui.view==='routines'?['member','tasks','routines']:ui.view==='calendar'||ui.view==='events'?['events','calendar']:[];
    if(views.length>1){const labels={home:'Resumen',inbox:'Revisiones',notifications:'Avisos',tasks:'Misiones',routines:'Rutinas',history:'Historial',calendar:'Calendario',events:'Eventos y listas',organize:'Convivencia',recipes:'Recetas y men\u00fa',shopping:'Compra',pantry:'Despensa',family:'Personas',money:'Paga y ahorro',rewards:'Recompensas',settings:'Ajustes',member:'Mi d\u00eda'};main.insertAdjacentHTML('afterbegin',`<nav class="section-nav" aria-label="Dentro de ${group.name}">${views.map(v=>`<button class="${ui.view===v?'active':''}" type="button" data-action="nav" data-view="${v}" ${ui.view===v?'aria-current="page"':''}>${esc(labels[v])}${v==='inbox'&&C.approvalItems(state).length?`<span class="pill">${C.approvalItems(state).length}</span>`:''}</button>`).join('')}</nav>`);}
@@ -2784,9 +3274,10 @@ function render(){
   }
   if(!isAdult())$('.sidebar-bottom [data-view=settings]')?.remove();
   if(isAdult()){const bar=$('.topbar>.flex');if(bar)bar.insertAdjacentHTML('afterbegin',`<button class="icon-btn notification-button" type="button" data-action="nav" data-view="inbox" aria-label="Revisiones pendientes: ${C.approvalItems(state).length}">${icon('check')}${C.approvalItems(state).length?`<span>${C.approvalItems(state).length}</span>`:''}</button>`);}
-  let skip=document.querySelector('.skip-content');if(!skip){skip=document.createElement('a');skip.href='#main-content';skip.className='skip-content';skip.textContent='Saltar al contenido';document.body.prepend(skip);}
+  let skip=document.querySelector('.skip-content');if(!skip){skip=document.createElement('a');skip.href='#main-content';skip.className='skip-content';skip.textContent=t5('skipContent');document.body.prepend(skip);}
   if(!web5.initializedRoute){web5.initializedRoute=true;if(web5.initialHash.startsWith('#/')){try{history.replaceState({},'',web5.initialHash);}catch(_){}readRoute5();return;}}
   writeRoute5();
+  if(ui.tour&&!state.settings.tutorialDismissed&&state.settings.familyReady)renderTour();else removeTourDom();
 }
 function nav(view){if(view==='meeting')view='home';if(!viewAllowed5(view))view='member';if(view==='member'&&!isAdult())ui.memberId=actor.memberId;if(view==='kitchen'){enterKitchen();return;}ui.view=view;render();window.scrollTo({top:0,behavior:'auto'});$('#main-content')?.focus({preventScroll:true});}
 function modalSnapshot5(){const form=$('#modal-form');if(!form)return '';return JSON.stringify([...form.querySelectorAll('input,select,textarea')].map(e=>[e.name,e.type==='checkbox'||e.type==='radio'?e.checked:e.value]));}
@@ -2800,7 +3291,7 @@ function enhanceHome5(main){
  const children=activeMembers().filter(m=>m.role==='member'),present=activeMembers().filter(m=>C.presenceOn(state,m.id,C.iso()).present);
  const note=`<div class="today-presence"><span class="eyebrow">HOY EN CASA</span><div class="flex wrap">${present.map(m=>`<span class="person-presence">${avatar(m,'small')}${esc(m.name)}</span>`).join('')||'<span>No hay convivencia prevista hoy.</span>'}</div></div>`;
  main.querySelector('.page-heading')?.insertAdjacentHTML('afterend',note);
- if(!state.demo&&!state.settings.onboardingDismissed){const steps=[{done:children.length>0,label:'Personas',view:'family'},{done:state.presencePlans.length>0,label:'Convivencia (opcional)',view:'organize'},{done:state.templates.length>0,label:'Tareas',view:'tasks'},{done:state.finance.accounts.length>0,label:'Paga (opcional)',view:'money'}];main.querySelector('.today-presence')?.insertAdjacentHTML('afterend',`<section class="setup-panel"><div class="flex between wrap"><h3>Dejad La Homa a vuestra medida</h3>${btn('Ocultar gu\u00eda','web5-setup-dismiss','','ghost small')}</div><div class="setup-steps">${steps.map((s,i)=>`<button type="button" data-action="nav" data-view="${s.view}"><span>${s.done?icon('check'):i+1}</span>${s.label}</button>`).join('')}</div><p class="small muted">Una cuenta es para un adulto. Los ni\u00f1os tienen perfiles, sin correo propio.</p></section>`);}
+ if(!state.demo&&!state.settings.onboardingDismissed){const steps=[{done:children.length>0,label:t5('setupPeople'),view:'family'},{done:state.presencePlans.length>0,label:t5('setupPresence'),view:'organize'},{done:state.templates.length>0,label:t5('setupTasks'),view:'tasks'},{done:state.finance.accounts.length>0,label:t5('setupMoney'),view:'money'}];main.querySelector('.today-presence')?.insertAdjacentHTML('afterend',`<section class="setup-panel"><div class="flex between wrap"><h3>${esc(t5('setupTitle'))}</h3>${btn(t5('hideGuide'),'web5-setup-dismiss','','ghost small')}</div><div class="setup-steps">${steps.map((s,i)=>`<button type="button" data-action="nav" data-view="${s.view}"><span>${s.done?icon('check'):i+1}</span>${esc(s.label)}</button>`).join('')}</div><p class="small muted">${esc(t5('setupNote'))}</p></section>`);}
 }
 function renderInbox5(){if(!isAdult())return empty('Solo para adultos','Vuelve a tus tareas.');const list=C.approvalItems(state);return `${heading('Pendiente de vuestra revisi\u00f3n.', 'Tareas, gastos y planes. Todo lo que necesita un adulto.',btn('Ver avisos','nav','data-view="notifications"','secondary','calendar'))}<div class="panel">${list.map(x=>`<article class="review-row"><div class="grow"><span class="eyebrow">${esc({task:'TAREA REALIZADA',correction:'SOLICITUD DE RECTIFICACI\u00d3N',spend:'GASTO SOLICITADO',voucher:'RECOMPENSA'}[x.type])}</span><h3>${esc(x.title)}</h3><p>${esc(member(x.memberId).name)}${x.note?' \u00b7 '+esc(x.note):''}</p></div><div class="flex wrap">${btn('Revisar','web5-review',`data-id="${esc(x.id)}" data-type="${x.type}" data-week="${x.week||''}"`,'primary small','check')}</div></article>`).join('')||empty('Todo revisado.','Las nuevas solicitudes aparecer\u00e1n aqu\u00ed.')}</div><section class="settings-group mt"><h3>Actividad reciente</h3><p>Registro visible solo para el adulto de este dispositivo. La identificaci\u00f3n por cuenta real se activa con la nube.</p>${state.houseLog.slice(0,30).map(x=>`<div class="audit-row"><span>${esc(x.action)}</span><time>${esc(new Date(x.at).toLocaleString('es-ES',{dateStyle:'short',timeStyle:'short'}))}</time></div>`).join('')||'<p class="mt">Todav\u00eda no hay cambios registrados.</p>'}</section>`;}
 function notificationSettings5(){if(!needAdult())return;const n=state.settings.notifications;openModal('Cu\u00e1ndo avisarnos',`<p class="dialog-description">La bandeja funciona en esta web. El env\u00edo con la web cerrada requiere activar el servicio de notificaciones al desplegar.</p>${['enabled','events','checklists','approvals','allowance'].map((k,i)=>`<label class="check-label"><input name="${k}" type="checkbox" ${n[k]?'checked':''}>${['Activar avisos','Planes pr\u00f3ximos','Preparativos pendientes','Revisiones del adulto','Paga por confirmar'][i]}</label>`).join('')}<div class="form-grid">${field('Antelaci\u00f3n de los eventos (minutos)','leadMinutes',n.leadMinutes,'number','min="0" max="10080" required')}${field('No molestar desde','quietStart',n.quietStart,'time','required')}${field('No molestar hasta','quietEnd',n.quietEnd,'time','required')}</div>${footer('Guardar preferencias')}`,fd=>transact(s=>{s.settings.notifications=Object.fromEntries(['enabled','events','checklists','approvals','allowance'].map(k=>[k,!!fd.get(k)]));Object.assign(s.settings.notifications,{leadMinutes:Number(fd.get('leadMinutes')),quietStart:fd.get('quietStart'),quietEnd:fd.get('quietEnd')});},'Preferencias guardadas.'));}
@@ -2829,7 +3320,7 @@ function openImportedRecipe5(r){recipeForm();const form=$('#modal-form');for(con
 function fileSection5(e){const files=state.eventFiles.filter(f=>f.eventId===e.id);return `<section class="settings-group mt"><div class="flex between wrap"><div><h3>Documentos del evento</h3><p>Solo adultos. Se guardan en este navegador hasta activar la nube.</p></div>${btn('Adjuntar','web5-file-add',vattr(e.id),'secondary','plus')}</div>${files.map(f=>`<div class="settings-row"><div class="grow"><h4>${esc(f.name)}</h4><p>${Math.ceil(f.size/1024)} KB${f.expires?' \u00b7 Revisar para eliminar el '+esc(f.expires):''}</p></div>${btn('Abrir','web5-file-open',vattr(f.id),'secondary small')}${iconBtn('trash','web5-file-delete','Eliminar documento',vattr(f.id))}</div>`).join('')}</section>`;}
 function eventDetail31(id){eventDetailBefore5(id);const e=state.events.find(x=>x.id===id);if(e&&isAdult())$('#modal .modal-body')?.insertAdjacentHTML('beforeend',fileSection5(e));}
 function taskPresets5(){if(!needAdult())return;const sets=[['Hacer la cama','bed','daily',2],['Recoger los juguetes','blocks','daily',3],['Poner la mesa','utensils','daily',3],['Regar las plantas','plant','flexible',4],['Ordenar la habitaci\u00f3n','house','weekly',5],['Preparar la mochila','book','daily',3]];openModal('Una base para empezar',`<p class="dialog-description">Elige una tarea y adapta sus responsables, puntos y frecuencia. Ninguna se asigna por edad de forma autom\u00e1tica.</p>${sets.map((s,i)=>`<button type="button" class="profile-option" data-action="web5-task-preset" data-index="${i}">${icon(s[1])}<div><b>${esc(s[0])}</b><p>${s[2]==='flexible'?'Cuota semanal':s[2]==='weekly'?'Una vez por semana':'Diaria'}</p></div></button>`).join('')}`,null,{presets:sets});}
-function renderSettingsV2(){return renderSettingsBefore5()+`<section class="settings-group"><h3>Zona horaria y avisos</h3><p>La familia usa <b>${esc(state.settings.timeZone)}</b>. La versi\u00f3n en nube validar\u00e1 puntos y dinero con el reloj del servidor.</p><div class="flex wrap mt">${btn('Zona horaria','web5-timezone','','secondary','calendar')}${btn('Avisos','web5-notification-settings','','secondary','settings')}${btn('Conexiones y estado','web5-connections','','secondary','link')}</div></section>`;}
+function renderSettingsV2(){const lang=state.settings.locale||(window.HomaI18n?window.HomaI18n.getLocale():'es');return renderSettingsBefore5()+`<section class="settings-group"><h3>${esc(t5('settingsLang'))}</h3><p>${esc(t5('settingsLangHelp'))}</p><label class="field mt"><span>${esc(t5('lang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(lang):'<option value="es">Español</option>'}</select></label></section><section class="settings-group"><h3>Zona horaria y avisos</h3><p>La familia usa <b>${esc(state.settings.timeZone)}</b>. La versi\u00f3n en nube validar\u00e1 puntos y dinero con el reloj del servidor.</p><div class="flex wrap mt">${btn('Zona horaria','web5-timezone','','secondary','calendar')}${btn('Avisos','web5-notification-settings','','secondary','settings')}${btn('Conexiones y estado','web5-connections','','secondary','link')}</div></section>`;}
 function enhanceAuth5(){const f=$('#access-form');if(f&&access.tab==='login'&&!$('.auth-recovery'))f.insertAdjacentHTML('afterend',`<button type="button" class="text-btn auth-recovery" data-action="web5-forgot">He olvidado mi contrase\u00f1a</button>`);}
 function resetPassword5(){openModal('Recuperar el acceso',`${field('Tu correo','email','','email','required maxlength="254" autocomplete="email"')}${footer('Enviar enlace')}`,async fd=>{const client=await cloudClient();const {error}=await client.auth.resetPasswordForEmail(fd.get('email'),{redirectTo:location.origin+location.pathname+'?recovery=1'});if(error)throw error;toast('Si existe una cuenta, recibir\u00e1s un enlace para restablecerla.');return true;});}
 async function web5Action(a,d,el,event){
@@ -2847,6 +3338,9 @@ async function web5Action(a,d,el,event){
  case 'web5-task-review':{openModal('Pedir una revisi\u00f3n',`<p class="dialog-description">Un adulto revisar\u00e1 lo ocurrido. Tus puntos no cambian hasta que lo confirme.</p><label class="field"><span>Qu\u00e9 quieres explicar (opcional)</span><textarea name="note" maxlength="500"></textarea></label>${footer('Enviar solicitud')}`,fd=>transact(s=>C.requestTaskReview(s,d.week,d.id,actor,fd.get('note')),'Solicitud enviada.'));return true;}
  case 'web5-review-resolve':if(transact(s=>C.resolveTaskReview(s,d.id,d.approve==='yes',actor),'Revisi\u00f3n resuelta.'))closeModal(true);return true;
  case 'web5-setup-dismiss':transact(s=>s.settings.onboardingDismissed=true);return true;
+ case 'tour-skip':clearTour(true);removeTourDom();render();return true;
+ case 'tour-next':{if(!ui.tour)return true;ui.tour.step=(ui.tour.step|0)+1;if(ui.tour.step>=TOUR_STEPS.length){clearTour(true);removeTourDom();}render();return true;}
+ case 'guide-skip':{const g=readGuide($('#family-guide'));const family=(g.familyName||state.settings.familyName||'La Homa').trim()||'La Homa';const adultName=(g.adultName||state.members.find(m=>m.role==='adult')?.name||'Adulto').trim()||'Adulto';g.familyName=family;g.adultName=adultName;g.step=2;try{finishGuide();clearTour(true);removeTourDom();render();}catch(err){toast(err.message,true);}return true;}
  case 'web5-notification-settings':notificationSettings5();return true;
  case 'web5-task-presets':taskPresets5();return true;
  case 'web5-task-preset':{const s=modalContext.presets[Number(d.index)];closeModal(true);taskForm();const f=$('#modal-form');f.elements.title.value=s[0];f.elements.icon.value=[...f.elements.icon.options].some(o=>o.value===s[1])?s[1]:'house';f.elements.frequency.value=s[2];f.elements.points.value=s[3];return true;}
@@ -2879,8 +3373,8 @@ async function web5Action(a,d,el,event){
  }
  return false;
 }
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}});
-document.addEventListener('submit',e=>{if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast('Escribe el nombre de la casa y el tuyo.',true);return;}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
+document.addEventListener('submit',e=>{if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
 window.addEventListener('beforeunload',e=>{if($('#modal')?.open&&modalSubmit&&web5.modalInitial&&modalSnapshot5()!==web5.modalInitial){e.preventDefault();e.returnValue='';}});
 $('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
 

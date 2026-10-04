@@ -65,7 +65,13 @@ a:focus-visible, summary:focus-visible, .menu-check:focus-visible + .menu-button
 .site-nav a { color: var(--text); text-decoration: none; font-size: 15px; font-weight: 600; padding: 8px 12px; border-radius: 10px; }
 .site-nav a:hover { color: var(--deep); background: #efe9f8; }
 .site-nav a[aria-current="page"] { color: var(--deep); background: var(--lilac); }
-.header-actions { display: flex; align-items: center; gap: 16px; }
+.header-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.lang-switch { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; max-width: 280px; }
+.lang-switch a { color: var(--muted); text-decoration: none; font-size: 12px; font-weight: 650; padding: 4px 7px; border-radius: 8px; line-height: 1.2; }
+.lang-switch a:hover { color: var(--deep); background: #efe9f8; }
+.lang-switch a[aria-current="true"] { color: var(--deep); background: var(--lilac); }
+.footer-langs { padding: 0 0 28px; }
+.footer-langs .lang-switch { max-width: none; justify-content: center; }
 .link-quiet { color: var(--text); font-weight: 650; font-size: 15px; text-decoration: none; }
 .link-quiet:hover { color: var(--deep); }
 .menu-check { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }

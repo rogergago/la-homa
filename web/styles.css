@@ -55,6 +55,14 @@ body{font-size:15px;line-height:1.55}button,input,select,textarea{font-size:inhe
 .guide-steps{display:flex;gap:8px;margin:0 0 18px}.guide-steps span{flex:1;height:4px;border-radius:99px;background:#e6e0ef}.guide-steps span.on{background:var(--purple)}.guide-row{display:grid;grid-template-columns:minmax(0,1fr) 148px 44px;gap:8px;align-items:end;margin-bottom:10px}.guide-row .field{margin:0}.guide-actions{display:flex;gap:10px;margin-top:18px}.guide-actions .btn{flex:1}
 @media(max-width:580px){.guide-row{grid-template-columns:minmax(0,1fr) 44px}.guide-row .field:nth-child(2){grid-column:1}.guide-row .icon-btn{grid-column:2;grid-row:1 / span 2}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.tour-layer{position:fixed;inset:auto 16px 16px;z-index:60;display:flex;justify-content:center;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)}
+.tour-card{pointer-events:auto;width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 22px 18px;box-shadow:0 24px 60px -28px #39255b66}
+.tour-card .eyebrow{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:750}
+.tour-card h2{margin:0 0 8px;font-size:22px;letter-spacing:-.03em}
+.tour-card p{margin:0;color:#6c5e7d;font-size:15px;line-height:1.5}
+.tour-progress{display:flex;gap:6px;margin:0 0 14px}.tour-progress span{flex:1;height:4px;border-radius:99px;background:#e6e0ef}.tour-progress span.on{background:var(--purple)}
+.tour-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+@media(max-width:850px){.tour-layer{bottom:90px}}
 
 /* Keep the family label readable in narrow headers without squeezing controls. */
 @media(max-width:580px){.topbar>div:first-child{flex:1;min-width:0;max-width:none}.topbar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;letter-spacing:.7px}.topbar>.flex{flex-shrink:0;gap:5px}.topbar>.icon-btn{display:none}.topbar .notification-button{min-width:36px;width:36px}.topbar .mode-btn{white-space:nowrap}.topbar-date{white-space:nowrap}}

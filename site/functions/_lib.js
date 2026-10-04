@@ -1,4 +1,5 @@
 import { PUBLIC } from './_public.js';
+import { LOCALES, getChrome, langSwitcher, localePath } from './i18n.js';
 
 const SITE = 'https://lahoma.app';
 
@@ -61,46 +62,58 @@ function current(path, section) {
   return path === section || path.startsWith(section + '/') ? ' aria-current="page"' : '';
 }
 
-export function layout({ title, description, path = '/', body, robots = 'index,follow', jsonLd = null, article = false }) {
-  const canonical = SITE + (path === '/' ? '/' : path);
+export function layout({ title, description, path = '/', body, robots = 'index,follow', jsonLd = null, article = false, locale = 'es' }) {
+  const loc = LOCALES.find(l => l.code === locale) || LOCALES[0];
+  const c = getChrome(loc.code);
+  const homeHref = localePath(loc.code, '/');
+  const howHref = localePath(loc.code, '/como-funciona');
+  const famHref = localePath(loc.code, '/familias');
+  const privHref = localePath(loc.code, '/privacidad');
+  const bare = path.replace(/^\/(ca|va|eu|gl|en|fr|it|de)(?=\/|$)/, '') || '/';
+  const canonicalPath = localePath(loc.code, bare === '' ? '/' : bare);
+  const canonical = SITE + (canonicalPath === '/' ? '/' : canonicalPath);
   const fullTitle = title.includes('La Homa') ? title : `${title} · La Homa`;
+  const alts = LOCALES.map(l => `<link rel="alternate" hreflang="${l.code === 'va' ? 'ca-valencia' : l.htmlLang}" href="${SITE}${localePath(l.code, bare === '' ? '/' : bare) === '/' ? '/' : localePath(l.code, bare === '' ? '/' : bare)}">`).join('\n');
   const ld = jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>` : '';
   return `<!doctype html>
-<html lang="es">
+<html lang="${loc.htmlLang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(fullTitle)}</title>
 <meta name="description" content="${escapeHtml(description)}">
 <link rel="canonical" href="${escapeHtml(canonical)}">
+${alts}
+<link rel="alternate" hreflang="x-default" href="${SITE}/">
 <meta name="robots" content="${escapeHtml(robots)}">
 <meta name="theme-color" content="#7851b5">
 <meta property="og:type" content="${article ? 'article' : 'website'}">
-<meta property="og:locale" content="es_ES">
+<meta property="og:locale" content="${loc.og}">
 <meta property="og:site_name" content="La Homa">
 <meta property="og:title" content="${escapeHtml(fullTitle)}">
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/site.css?v=2">
+<link rel="stylesheet" href="/site.css?v=3">
 ${ld}
 </head>
 <body>
-<a class="skip" href="#contenido">Saltar al contenido</a>
+<a class="skip" href="#contenido">${escapeHtml(c.skip)}</a>
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="brand" href="/" aria-label="La Homa, inicio"><span class="brand-mark">${MARK}</span><span>La Homa<small>Organización familiar</small></span></a>
-    <input id="menu" class="menu-check" type="checkbox" aria-label="Abrir el menú">
+    <a class="brand" href="${homeHref}" aria-label="La Homa"><span class="brand-mark">${MARK}</span><span>La Homa<small>${escapeHtml(c.brandSub)}</small></span></a>
+    <input id="menu" class="menu-check" type="checkbox" aria-label="${escapeHtml(c.how)}">
     <label class="menu-button" for="menu" aria-hidden="true"><span></span><span></span></label>
     <div class="menu-panel">
-      <nav class="site-nav" aria-label="Secciones">
-        <a href="/como-funciona"${current(path, '/como-funciona')}>Cómo funciona</a>
-        <a href="/familias"${current(path, '/familias')}>Para quién es</a>
-        <a href="/blog"${current(path, '/blog')}>Blog</a>
+      <nav class="site-nav" aria-label="La Homa">
+        <a href="${howHref}"${current(bare, '/como-funciona')}>${escapeHtml(c.how)}</a>
+        <a href="${famHref}"${current(bare, '/familias')}>${escapeHtml(c.forWhom)}</a>
+        <a href="/blog"${current(bare, '/blog')}>${escapeHtml(c.blog)}</a>
       </nav>
       <div class="header-actions">
-        <a class="link-quiet" href="${PUBLIC.app}">Entrar</a>
-        <a class="button small" href="${PUBLIC.app}">Crear mi casa</a>
+        ${langSwitcher(loc.code, bare === '' ? '/' : bare)}
+        <a class="link-quiet" href="${PUBLIC.app}">${escapeHtml(c.enter)}</a>
+        <a class="button small" href="${PUBLIC.app}">${escapeHtml(c.create)}</a>
       </div>
     </div>
   </div>
@@ -109,29 +122,30 @@ ${ld}
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <div class="footer-brand">
-      <a class="brand" href="/"><span class="brand-mark">${MARK}</span><span>La Homa<small>Organización familiar</small></span></a>
-      <p>Tareas, paga, calendario y cocina de toda la familia, en un mismo sitio.</p>
+      <a class="brand" href="${homeHref}"><span class="brand-mark">${MARK}</span><span>La Homa<small>${escapeHtml(c.brandSub)}</small></span></a>
+      <p>${escapeHtml(c.footerTag)}</p>
     </div>
     <nav aria-label="La Homa">
       <b>La Homa</b>
-      <a href="/como-funciona">Cómo funciona</a>
-      <a href="/familias">Para quién es</a>
-      <a href="/blog">Blog</a>
+      <a href="${howHref}">${escapeHtml(c.how)}</a>
+      <a href="${famHref}">${escapeHtml(c.forWhom)}</a>
+      <a href="/blog">${escapeHtml(c.blog)}</a>
     </nav>
-    <nav aria-label="La app">
-      <b>La app</b>
-      <a href="${PUBLIC.app}">Entrar</a>
-      <a href="${PUBLIC.app}">Crear mi casa</a>
+    <nav aria-label="${escapeHtml(c.footerApp)}">
+      <b>${escapeHtml(c.footerApp)}</b>
+      <a href="${PUBLIC.app}">${escapeHtml(c.enter)}</a>
+      <a href="${PUBLIC.app}">${escapeHtml(c.create)}</a>
     </nav>
-    <nav aria-label="Información">
-      <b>Información</b>
-      <a href="/privacidad">Privacidad</a>
+    <nav aria-label="${escapeHtml(c.footerInfo)}">
+      <b>${escapeHtml(c.footerInfo)}</b>
+      <a href="${privHref}">${escapeHtml(c.privacy)}</a>
     </nav>
   </div>
   <div class="wrap footer-bottom">
     <span>© ${new Date().getFullYear()} La Homa</span>
-    <span>Tu vida familiar, organizada.</span>
+    <span>${escapeHtml(c.tagline)}</span>
   </div>
+  <div class="wrap footer-langs">${langSwitcher(loc.code, bare === '' ? '/' : bare)}</div>
 </footer>
 </body>
 </html>`;
@@ -217,19 +231,35 @@ export function articleDocument(post) {
   });
 }
 
-export function notFoundDocument() {
+export function notFoundDocument(locale = 'es') {
+  const c = getChrome(locale);
   return layout({
-    title: 'Página no encontrada',
-    description: 'Esa dirección no existe en La Homa.',
+    title: c.notFoundTitle,
+    description: c.notFoundLede,
     path: '/404',
     robots: 'noindex,follow',
-    body: `<article class="wrap page narrow"><p class="eyebrow">Error 404</p><h1>Esta página no existe.</h1><p class="lede">Puede que la dirección esté mal escrita o que la página se haya movido. Desde el inicio puedes llegar a todo lo demás.</p><div class="actions"><a class="button" href="/">Ir al inicio</a><a class="button quiet" href="${PUBLIC.app}">Entrar en la app</a></div></article>`
+    locale,
+    body: `<article class="wrap page narrow"><p class="eyebrow">404</p><h1>${escapeHtml(c.notFoundH1)}</h1><p class="lede">${escapeHtml(c.notFoundLede)}</p><div class="actions"><a class="button" href="${localePath(locale, '/')}">${escapeHtml(c.homeLink)}</a><a class="button quiet" href="${PUBLIC.app}">${escapeHtml(c.enterApp)}</a></div></article>`
   });
 }
 
 export function sitemap(posts) {
-  const urls = ['/', '/como-funciona', '/familias', '/blog', '/privacidad', ...posts.map(post => `/blog/${post.slug}`)];
-  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(path => `  <url><loc>${SITE}${path === '/' ? '/' : path}</loc></url>`).join('\n')}\n</urlset>\n`;
+  const base = ['/', '/como-funciona', '/familias', '/blog', '/privacidad', ...posts.map(post => `/blog/${post.slug}`)];
+  const urls = [];
+  for (const path of base) {
+    for (const loc of LOCALES) {
+      if (path.startsWith('/blog') && loc.code !== 'es') continue;
+      const p = localePath(loc.code, path);
+      urls.push(p === '/' ? '/' : p);
+    }
+  }
+  const body = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls.map(path => `  <url><loc>${SITE}${path === '/' ? '/' : path}</loc></url>`),
+    '</urlset>',
+    ''
+  ].join('\n');
   return body;
 }
 
