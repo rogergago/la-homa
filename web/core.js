@@ -14,7 +14,7 @@
   const uid = prefix => `${prefix||'id'}_${globalThis.crypto?.randomUUID?.() || Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)}`;
   const copy = x => JSON.parse(JSON.stringify(x));
   const contribution = task => task.status === 'done' ? task.points : task.status === 'missed' ? -task.points : 0;
-  const memberSnapshot = m => ({id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null});
+  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
   function generateWeek(state, start) {
     if (state.weeks.some(w=>w.start===start)) return state.weeks.find(w=>w.start===start);
     const members=state.members.filter(m=>m.active!==false);
@@ -106,7 +106,7 @@
     check(s.settings&&text(s.settings.familyName,80)&&text(s.settings.teamReward,160)&&Number.isInteger(s.settings.teamTarget)&&s.settings.teamTarget>=0&&s.settings.teamTarget<=100000,'configuración.');
     const ids=(arr,k)=>{check(new Set(arr.map(x=>x.id)).size===arr.length,'identificadores repetidos en '+k);for(const x of arr) check(text(x.id,200)&&/^[A-Za-z0-9_.:@-]+$/.test(x.id),'identificador.');};
     for(const k of ['members','templates','rewards','weeks','shopping','recipes','mealPlan','events']) ids(s[k],k);
-    const member=m=>check(text(m.name,80)&&m.name.trim()&&text(m.avatar,20)&&/^#[0-9a-f]{6}$/i.test(m.color)&&['adult','member'].includes(m.role)&&(m.age==null||(Number.isInteger(m.age)&&m.age>=1&&m.age<=120)),'miembro.');
+    const member=m=>check(text(m.name,80)&&m.name.trim()&&text(m.avatar,20)&&/^#[0-9a-f]{6}$/i.test(m.color)&&['adult','member','pet'].includes(m.role)&&(m.age==null||(Number.isInteger(m.age)&&m.age>=1&&m.age<=120))&&(m.species==null||(typeof m.species==='string'&&m.species.length<=40)),'miembro.');
     s.members.forEach(member);
     check(s.members.some(m=>m.role==='adult'&&m.active!==false),'debe existir un adulto activo.');
     const positive=n=>Number.isInteger(n)&&n>0&&n<=1000;
@@ -1289,6 +1289,7 @@ function ensureWeb5(s) {
   s.settings.notifications ||= {enabled:true,events:true,checklists:true,approvals:true,allowance:true,leadMinutes:60,quietStart:'21:00',quietEnd:'08:00'};
   for (const x of s.shopping||[]) x.listId ||= 'groceries';
   s.settings.onboardingDismissed ??= false; s.usualProducts ||= [];
+  if(typeof s.settings.familyReady!=='boolean'){const people=(s.members||[]).filter(m=>m.active!==false);s.settings.familyReady=!!(s.demo||people.length>1||(s.templates||[]).some(t=>t.active!==false));}
   for(const x of s.shopping||[])if(x.checked&&!s.usualProducts.some(y=>foodKey(y.name)===foodKey(x.name)))s.usualProducts.push({...copy(x),id:uid('usual')});
   return s;
 }
@@ -1411,7 +1412,7 @@ function addShoppingList(s,name,a,icon='\u{1F6D2}'){
 }
 function archiveShoppingList(s,id,a){requireAdult(a);if(id==='groceries')throw new Error('La lista principal se conserva.');const l=s.shoppingLists.find(l=>l.id===id);if(!l)return;if(s.shopping.some(x=>x.listId===id&&!x.checked))throw new Error('Completa o mueve los productos pendientes antes de archivar.');l.archived=true;}
 function setShoppingState(s,id,done){const x=s.shopping.find(x=>x.id===id);if(!x)throw new Error('Producto no encontrado.');x.checked=!!done;return x;}
-function menuServings(s,day){return s.members.filter(m=>m.active!==false&&presenceOn(s,m.id,day).present).length;}
+function menuServings(s,day){return s.members.filter(m=>m.active!==false&&m.role!=='pet'&&presenceOn(s,m.id,day).present).length;}
 function copyMenu(s,fromWeek,toWeek,a,adjust=true){
   requireAdult(a);if(!validDate(fromWeek)||!validDate(toWeek)||fromWeek===toWeek)throw new Error('Elige una semana distinta.');
   const source=s.mealPlan.filter(p=>p.date>=fromWeek&&p.date<=addDays(fromWeek,6));let copied=0,skipped=0;

@@ -8,6 +8,7 @@ function ensureWeb5(s) {
   s.settings.notifications ||= {enabled:true,events:true,checklists:true,approvals:true,allowance:true,leadMinutes:60,quietStart:'21:00',quietEnd:'08:00'};
   for (const x of s.shopping||[]) x.listId ||= 'groceries';
   s.settings.onboardingDismissed ??= false; s.usualProducts ||= [];
+  if(typeof s.settings.familyReady!=='boolean'){const people=(s.members||[]).filter(m=>m.active!==false);s.settings.familyReady=!!(s.demo||people.length>1||(s.templates||[]).some(t=>t.active!==false));}
   for(const x of s.shopping||[])if(x.checked&&!s.usualProducts.some(y=>foodKey(y.name)===foodKey(x.name)))s.usualProducts.push({...copy(x),id:uid('usual')});
   return s;
 }
@@ -130,7 +131,7 @@ function addShoppingList(s,name,a,icon='\u{1F6D2}'){
 }
 function archiveShoppingList(s,id,a){requireAdult(a);if(id==='groceries')throw new Error('La lista principal se conserva.');const l=s.shoppingLists.find(l=>l.id===id);if(!l)return;if(s.shopping.some(x=>x.listId===id&&!x.checked))throw new Error('Completa o mueve los productos pendientes antes de archivar.');l.archived=true;}
 function setShoppingState(s,id,done){const x=s.shopping.find(x=>x.id===id);if(!x)throw new Error('Producto no encontrado.');x.checked=!!done;return x;}
-function menuServings(s,day){return s.members.filter(m=>m.active!==false&&presenceOn(s,m.id,day).present).length;}
+function menuServings(s,day){return s.members.filter(m=>m.active!==false&&m.role!=='pet'&&presenceOn(s,m.id,day).present).length;}
 function copyMenu(s,fromWeek,toWeek,a,adjust=true){
   requireAdult(a);if(!validDate(fromWeek)||!validDate(toWeek)||fromWeek===toWeek)throw new Error('Elige una semana distinta.');
   const source=s.mealPlan.filter(p=>p.date>=fromWeek&&p.date<=addDays(fromWeek,6));let copied=0,skipped=0;

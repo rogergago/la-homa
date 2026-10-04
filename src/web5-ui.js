@@ -8,8 +8,48 @@ function currentRoute5(){const p=new URLSearchParams();if(ui.view==='member'&&ui
 function writeRoute5(replace=false){if(web5.routeApplying||access.blocked)return;const r=currentRoute5();if(r===web5.lastRoute)return;try{history[replace?'replaceState':'pushState']({homa:true},'',r);web5.lastRoute=r;}catch(_){web5.lastRoute=r;}}
 function readRoute5(){if(access.blocked)return;const [path,query]=location.hash.replace(/^#\/?/,'').split('?');if(!path||path.includes('='))return;const valid=[...navigation.map(x=>x[0]),'member','settings','inbox','notifications'];if(!valid.includes(path))return;web5.routeApplying=true;ui.view=viewAllowed5(path)?path:'member';const q=new URLSearchParams(query||'');if(ui.view==='member')ui.memberId=isAdult()&&state.members.some(m=>m.id===q.get('person'))?q.get('person'):actor.memberId||activeMembers()[0]?.id;if(ui.view==='recipes'&&['recipes','menu','ingredients'].includes(q.get('tab')))ui.recipeTab=q.get('tab');if(ui.view==='tasks'&&['assignments','templates'].includes(q.get('tab')))ui.taskTab=q.get('tab');render();web5.lastRoute=currentRoute5();web5.routeApplying=false;}
 window.addEventListener('popstate',()=>{const destination=location.hash;if($('#modal')?.open&&!closeModal()){try{history.replaceState({homa:true},'',web5.lastRoute);}catch(_){}web5.queued=()=>{try{history.replaceState({homa:true},'',destination);}catch(_){}readRoute5();};return;}readRoute5();});
+function guideDraft(){
+ if(ui.guide)return ui.guide;
+ const adult=state.members.find(m=>m.role==='adult'&&m.active!==false);
+ const given=String(adult?.name||'');
+ ui.guide={step:0,familyName:state.settings.familyName||'',adultName:given==='Adulto'?'':given,people:[{name:'',role:'member'}],pets:[{name:'',species:'perro'}]};
+ return ui.guide;
+}
+function readGuide(form){
+ const g=guideDraft();if(!form)return g;
+ if(form.elements.familyName)g.familyName=form.elements.familyName.value;
+ if(form.elements.adultName)g.adultName=form.elements.adultName.value;
+ const people=[...form.querySelectorAll('[data-guide-person]')].map(row=>({name:row.querySelector('[name=personName]').value,role:row.querySelector('[name=personRole]').value}));
+ const pets=[...form.querySelectorAll('[data-guide-pet]')].map(row=>({name:row.querySelector('[name=petName]').value,species:row.querySelector('[name=petSpecies]').value}));
+ if(people.length)g.people=people;if(pets.length)g.pets=pets;return g;
+}
+function finishGuide(){
+ const g=guideDraft(),family=g.familyName.trim(),adultName=g.adultName.trim();
+ if(!family||!adultName)throw new Error('Escribe el nombre de la casa y el tuyo.');
+ const petEmoji={perro:'\u{1F436}',gato:'\u{1F431}',otro:'\u{1F43E}'};
+ const ok=transact(s=>{
+  s.settings.familyName=family.slice(0,80);s.settings.familyReady=true;
+  const adult=s.members.find(m=>m.role==='adult'&&m.active!==false);if(adult)adult.name=adultName.slice(0,80);
+  let n=s.members.length;
+  for(const p of g.people){const name=p.name.trim();if(!name)continue;s.members.push({id:C.uid('member'),name:name.slice(0,80),role:p.role==='adult'?'adult':'member',avatar:p.role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[n%colors.length],age:null,active:true});n++;}
+  for(const p of g.pets){const name=p.name.trim();if(!name)continue;const species=['perro','gato','otro'].includes(p.species)?p.species:'otro';s.members.push({id:C.uid('member'),name:name.slice(0,80),role:'pet',species,avatar:petEmoji[species],color:colors[n%colors.length],age:null,active:true});n++;}
+  const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
+  if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
+ },'La familia est\u00e1 lista.');
+ if(!ok)return;
+ ui.guide=null;ui.view='home';render();
+}
+function renderFamilyGuide(){
+ const g=guideDraft(),step=g.step,titles=['C\u00f3mo se llama vuestra casa','Qui\u00e9n vive aqu\u00ed','Las mascotas tambi\u00e9n'];
+ const body=step===0?`${field('Nombre de la casa','familyName',g.familyName,'text','required maxlength="80" placeholder="Familia Garc\u00eda"')}${field('Tu nombre','adultName',g.adultName,'text','required maxlength="80" placeholder="C\u00f3mo te llaman en casa"')}<p class="small muted">T\u00fa eres quien administra. Los dem\u00e1s no necesitan correo.</p>`
+  :step===1?`<p class="small muted mb">Ni\u00f1os y otros adultos. Si hoy est\u00e1s solo, contin\u00faa: podr\u00e1s a\u00f1adirlos despu\u00e9s.</p>${g.people.map((p,i)=>`<div class="guide-row" data-guide-person><label class="field"><span>Nombre</span><input name="personName" value="${esc(p.name)}" maxlength="80" placeholder="Nombre"></label><label class="field"><span>Es</span><select name="personRole"><option value="member" ${p.role!=='adult'?'selected':''}>Ni\u00f1o o ni\u00f1a</option><option value="adult" ${p.role==='adult'?'selected':''}>Adulto</option></select></label>${iconBtn('trash','guide-remove','Quitar',`data-kind="person" data-index="${i}"`)}</div>`).join('')}${btn('A\u00f1adir otra persona','guide-add','data-kind="person"','secondary','plus')}`
+  :`<p class="small muted mb">Un perro, un gato o quien consider\u00e9is de la familia. No inician sesi\u00f3n ni cuentan como un plato en la mesa.</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet><label class="field"><span>Nombre</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>Animal</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>Perro</option><option value="gato" ${p.species==='gato'?'selected':''}>Gato</option><option value="otro" ${p.species==='otro'?'selected':''}>Otro</option></select></label>${iconBtn('trash','guide-remove','Quitar',`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn('A\u00f1adir otra mascota','guide-add','data-kind="pet"','secondary','plus')}`;
+ $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>Organizaci&oacute;n familiar</small></span></div><span class="auth-eyebrow">VUESTRA FAMILIA</span><h1>La casa se construye con nombres.</h1><p>Primero qui\u00e9nes sois. Despu\u00e9s, las tareas, la paga y la compra.</p></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">Paso ${step+1} de 3</span><h2>${titles[step]}</h2>${body}<div class="guide-actions">${step?btn('Atr\u00e1s','guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?'Entrar en casa':'Continuar'}</button></div></form></section></div>`;
+}
 function render(){
-  C.ensureWeb5(state);if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
+  C.ensureWeb5(state);
+  if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
+  if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
   renderBefore5();
   if(access.blocked){enhanceAuth5();return;}
   if(ui.view==='kitchen'){writeRoute5();return;}
@@ -110,12 +150,16 @@ async function web5Action(a,d,el,event){
  case 'web5-file-delete':{if(!needAdult())return true;confirmDialog('Eliminar documento','Se eliminar\u00e1 el documento de este evento.',async()=>{const ok=transact(s=>s.eventFiles=s.eventFiles.filter(f=>f.id!==d.id));if(ok)await window.HomaAssets.remove(KEY,d.id);return ok;},'Eliminar');return true;}
  case 'backup-export':{if(!needAdult())return true;const bundle=await window.HomaAssets.exportBundle(KEY,state.eventFiles.map(f=>f.id));downloadFile('la-homa-copia-completa-'+C.iso()+'.json',JSON.stringify({...state,assetBundle:bundle},null,2),'application/json');toast('Copia completa creada, incluidos los adjuntos disponibles.');return true;}
  case 'web5-forgot':resetPassword5();return true;
+ case 'guide-back':{const g=readGuide($('#family-guide'));g.step=Math.max(0,g.step-1);render();return true;}
+ case 'guide-add':{const g=readGuide($('#family-guide'));if(d.kind==='pet')g.pets.push({name:'',species:'perro'});else g.people.push({name:'',role:'member'});render();return true;}
+ case 'guide-remove':{const g=readGuide($('#family-guide'));const list=d.kind==='pet'?g.pets:g.people;const i=Number(d.index);if(list.length<=1)list[0].name='';else list.splice(i,1);render();return true;}
  case 'web5-timezone':openModal('Zona horaria del hogar',`${field('Zona horaria IANA','zone',state.settings.timeZone,'text','required maxlength="80" placeholder="Europe/Madrid"')}<p class="note">Se guarda una sola zona para el hogar. El servidor la usar\u00e1 al activar la nube. Este prototipo a\u00fan usa el reloj del dispositivo para las operaciones locales.</p>${footer('Guardar')}`,fd=>transact(s=>{new Intl.DateTimeFormat('es',{timeZone:fd.get('zone')});s.settings.timeZone=fd.get('zone');},'Zona horaria guardada.'));return true;
  case 'web5-connections':openModal('Conexiones de la web',`<div class="connection-row"><b>Datos locales</b><span>Activos en este navegador</span></div><div class="connection-row"><b>Cuenta y base de datos web</b><span>${cloudConfigured()?'Conectada a Supabase':'Pendiente de conectar Supabase'}</span></div><div class="connection-row"><b>Google Calendar</b><span>Pendiente de autorizar una conexi\u00f3n de calendario; iniciar sesi\u00f3n con Google no la activa</span></div><div class="connection-row"><b>Apple Calendar</b><span>Intercambio ICS; suscripci\u00f3n privada prevista en servidor</span></div><div class="connection-row"><b>Avisos con la web cerrada</b><span>Pendiente de servicio de env\u00edo y permisos</span></div><p class="note mt">El proyecto incluye la gu\u00eda de despliegue y el estado real de cada integraci\u00f3n. No se muestran conexiones simuladas.</p><div class="modal-footer">${btn('Entendido','close','','primary')}</div>`);return true;
  }
  return false;
 }
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}});
+document.addEventListener('submit',e=>{if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast('Escribe el nombre de la casa y el tuyo.',true);return;}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
 window.addEventListener('beforeunload',e=>{if($('#modal')?.open&&modalSubmit&&web5.modalInitial&&modalSnapshot5()!==web5.modalInitial){e.preventDefault();e.returnValue='';}});
 $('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
 
