@@ -38,15 +38,23 @@ test('admin is a noindex operator panel without a secret', () => {
   const dist = buildAdmin();
   const html = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   const config = fs.readFileSync(path.join(dist, 'config.js'), 'utf8');
+  const headers = fs.readFileSync(path.join(dist, '_headers'), 'utf8');
   const source = fs.readFileSync(path.join(__dirname, '..', 'admin', 'admin.js'), 'utf8');
   assert.match(html, /noindex/);
+  assert.match(html, /\.\/supabase\.js/);
+  assert.doesNotMatch(html, /jsdelivr/);
+  assert.ok(fs.existsSync(path.join(dist, 'supabase.js')));
   assert.match(config, /sb_publishable_/);
   assert.doesNotMatch(config + source, /sb_secret|service_role/);
   assert.doesNotMatch(source, /signInWithOAuth/);
   assert.match(source, /homa_is_operator/);
   assert.match(source, /homa_admin_dashboard/);
   assert.match(source, /homa_admin_delete_household/);
+  assert.match(source, /mfa\.challengeAndVerify|mfa\.enroll/);
+  assert.match(source, /aal2|getAuthenticatorAssuranceLevel/);
   assert.doesNotMatch(source, /style="/);
+  assert.match(headers, /Strict-Transport-Security/);
+  assert.doesNotMatch(headers, /jsdelivr/);
   assert.match(fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8'), /Disallow: \//);
 });
 
@@ -72,4 +80,30 @@ test('operator SQL counts people and does not return the inside of a house', () 
   assert.match(sql, /for select to anon\s+using \(status = 'published'\)/);
   assert.doesNotMatch(sql, /data->>'name'|data->>'photo'|finance|service_role/);
   assert.match(sql, /revoke all on function public\.homa_operator_overview\(\) from public, anon/);
+});
+
+test('security hardening requires MFA for operators and hardens invites and sync', () => {
+  const sql = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '0005_security_hardening.sql'), 'utf8');
+  assert.match(sql, /raise exception 'MFA_REQUIRED'/);
+  assert.match(sql, /auth\.jwt\(\)->>'aal'/);
+  assert.match(sql, /homa_operator_session/);
+  assert.match(sql, /gen_random_bytes\(8\)/);
+  assert.match(sql, /TOO_MANY_ATTEMPTS/);
+  assert.match(sql, /QUOTA_EXCEEDED/);
+  assert.match(sql, /drop function if exists public\.homa_operator_overview\(\)/);
+  assert.match(sql, /revoke all on function public\.homa_can_read\(uuid\) from public, anon/);
+  const purge = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'homa-admin-purge', 'index.ts'), 'utf8');
+  assert.match(purge, /homa_operator_session/);
+  assert.doesNotMatch(purge, /homa_is_operator/);
+});
+
+test('app build ships local supabase client and closed CSP', () => {
+  const build = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'build.cjs'), 'utf8');
+  assert.match(build, /vendor['",/\\]+supabase\.js/);
+  assert.doesNotMatch(build, /jsdelivr/);
+  assert.match(build, /Strict-Transport-Security/);
+  const transport = fs.readFileSync(path.join(__dirname, '..', 'src', 'cloud-transport.js'), 'utf8');
+  assert.match(transport, /\.\/supabase\.js/);
+  assert.doesNotMatch(transport, /jsdelivr/);
+  assert.match(transport, /TOO_MANY_ATTEMPTS/);
 });

@@ -91,6 +91,8 @@ Para Google, crear/configurar el cliente web OAuth, consentimiento, orígenes y 
 
 El inicio de sesión es con correo o con Google. Apple no forma parte del acceso.
 
+En Auth → Providers → Email, la confirmación de correo debe estar activada (`mailer_autoconfirm` en false). En Auth → Attack Protection, activa la protección de contraseñas filtradas (Have I Been Pwned). En Auth → Multi-Factor, deja permitido el TOTP: el panel lo exige para las cuentas operadoras.
+
 ## 9. Guardar realmente todo
 
 Separar datos de negocio, archivos privados y credenciales. Conservar perfiles, fotografías, ingredientes/unidades, listas, menús, convivencias, eventos/checklists/documentos, semanas históricas y movimientos de dinero. No incluir contraseñas, sesiones ni tokens de terceros en una exportación familiar.
@@ -139,11 +141,11 @@ Proyecto del panel:
 - Directorio de salida: `dist`
 - Dominio: `admin.lahoma.app`
 
-El panel se abre con el correo y la contraseña de la cuenta operadora. No usa Google y no necesita una redirección nueva en Supabase.
+El panel se abre con el correo y la contraseña de la cuenta operadora. No usa Google y no necesita una redirección nueva en Supabase. Tras la contraseña pide verificación en dos pasos (TOTP): la primera vez muestra un código QR para Google Authenticator, 1Password o Authy; las siguientes, el código de seis cifras. Sin ese segundo factor la base rechaza cualquier acción de operadora (`MFA_REQUIRED`). La sesión se cierra sola tras 30 minutos sin actividad.
 
-El primer acceso al panel, con la misma cuenta de la app, muestra la sentencia SQL que marca esa cuenta como operadora. Hay que pegarla en el editor SQL.
+La cuenta operadora se marca una sola vez en el editor SQL de Supabase insertando su `user_id` en `homa_operators`.
 
-El panel necesita `supabase/migrations/0004_operator_panel.sql` y la función `supabase/functions/homa-admin-purge`. Con ellas tiene:
+El panel necesita `supabase/migrations/0004_operator_panel.sql`, `0005_security_hardening.sql` y la función `supabase/functions/homa-admin-purge`. Con ellas tiene:
 
 - Resumen: altas por semana, familias activas, cuentas sin casa para contactar, familias sin actividad y qué módulos se usan.
 - Familias: buscador, filtros y exportación CSV. Cada ficha tiene el contacto del titular (nombre, apellidos, correo, teléfono, etiquetas y notas internas), el nombre y la zona horaria de la casa, cuántas cosas usa, las cuentas con acceso, las invitaciones y los dispositivos.

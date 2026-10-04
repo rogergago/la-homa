@@ -105,6 +105,10 @@
     if (/VERSION_CONFLICT/.test(msg)) return 'Otro dispositivo ha cambiado este dato. Pulsa «Recargar desde la nube» y repite el cambio.';
     if (/INVITE_INVALID/.test(msg)) return 'El código de invitación no es válido, ya se usó o ha caducado.';
     if (/ALREADY_IN_HOUSEHOLD/.test(msg)) return 'Esta cuenta ya pertenece a un hogar.';
+    if (/TOO_MANY_ATTEMPTS/.test(msg)) return 'Demasiados códigos incorrectos. Espera una hora o pide un código nuevo.';
+    if (/TOO_MANY_INVITES/.test(msg)) return 'Ya hay 10 invitaciones sin usar. Espera a que se usen o caduquen.';
+    if (/QUOTA_EXCEEDED/.test(msg)) return 'El hogar ha llegado al límite de espacio en la nube. Quita fotos o datos antiguos.';
+    if (/INVALID_COMMAND/.test(msg)) return 'La nube ha rechazado un dato con un formato no válido.';
     if (/FORBIDDEN/.test(msg)) return 'No tienes permiso para cambiar este hogar.';
     if (/Invalid login/.test(msg)) return 'No se pudo acceder. Revisa correo, contraseña y confirmación del correo.';
     return msg || 'No se pudo guardar en la nube.';
@@ -122,15 +126,16 @@
     refreshAgain: false,
     channel: null,
     async clientFor(session) {
-      const cfg = (typeof localStorage !== 'undefined' && localStorage.getItem('family-points-v3-cloud-config'))
+      const bundled = globalThis.FAMILY_CLOUD?.url && globalThis.FAMILY_CLOUD?.anonKey ? globalThis.FAMILY_CLOUD : null;
+      const cfg = !bundled && typeof localStorage !== 'undefined' && localStorage.getItem('family-points-v3-cloud-config')
         ? JSON.parse(localStorage.getItem('family-points-v3-cloud-config') || 'null')
         : null;
-      const cloud = cfg?.url ? cfg : globalThis.FAMILY_CLOUD;
+      const cloud = bundled || cfg;
       if (!cloud?.url || !cloud?.anonKey) throw new Error('Falta la configuración pública de Supabase.');
       if (!globalThis.supabase) {
         await new Promise((resolve, reject) => {
           const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js';
+          script.src = './supabase.js';
           script.onload = resolve;
           script.onerror = () => reject(new Error('No se pudo cargar el servicio de acceso.'));
           document.head.appendChild(script);
@@ -154,8 +159,9 @@
       const client = await this.clientFor(session);
       const code = String(inviteCode || '').trim().toLowerCase();
       if (code) {
-        const { error } = await client.rpc('homa_accept', { p_code: code });
+        const { data: joined, error } = await client.rpc('homa_accept', { p_code: code });
         if (error) throw new Error(explain(error));
+        if (!joined) throw new Error(explain('INVITE_INVALID'));
       }
       const { data: householdId, error } = await client.rpc('homa_bootstrap', { p_name: String(name || 'Mi hogar').slice(0, 120) });
       if (error) throw new Error(explain(error));

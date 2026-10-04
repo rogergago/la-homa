@@ -8,6 +8,9 @@
   let editing = null;
   let flash = { text: '', bad: false };
   let pending = null;
+  let mfa = null;
+  let idleTimer = null;
+  const IDLE_MS = 30 * 60 * 1000;
   const data = { dashboard: null, households: null, accounts: null, posts: null, log: null, detail: null };
   const ui = { familyQuery: '', familyStatus: 'todas', familySort: 'recientes', accountQuery: '', accountFilter: 'todas' };
 
@@ -37,7 +40,8 @@
     INVALID_NAME: 'El nombre de la casa tiene que tener entre 1 y 120 caracteres.',
     INVALID_TIMEZONE: 'Esa zona horaria no existe.',
     CANNOT_DELETE_SELF: 'No puedes borrar tu propia cuenta desde el panel.',
-    CANNOT_DELETE_OPERATOR: 'Las cuentas operadoras no se borran desde el panel.'
+    CANNOT_DELETE_OPERATOR: 'Las cuentas operadoras no se borran desde el panel.',
+    MFA_REQUIRED: 'Hace falta el código de verificación. Vuelve a entrar.'
   };
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -122,23 +126,51 @@
       ${notice ? `<div class="note ${bad ? 'bad' : ''}">${esc(notice)}</div>` : ''}
       <form data-form="login">
         <label class="field">Correo<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
-        <label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" required minlength="6" maxlength="200"></label>
+        <label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" required minlength="10" maxlength="200"></label>
         <div class="actions"><button class="button wide" type="submit">Entrar</button></div>
       </form>`);
   }
 
-  function operatorSql() {
-    const email = session?.user?.email || '';
-    return `insert into public.homa_operators (user_id)\nselect id from auth.users\nwhere lower(email) = lower('${email.replace(/'/g, "''")}')\non conflict (user_id) do nothing;`;
+  function denied() {
+    gate('Esta cuenta no abre el panel', `
+      <p class="lede">Has entrado como ${esc(session?.user?.email || 'esta cuenta')}, que no tiene acceso de operadora.</p>
+      <div class="actions"><button class="quiet" type="button" data-action="logout">Salir</button></div>`);
   }
 
-  function operatorInstructions() {
-    gate('Falta marcarte como operador', `
-      <p class="lede">Has entrado como ${esc(session?.user?.email || 'esta cuenta')}. El panel todavía no te reconoce.</p>
-      <p class="help">Abre el editor SQL de Supabase y ejecuta esto una sola vez. Luego vuelve y pulsa Comprobar.</p>
-      <pre>${esc(operatorSql())}</pre>
-      ${flash.text ? `<div class="note">${esc(flash.text)}</div>` : ''}
-      <div class="actions"><button class="button" type="button" data-action="copy-sql">Copiar</button><button class="quiet" type="button" data-action="boot">Comprobar</button><button class="quiet" type="button" data-action="logout">Salir</button></div>`);
+  function mfaGate(notice, bad) {
+    const enrolling = Boolean(mfa?.qr);
+    gate(enrolling ? 'Activa la verificación en dos pasos' : 'Código de verificación', `
+      ${enrolling
+        ? `<p class="lede">El panel puede borrar familias, así que pide algo más que la contraseña. Escanea este código con Google Authenticator, 1Password, Authy o la app de códigos que uses.</p>
+          <p class="qr"><img src="${esc(mfa.qr)}" alt="Código QR para la app de verificación" width="180" height="180"></p>
+          <p class="help">Si no puedes escanearlo, escribe esta clave en la app: <code class="secret">${esc(mfa.secret)}</code></p>`
+        : '<p class="lede">Abre tu app de verificación y escribe el código de seis cifras de La Homa.</p>'}
+      ${notice ? `<div class="note ${bad ? 'bad' : ''}">${esc(notice)}</div>` : ''}
+      <form data-form="mfa">
+        <label class="field">Código<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></label>
+        <div class="actions"><button class="button wide" type="submit">${enrolling ? 'Activar y entrar' : 'Entrar'}</button></div>
+      </form>
+      <div class="actions"><button class="quiet" type="button" data-action="logout">Salir</button></div>`);
+    app.querySelector('[name="code"]')?.focus();
+  }
+
+  async function prepareMfa() {
+    const factors = await client.auth.mfa.listFactors();
+    if (factors.error) throw new Error('No se pudo leer la verificación en dos pasos.');
+    const verified = (factors.data.totp || []).find(f => f.status === 'verified');
+    if (verified) { mfa = { factorId: verified.id }; return; }
+    for (const f of factors.data.all || []) {
+      if (f.factor_type === 'totp' && f.status !== 'verified') await client.auth.mfa.unenroll({ factorId: f.id });
+    }
+    const enrolled = await client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Panel La Homa', issuer: 'La Homa' });
+    if (enrolled.error) throw new Error('No se pudo preparar la verificación en dos pasos.');
+    mfa = { factorId: enrolled.data.id, qr: enrolled.data.totp.qr_code, secret: enrolled.data.totp.secret };
+  }
+
+  function touch() {
+    if (!session) return;
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { logout('Sesión cerrada tras 30 minutos sin actividad.'); }, IDLE_MS);
   }
 
   // Estructura
@@ -744,11 +776,6 @@
     if (action === 'reload') { invalidate(); data.posts = null; if (data.detail) data.detail = null; await show(); return; }
     if (action === 'logout') { await logout(); return; }
     if (action === 'boot') { await boot(); return; }
-    if (action === 'copy-sql') {
-      try { await navigator.clipboard.writeText(operatorSql()); say('Copiado.'); } catch { say('Selecciona el texto y cópialo a mano.'); }
-      operatorInstructions();
-      return;
-    }
     if (action === 'password') { await onPassword(); return; }
     if (action === 'dialog-cancel') { closeDialog(null); return; }
     if (action === 'export-families') { exportFamilies(); return; }
@@ -803,6 +830,15 @@
       await boot();
       return;
     }
+    if (kind === 'mfa') {
+      const code = String(values.get('code') || '').replace(/\s/g, '');
+      if (!/^\d{6}$/.test(code)) { mfaGate('El código tiene seis cifras.', true); return; }
+      const verified = await client.auth.mfa.challengeAndVerify({ factorId: mfa.factorId, code });
+      if (verified.error) { mfaGate('Ese código no vale. Espera al siguiente y vuelve a probar.', true); return; }
+      mfa = null;
+      await boot();
+      return;
+    }
     if (kind === 'contact') {
       const contact = {
         firstName: String(values.get('firstName') || ''),
@@ -846,12 +882,14 @@
     rows.innerHTML = route().section === 'cuentas' ? accountRows() : familyRows();
   }
 
-  async function logout() {
+  async function logout(notice) {
+    clearTimeout(idleTimer);
     await client.auth.signOut();
     session = null;
     editing = null;
+    mfa = null;
     for (const key of Object.keys(data)) data[key] = null;
-    login('');
+    login(typeof notice === 'string' ? notice : '');
   }
 
   async function boot() {
@@ -873,10 +911,17 @@
       gate(missing ? 'Falta preparar la base' : 'No se pudo comprobar el acceso', `<p class="lede">${missing ? 'Ejecuta en Supabase las migraciones de supabase/migrations y vuelve a abrir el panel.' : esc(role.error.message || 'Error de acceso.')}</p><div class="actions"><button class="quiet" type="button" data-action="logout">Salir</button></div>`);
       return;
     }
-    if (!role.data) { operatorInstructions(); return; }
+    if (!role.data) { denied(); return; }
+    const level = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (level.error || level.data.currentLevel !== 'aal2') {
+      try { await prepareMfa(); mfaGate(''); } catch (err) { gate('No se pudo comprobar el acceso', `<p class="lede">${esc(err.message)}</p><div class="actions"><button class="quiet" type="button" data-action="logout">Salir</button></div>`); }
+      return;
+    }
+    touch();
     await show();
   }
 
+  for (const type of ['click', 'keydown']) document.addEventListener(type, touch, { passive: true });
   document.addEventListener('click', event => {
     const target = event.target.closest('[data-action]');
     if (!target) return;

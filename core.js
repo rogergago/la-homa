@@ -128,6 +128,10 @@
     for(const x of s.events) check(text(x.title,160)&&text(x.description||'',5000)&&validDate(x.date)&&(!x.endDate||validDate(x.endDate))&&(!x.endDate||x.endDate>=x.date)&&typeof x.time==='string'&&typeof x.endTime==='string'&&time(x.time)&&time(x.endTime)&&text(x.memberId||'',200)&&Number.isInteger(x.revision)&&x.revision>=0,'evento.');
     if(s.settings.pin) check(/^[a-f0-9]{32}$/.test(s.settings.pin.salt)&&/^[a-f0-9]{64}$/.test(s.settings.pin.hash),'PIN.');
     validateV2(s);validateV3(s);validateEvents31(s);validateHoma(s);validateWeb5(s);
+    // Identifiers end up inside HTML attributes; data synced by another adult must not be able to break out of them.
+    const safeId=v=>v==null||v===''||Number.isFinite(v)||(typeof v==='string'&&v.length<=200&&/^[A-Za-z0-9_.:@-]+$/.test(v));
+    const walk=(v,depth)=>{if(!v||typeof v!=='object')return;check(depth<=16,'estructura demasiado profunda.');if(Array.isArray(v)){for(const x of v)walk(x,depth+1);return;}for(const [k,x] of Object.entries(v)){if(k==='id'||/[a-z]Id$/.test(k))check(safeId(x),'identificador '+k+'.');else if(/[a-z]Ids$/.test(k)&&Array.isArray(x))check(x.every(safeId),'identificadores '+k+'.');else walk(x,depth+1);}};
+    walk(s,0);
     return s;
   }
   function seed(today=iso()) {

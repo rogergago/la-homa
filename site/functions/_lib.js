@@ -137,14 +137,23 @@ ${ld}
 </html>`;
 }
 
+export const SECURITY_HEADERS = {
+  'strict-transport-security': 'max-age=31536000; includeSubDomains',
+  'x-content-type-options': 'nosniff',
+  'x-frame-options': 'DENY',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'permissions-policy': 'geolocation=(), microphone=(), camera=()',
+  'cross-origin-opener-policy': 'same-origin',
+  'content-security-policy': "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
+};
+
 export function htmlResponse(document, status = 200, extra = {}) {
   return new Response(document, {
     status,
     headers: {
+      ...SECURITY_HEADERS,
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'public, max-age=60',
-      'x-content-type-options': 'nosniff',
-      'referrer-policy': 'strict-origin-when-cross-origin',
       ...extra
     }
   });
@@ -158,7 +167,7 @@ export function formatDate(value) {
 }
 
 export async function publishedPosts(filters = '') {
-  const query = `site_posts?select=slug,title,excerpt,body,seo_title,seo_description,published_at&status=eq.published&order=published_at.desc${filters}`;
+  const query = `site_posts?select=slug,title,excerpt,body,seo_title,seo_description,published_at&status=eq.published&order=published_at.desc${filters || '&limit=200'}`;
   const response = await fetch(`${PUBLIC.url}/rest/v1/${query}`, {
     headers: {
       apikey: PUBLIC.anonKey,
