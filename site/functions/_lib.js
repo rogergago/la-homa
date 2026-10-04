@@ -82,7 +82,7 @@ export function layout({ title, description, path = '/', body, robots = 'index,f
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/site.css?v=2">
 ${ld}
 </head>
 <body>
