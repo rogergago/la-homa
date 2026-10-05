@@ -10825,7 +10825,7 @@ document.addEventListener('click',async event=>{
  case 'pin-remove':confirmDialog(t('removePinQ'), t('removePinBody'),()=>transact(s=>{s.settings.pin=null;},t('pinRemoved')),t('removePin'));break;
  case 'backup-export':break;
  case 'backup-import':break;
- case 'backup-recover':break;}
+ case 'backup-recover':break;
  case 'onboarding':onboarding();break;
  case 'reset-demo':openModal(t('resetDemoFamily'),`<p class="dialog-description">${esc(t('resetDemoBody'))}</p>${field(t('typeDemoConfirm'),'confirm','','text','required pattern="DEMO" autocomplete="off"')}${footer(t('resetDemoBtn'))}`,fd=>{if(fd.get('confirm')!=='DEMO')throw new Error(t('typeDemoConfirm'));const ok=transact(()=>{state=C.seed();},t('demoReset'));if(ok){actor={role:'adult',memberId:null};try{sessionStorage.removeItem(KEY+'-profile');}catch(_){}ui.view='home';ui.selectedWeek=current().id;render();}return ok;});break;
  case 'install':installHelp();break;
