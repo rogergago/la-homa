@@ -65,7 +65,7 @@ export const SITE_COPY = {
     "kidsH3": "Los niños",
     "kidsP": "Ven solo lo suyo: tareas, puntos, recompensas y hucha. Pueden usar la tablet sin cuenta, o tener correo propio si ya lo tienen. El objetivo no es controlarlos mejor: es que necesiten cada vez menos control.",
     "petsH3": "Las mascotas",
-    "petsP": "Para mucha gente también son familia, así que aparecen en la casa con su nombre y su foto. Su paseo o su comida son tareas de las personas. Ellas no suman puntos ni tienen paga.",
+    "petsP": "Para mucha gente también son familia, así que aparecen en la casa con su nombre y su foto. Su paseo o su comida son tareas de las personas.",
     "tabletH3": "La tablet de la cocina",
     "tabletP": "Una vista grande y sencilla para dejarla en un sitio de paso. Cada niño toca su cara, ve lo que le toca hoy y lo marca cuando lo ha hecho. Las rutinas se siguen paso a paso, con un dibujo grande en cada uno.",
     "outEyebrow": "Lo que hemos dejado fuera",
@@ -266,7 +266,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Casas con mascotas",
-        "p": "La mascota aparece en la familia con su nombre y su foto. Sus cuidados son tareas de las personas: quien saca a Kira de paseo es quien suma los puntos. Las mascotas no suman puntos, no tienen paga y no cuentan en las raciones del menú."
+        "p": "La mascota aparece en la familia con su nombre y su foto. Sus cuidados son tareas de las personas: quien saca a Kira de paseo es quien suma los puntos. No cuentan en las raciones del menú."
       },
       {
         "h2": "Un solo adulto",
@@ -363,7 +363,7 @@ export const SITE_COPY = {
     "kidsH3": "Els infants",
     "kidsP": "Veuen només el seu: feines, punts, recompenses i guardiola. Poden usar la tauleta sense compte, o tenir correu propi si ja en tenen. L’objectiu no és controlar-los millor: és que necessitin cada vegada menys control.",
     "petsH3": "Les mascotes",
-    "petsP": "Per a molta gent també són família, així que apareixen a la casa amb el nom i la foto. El passeig o el menjar són feines de les persones. Elles no sumen punts ni tenen paga.",
+    "petsP": "Per a molta gent també són família, així que apareixen a la casa amb el nom i la foto. El passeig o el menjar són feines de les persones.",
     "tabletH3": "La tauleta de la cuina",
     "tabletP": "Una vista gran i senzilla per deixar-la en un lloc de pas. Cada infant toca la cara, veu el que li toca avui i ho marca quan ho ha fet. Les rutines se segueixen pas a pas, amb un dibuix gran a cadascun.",
     "outEyebrow": "El que hem deixat fora",
@@ -564,7 +564,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Cases amb mascotes",
-        "p": "La mascota apareix a la família amb el nom i la foto. Les cures són feines de les persones: qui treu en Kira a passejar és qui suma els punts. Les mascotes no sumen punts, no tenen paga i no compten a les racions del menú."
+        "p": "La mascota apareix a la família amb el nom i la foto. Les cures són feines de les persones: qui treu en Kira a passejar és qui suma els punts. No compten a les racions del menú."
       },
       {
         "h2": "Un sol adult",
@@ -661,7 +661,7 @@ export const SITE_COPY = {
     "kidsH3": "Els xiquets",
     "kidsP": "Veuen només el seu: faenes, punts, recompenses i hucha. Poden usar la tablet sense compte, o tindre correu propi si ja en tenen. L’objectiu no és controlar-los millor: és que necessiten cada vegada menys control.",
     "petsH3": "Les mascotes",
-    "petsP": "Per a molta gent també són família, així que apareixen a la casa amb el nom i la foto. El passeig o el menjar són faenes de les persones. Elles no sumen punts ni tenen paga.",
+    "petsP": "Per a molta gent també són família, així que apareixen a la casa amb el nom i la foto. El passeig o el menjar són faenes de les persones.",
     "tabletH3": "La tablet de la cuina",
     "tabletP": "Una vista gran i senzilla per deixar-la en un lloc de pas. Cada xiquet toca la cara, veu el que li toca hui i ho marca quan ho ha fet. Les rutines se seguixen pas a pas, amb un dibuix gran a cadascun.",
     "outEyebrow": "El que hem deixat fora",
@@ -862,7 +862,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Cases amb mascotes",
-        "p": "La mascota apareix a la família amb el nom i la foto. Les cures són faenes de les persones: qui treu en Kira a passejar és qui suma els punts. Les mascotes no sumen punts, no tenen paga i no compten a les racions del menú."
+        "p": "La mascota apareix a la família amb el nom i la foto. Les cures són faenes de les persones: qui treu en Kira a passejar és qui suma els punts. No compten a les racions del menú."
       },
       {
         "h2": "Un sol adult",
@@ -959,7 +959,7 @@ export const SITE_COPY = {
     "kidsH3": "Haurrek",
     "kidsP": "Beren gauzak bakarrik ikusten dituzte: zereginak, puntuak, sariak eta urtxintxa. Konturik gabe erabil dezakete tableta, edo posta propioa badute. Helburua ez da hobe kontrolatzea: denbora igaro ahala kontrol gutxiago behar izatea da.",
     "petsH3": "Maskotak",
-    "petsP": "Jende askorentzat familia ere dira, beraz etxean agertzen dira izena eta argazkiarekin. Haien paseoa edo janaria pertsonen zereginak dira. Ez dute puntu jartzen ez poltsiko-dirurik.",
+    "petsP": "Jende askorentzat familia ere dira, beraz etxean agertzen dira izena eta argazkiarekin. Haien paseoa edo janaria pertsonen zereginak dira.",
     "tabletH3": "Sukaldeko tableta",
     "tabletP": "Ikuspegi handi eta sinplea pasaleku batean uzteko. Haur bakoitzak bere aurpegia ukitzen du, gaur zer den berea ikusten du eta eginda markatzen du. Errutinak urratsez urrats, irudi handi batekin bakoitzean.",
     "outEyebrow": "Kanpo utzi duguna",
@@ -1160,7 +1160,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Maskota duten etxeak",
-        "p": "Maskota familiaren barruan agertzen da, bere izena eta argazkiarekin. Bere zainketak pertsonen zereginak dira: Kira paseatzera ateratzen denak puntuak lortzen ditu. Maskotek ez dute puntu jartzen, ez dute poltsiko-dirurik eta ez dira menuko porcietan kontatzen."
+        "p": "Maskota familiaren barruan agertzen da, bere izena eta argazkiarekin. Bere zainketak pertsonen zereginak dira: Kira paseatzera ateratzen denak puntuak lortzen ditu. Ez dira menuko porcietan kontatzen."
       },
       {
         "h2": "Heldu bakarra",
@@ -1257,7 +1257,7 @@ export const SITE_COPY = {
     "kidsH3": "Os nenos",
     "kidsP": "Ven só o seu: tarefas, puntos, recompensas e hucha. Poden usar a tablet sen conta, ou ter correo propio se xa o teñen. O obxectivo non é controlalos mellor: é que precisen cada vez menos control.",
     "petsH3": "As mascotas",
-    "petsP": "Para moita xente tamén son familia, así que aparecen na casa co seu nome e a súa foto. O seu paseo ou a súa comida son tarefas das persoas. Elas non suman puntos nin teñen mesada.",
+    "petsP": "Para moita xente tamén son familia, así que aparecen na casa co seu nome e a súa foto. O seu paseo ou a súa comida son tarefas das persoas.",
     "tabletH3": "A tablet da cociña",
     "tabletP": "Unha vista grande e sinxela para deixala nun sitio de paso. Cada neno toca a súa cara, ve o que lle toca hoxe e márcao cando o fixo. As rutinas seguense paso a paso, cun debuxo grande en cada unha.",
     "outEyebrow": "O que deixamos fóra",
@@ -1458,7 +1458,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Casas con mascotas",
-        "p": "A mascota aparece na familia co seu nome e a súa foto. Os seus coidados son tarefas das persoas: quen saca a Kira de paseo é quen suma os puntos. As mascotas non suman puntos, non teñen mesada e non contan nas racións do menú."
+        "p": "A mascota aparece na familia co seu nome e a súa foto. Os seus coidados son tarefas das persoas: quen saca a Kira de paseo é quen suma os puntos. Non contan nas racións do menú."
       },
       {
         "h2": "Un só adulto",
@@ -1555,7 +1555,7 @@ export const SITE_COPY = {
     "kidsH3": "Children",
     "kidsP": "They only see their own: tasks, points, rewards, and piggy bank. They can use the tablet without an account, or have their own email if they already do. The goal isn’t tighter control: it’s needing less control over time.",
     "petsH3": "Pets",
-    "petsP": "For many people they’re family too, so they appear in the home with their name and photo. Their walk or meal are people’s tasks. They don’t earn points or get an allowance.",
+    "petsP": "For many people they’re family too, so they appear in the home with their name and photo. Their walk or meal are people’s tasks.",
     "tabletH3": "The kitchen tablet",
     "tabletP": "A large, simple view to leave in a shared spot. Each child taps their face, sees what’s theirs today, and marks it when done. Routines go step by step, with a big picture for each one.",
     "outEyebrow": "What we’ve left out",
@@ -1756,7 +1756,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Homes with pets",
-        "p": "The pet appears in the family with their name and photo. Their care is people’s tasks: whoever walks Kira is who earns the points. Pets don’t earn points, don’t get allowance, and don’t count in menu portions."
+        "p": "The pet appears in the family with their name and photo. Their care is people’s tasks: whoever walks Kira is who earns the points. They don’t count in menu portions."
       },
       {
         "h2": "A single adult",
@@ -1853,7 +1853,7 @@ export const SITE_COPY = {
     "kidsH3": "Les enfants",
     "kidsP": "Ils ne voient que leur part : tâches, points, récompenses et tirelire. Ils peuvent utiliser la tablette sans compte, ou avoir leur propre e-mail s'ils en ont déjà un. Le but n'est pas de mieux les contrôler : c'est qu'ils aient de moins en moins besoin de contrôle.",
     "petsH3": "Les animaux",
-    "petsP": "Pour beaucoup, ils font aussi partie de la famille : ils apparaissent dans le foyer avec leur nom et leur photo. Leur promenade ou leur repas sont des tâches des personnes. Ils ne gagnent pas de points et n'ont pas d'argent de poche.",
+    "petsP": "Pour beaucoup, ils font aussi partie de la famille : ils apparaissent dans le foyer avec leur nom et leur photo. Leur promenade ou leur repas sont des tâches des personnes.",
     "tabletH3": "La tablette de la cuisine",
     "tabletP": "Une vue grande et simple à laisser dans un endroit partagé. Chaque enfant touche son visage, voit ce qui lui incombe aujourd'hui et le coche quand c'est fait. Les routines se suivent étape par étape, avec une grande image à chaque fois.",
     "outEyebrow": "Ce qu'on a laissé de côté",
@@ -2054,7 +2054,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Foyers avec animaux",
-        "p": "L'animal apparaît dans la famille avec son nom et sa photo. Ses soins sont des tâches des personnes : celui ou celle qui promène Kira gagne les points. Les animaux ne gagnent pas de points, n'ont pas d'argent de poche et ne comptent pas dans les portions du menu."
+        "p": "L'animal apparaît dans la famille avec son nom et sa photo. Ses soins sont des tâches des personnes : celui ou celle qui promène Kira gagne les points. Ils ne comptent pas dans les portions du menu."
       },
       {
         "h2": "Un seul adulte",
@@ -2151,7 +2151,7 @@ export const SITE_COPY = {
     "kidsH3": "I bambini",
     "kidsP": "Vedono solo il loro: compiti, punti, ricompense e salvadanaio. Possono usare il tablet senza account, o avere email propria se ce l'hanno già. L'obiettivo non è controllarli meglio: è che abbiano sempre meno bisogno di controllo.",
     "petsH3": "Gli animali",
-    "petsP": "Per molti fanno parte della famiglia: compaiono in casa con nome e foto. La passeggiata o il pasto sono compiti delle persone. Loro non sommano punti né hanno paghetta.",
+    "petsP": "Per molti fanno parte della famiglia: compaiono in casa con nome e foto. La passeggiata o il pasto sono compiti delle persone.",
     "tabletH3": "Il tablet della cucina",
     "tabletP": "Una vista grande e semplice da lasciare in un punto condiviso. Ogni bambino tocca il proprio volto, vede cosa gli tocca oggi e lo segna quando ha finito. Le routine si seguono passo passo, con un'immagine grande in ognuna.",
     "outEyebrow": "Cosa abbiamo lasciato fuori",
@@ -2352,7 +2352,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Case con animali",
-        "p": "L'animale compare in famiglia con nome e foto. Le sue cure sono compiti delle persone: chi porta Kira a passeggio somma i punti. Gli animali non sommano punti, non hanno paghetta e non contano nelle porzioni del menu."
+        "p": "L'animale compare in famiglia con nome e foto. Le sue cure sono compiti delle persone: chi porta Kira a passeggio somma i punti. Non contano nelle porzioni del menu."
       },
       {
         "h2": "Un solo adulto",
@@ -2449,7 +2449,7 @@ export const SITE_COPY = {
     "kidsH3": "Kinder",
     "kidsP": "Sie sehen nur ihr Eigenes: Aufgaben, Punkte, Belohnungen und Sparschwein. Sie können das Tablet ohne Konto nutzen oder eine eigene E-Mail haben, wenn sie schon eine haben. Ziel ist nicht mehr Kontrolle: sondern immer weniger Kontrolle nötig.",
     "petsH3": "Haustiere",
-    "petsP": "Für viele gehören sie zur Familie: Sie erscheinen im Haushalt mit Name und Foto. Spaziergang oder Futter sind Aufgaben der Menschen. Sie sammeln keine Punkte und bekommen kein Taschengeld.",
+    "petsP": "Für viele gehören sie zur Familie: Sie erscheinen im Haushalt mit Name und Foto. Spaziergang oder Futter sind Aufgaben der Menschen.",
     "tabletH3": "Das Küchen-Tablet",
     "tabletP": "Eine große, einfache Ansicht für einen gemeinsamen Platz. Jedes Kind tippt sein Gesicht, sieht, was heute dran ist, und hakt ab, wenn es fertig ist. Routinen laufen Schritt für Schritt, mit einem großen Bild pro Schritt.",
     "outEyebrow": "Was wir weggelassen haben",
@@ -2650,7 +2650,7 @@ export const SITE_COPY = {
       },
       {
         "h2": "Haushalte mit Haustieren",
-        "p": "Das Tier erscheint in der Familie mit Name und Foto. Seine Pflege sind Aufgaben der Menschen: Wer Kira Gassi geht, sammelt die Punkte. Haustiere sammeln keine Punkte, bekommen kein Taschengeld und zählen nicht in Menü-Portionen."
+        "p": "Das Tier erscheint in der Familie mit Name und Foto. Seine Pflege sind Aufgaben der Menschen: Wer Kira Gassi geht, sammelt die Punkte. Sie zählen nicht in Menü-Portionen."
       },
       {
         "h2": "Ein einzelner Erwachsener",
