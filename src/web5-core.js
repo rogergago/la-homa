@@ -15,6 +15,7 @@ function ensureWeb5(s) {
     if (m.inviteStatus != null && !['none', 'pending', 'joined'].includes(m.inviteStatus)) m.inviteStatus = 'none';
     if (m.phone == null) m.phone = '';
     if (m.birthday == null) m.birthday = '';
+    if (!['padre','madre','hijo','hija'].includes(m.relation)) m.relation = '';
   }
   if(typeof s.settings.familyReady!=='boolean'){const people=(s.members||[]).filter(m=>m.active!==false);s.settings.familyReady=!!(s.demo||people.length>1||(s.templates||[]).some(t=>t.active!==false));}
   if(globalThis.HomaI18n&&s.settings.locale)globalThis.HomaI18n.setLocale(s.settings.locale,false);

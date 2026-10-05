@@ -606,10 +606,11 @@
       <section class="grid-2">
         <div class="stack">
           <div class="card">
-            <div class="card-head"><h2>Datos del registro</h2><span class="help">Lo que indicó al crear la cuenta</span></div>
+            <div class="card-head"><h2>Datos del registro</h2><span class="help">Contacto al crear la cuenta · parentesco al crear la familia</span></div>
             <ul class="facts">
               ${fact('Nombre', acc.name)}
               ${fact('Correo', acc.email)}
+              ${fact('Parentesco', ({padre:'Padre',madre:'Madre',hijo:'Hijo',hija:'Hija'})[acc.relation] || '')}
               ${fact('Teléfono', acc.phone)}
               ${fact('Cumpleaños', birthdayLabel)}
               ${fact('País', countryLabel(acc.country))}
@@ -811,10 +812,10 @@
   }
 
   function exportAccounts() {
-    const rows = filteredAccounts().map(acc => [acc.name, acc.email, acc.phone || '', acc.birthday || '', countryLabel(acc.country) || acc.country || '', acc.province || '',
+    const rows = filteredAccounts().map(acc => [acc.name, acc.email, ({padre:'Padre',madre:'Madre',hijo:'Hijo',hija:'Hija'})[acc.relation] || '', acc.phone || '', acc.birthday || '', countryLabel(acc.country) || acc.country || '', acc.province || '',
       provider(acc.provider), acc.householdName || '', acc.role === 'owner' ? 'Titular' : acc.role ? 'Adulto' : '',
       day(acc.createdAt), when(acc.lastSignIn), acc.confirmed ? 'Sí' : 'No', acc.isOperator ? 'Sí' : 'No']);
-    download(`la-homa-cuentas-${stamp()}.csv`, [['Nombre', 'Correo', 'Teléfono', 'Cumpleaños', 'País', 'Provincia', 'Entra con', 'Casa', 'Papel', 'Alta', 'Último acceso', 'Correo confirmado', 'Operadora'], ...rows]);
+    download(`la-homa-cuentas-${stamp()}.csv`, [['Nombre', 'Correo', 'Parentesco', 'Teléfono', 'Cumpleaños', 'País', 'Provincia', 'Entra con', 'Casa', 'Papel', 'Alta', 'Último acceso', 'Correo confirmado', 'Operadora'], ...rows]);
   }
 
   async function mutate(work, text) {

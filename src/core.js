@@ -33,7 +33,7 @@
     }
     return s;
   }
-  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null,birthday:m.birthday||'',phone:m.phone||''};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
+  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null,birthday:m.birthday||'',phone:m.phone||'',relation:['padre','madre','hijo','hija'].includes(m.relation)?m.relation:''};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
   function generateWeek(state, start) {
     if (state.weeks.some(w=>w.start===start)) return state.weeks.find(w=>w.start===start);
     const members=state.members.filter(m=>m.active!==false);

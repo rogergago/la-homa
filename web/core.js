@@ -33,7 +33,7 @@
     }
     return s;
   }
-  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null,birthday:m.birthday||'',phone:m.phone||''};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
+  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null,birthday:m.birthday||'',phone:m.phone||'',relation:['padre','madre','hijo','hija'].includes(m.relation)?m.relation:''};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
   function generateWeek(state, start) {
     if (state.weeks.some(w=>w.start===start)) return state.weeks.find(w=>w.start===start);
     const members=state.members.filter(m=>m.active!==false);
@@ -1325,6 +1325,7 @@ function ensureWeb5(s) {
     if (m.inviteStatus != null && !['none', 'pending', 'joined'].includes(m.inviteStatus)) m.inviteStatus = 'none';
     if (m.phone == null) m.phone = '';
     if (m.birthday == null) m.birthday = '';
+    if (!['padre','madre','hijo','hija'].includes(m.relation)) m.relation = '';
   }
   if(typeof s.settings.familyReady!=='boolean'){const people=(s.members||[]).filter(m=>m.active!==false);s.settings.familyReady=!!(s.demo||people.length>1||(s.templates||[]).some(t=>t.active!==false));}
   if(globalThis.HomaI18n&&s.settings.locale)globalThis.HomaI18n.setLocale(s.settings.locale,false);

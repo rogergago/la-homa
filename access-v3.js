@@ -51,6 +51,7 @@ function syncAdultProfileAuth(profile,name=''){
  if(name)data.name=String(name).slice(0,80);
  if(profile.country)data.country=profile.country;
  if(profile.province)data.province=profile.province;
+ if(profile.relation)data.relation=normalizeRelation(profile.relation);
  access.cloud.auth.updateUser({data}).catch(()=>{});
 }
 function completeAdultProfile(fd){
