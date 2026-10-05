@@ -3,7 +3,5 @@ export {
   getChrome,
   getPageCopy,
   localePath,
-  langSwitcher,
-  homeBody,
-  simplePageBody
+  langSwitcher
 } from './functions/i18n.js';

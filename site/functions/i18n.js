@@ -10,8 +10,6 @@ export const LOCALES = [
   { code: 'de', label: 'Deutsch', htmlLang: 'de', og: 'de_DE', prefix: '/de' }
 ];
 
-const APP = 'https://app.lahoma.app';
-
 const chrome = {
   es: {
     how: 'Cómo funciona', forWhom: 'Para quién es', blog: 'Blog', enter: 'Entrar', create: 'Crear mi casa',
@@ -25,7 +23,7 @@ const chrome = {
   ca: {
     how: 'Com funciona', forWhom: 'Per a qui és', blog: 'Blog', enter: 'Entra', create: 'Crea la meva casa',
     privacy: 'Privadesa', skip: 'Salta al contingut', brandSub: 'Una família. Un equip.',
-    footerTag: 'Tasques, paga, calendari i cuina de tota la família, en un mateix lloc.',
+    footerTag: 'Organització compartida, menys càrrega mental i una llar on tothom participa.',
     footerApp: 'L’app', footerInfo: 'Informació', tagline: 'Una manera més fàcil de viure en família.',
     lang: 'Idioma', notFoundTitle: 'Pàgina no trobada', notFoundH1: 'Aquesta pàgina no existeix.',
     notFoundLede: 'Pot ser que l’adreça estigui mal escrita o que la pàgina s’hagi mogut.',
@@ -34,7 +32,7 @@ const chrome = {
   va: {
     how: 'Com funciona', forWhom: 'Per a qui és', blog: 'Blog', enter: 'Entra', create: 'Crea la meua casa',
     privacy: 'Privacitat', skip: 'Salta al contingut', brandSub: 'Una família. Un equip.',
-    footerTag: 'Faenes, paga, calendari i cuina de tota la família, en un mateix lloc.',
+    footerTag: 'Organització compartida, menys càrrega mental i una llar on tothom participa.',
     footerApp: 'L’app', footerInfo: 'Informació', tagline: 'Una manera més fàcil de viure en família.',
     lang: 'Idioma', notFoundTitle: 'Pàgina no trobada', notFoundH1: 'Esta pàgina no existeix.',
     notFoundLede: 'Pot ser que l’adreça estiga mal escrita o que la pàgina s’haja mogut.',
@@ -43,7 +41,7 @@ const chrome = {
   eu: {
     how: 'Nola funtzionatzen du', forWhom: 'Norentzat da', blog: 'Bloga', enter: 'Sartu', create: 'Sortu nire etxea',
     privacy: 'Pribatutasuna', skip: 'Joan edukira', brandSub: 'Familia bat. Talde bat.',
-    footerTag: 'Familia osoaren lanak, dirua, egutegia eta sukaldea, leku bakarrean.',
+    footerTag: 'Antolaketa partekatua, karga mental gutxiago eta denek parte hartzen duten etxe bat.',
     footerApp: 'Aplikazioa', footerInfo: 'Informazioa', tagline: 'Familian bizitzeko modu errazagoa.',
     lang: 'Hizkuntza', notFoundTitle: 'Orria ez da aurkitu', notFoundH1: 'Orri hau ez da existitzen.',
     notFoundLede: 'Helbidea gaizki idatzita egon daiteke edo orria mugitu da.',
@@ -52,7 +50,7 @@ const chrome = {
   gl: {
     how: 'Como funciona', forWhom: 'Para quen é', blog: 'Blog', enter: 'Entrar', create: 'Crear a miña casa',
     privacy: 'Privacidade', skip: 'Saltar ao contido', brandSub: 'Unha familia. Un equipo.',
-    footerTag: 'Tarefas, paga, calendario e cociña de toda a familia, nun mesmo sitio.',
+    footerTag: 'Organización compartida, menos carga mental e un fogar onde todos participan.',
     footerApp: 'A app', footerInfo: 'Información', tagline: 'Unha forma máis doada de vivir en familia.',
     lang: 'Idioma', notFoundTitle: 'Páxina non atopada', notFoundH1: 'Esta páxina non existe.',
     notFoundLede: 'Pode que o enderezo estea mal escrito ou que a páxina se movese.',
@@ -69,8 +67,8 @@ const chrome = {
   },
   fr: {
     how: 'Comment ça marche', forWhom: 'Pour qui', blog: 'Blog', enter: 'Entrer', create: 'Créer ma maison',
-    privacy: 'Confidentialité', skip: 'Aller au contenu', brandSub: 'Organisation familiale',
-    footerTag: 'Tâches, argent de poche, calendrier et cuisine de toute la famille, au même endroit.',
+    privacy: 'Confidentialité', skip: 'Aller au contenu', brandSub: 'Une famille. Une équipe.',
+    footerTag: 'Organisation partagée, moins de charge mentale et une maison où tout le monde participe.',
     footerApp: 'L’app', footerInfo: 'Informations', tagline: 'Une façon plus simple de vivre en famille.',
     lang: 'Langue', notFoundTitle: 'Page introuvable', notFoundH1: 'Cette page n’existe pas.',
     notFoundLede: 'L’adresse est peut-être incorrecte ou la page a déménagé.',
@@ -78,8 +76,8 @@ const chrome = {
   },
   it: {
     how: 'Come funziona', forWhom: 'Per chi è', blog: 'Blog', enter: 'Entra', create: 'Crea la mia casa',
-    privacy: 'Privacy', skip: 'Vai al contenuto', brandSub: 'Organizzazione familiare',
-    footerTag: 'Compiti, paghetta, calendario e cucina di tutta la famiglia, in un unico posto.',
+    privacy: 'Privacy', skip: 'Vai al contenuto', brandSub: 'Una famiglia. Una squadra.',
+    footerTag: 'Organizzazione condivisa, meno carico mentale e una casa dove tutti partecipano.',
     footerApp: 'L’app', footerInfo: 'Informazioni', tagline: 'Un modo più semplice di vivere in famiglia.',
     lang: 'Lingua', notFoundTitle: 'Pagina non trovata', notFoundH1: 'Questa pagina non esiste.',
     notFoundLede: 'L’indirizzo potrebbe essere sbagliato o la pagina potrebbe essere stata spostata.',
@@ -87,8 +85,8 @@ const chrome = {
   },
   de: {
     how: 'So funktioniert’s', forWhom: 'Für wen', blog: 'Blog', enter: 'Anmelden', create: 'Zuhause erstellen',
-    privacy: 'Datenschutz', skip: 'Zum Inhalt springen', brandSub: 'Familienorganisation',
-    footerTag: 'Aufgaben, Taschengeld, Kalender und Küche der ganzen Familie, an einem Ort.',
+    privacy: 'Datenschutz', skip: 'Zum Inhalt springen', brandSub: 'Eine Familie. Ein Team.',
+    footerTag: 'Geteilte Organisation, weniger mentale Last und ein Zuhause, in dem alle mitmachen.',
     footerApp: 'Die App', footerInfo: 'Informationen', tagline: 'Eine einfachere Art, als Familie zu leben.',
     lang: 'Sprache', notFoundTitle: 'Seite nicht gefunden', notFoundH1: 'Diese Seite gibt es nicht.',
     notFoundLede: 'Die Adresse ist vielleicht falsch oder die Seite wurde verschoben.',
@@ -205,45 +203,14 @@ export function localePath(code, path = '/') {
 
 export function langSwitcher(current, path = '/') {
   const c = getChrome(current);
+  const active = LOCALES.find(l => l.code === current) || LOCALES[0];
   const links = LOCALES.map(l => {
     const href = localePath(l.code, path);
-    const active = l.code === current ? ' aria-current="true"' : '';
-    return `<a href="${href}" hreflang="${l.htmlLang}"${active}>${l.label}</a>`;
+    const selected = l.code === current ? ' aria-current="true"' : '';
+    return `<a href="${href}" hreflang="${l.htmlLang}"${selected}>${l.label}</a>`;
   }).join('');
-  return `<nav class="lang-switch" aria-label="${c.lang}">${links}</nav>`;
-}
-
-export function homeBody(code, extras = {}) {
-  const p = getPageCopy(code);
-  const c = getChrome(code);
-  const { heroMock = '' } = extras;
-  return `
-<section class="hero wrap">
-  <div class="hero-copy">
-    <p class="eyebrow">${c.brandSub}</p>
-    <h1>${p.homeH1}</h1>
-    <p class="lede">${p.homeLede}</p>
-    <div class="actions">
-      <a class="button" href="${APP}">${p.homeCta}</a>
-      <a class="button quiet" href="${localePath(code, '/como-funciona')}">${p.homeSee}</a>
-    </div>
-    <p class="hero-note">${p.homeNote}</p>
-  </div>
-  ${heroMock}
-</section>
-<section class="wrap section">
-  <div class="cta">
-    <h2>${p.homeH1}</h2>
-    <p>${p.homeLede}</p>
-    <div class="actions"><a class="button light" href="${APP}">${p.homeCta}</a></div>
-  </div>
-</section>`;
-}
-
-export function simplePageBody(code, kind) {
-  const p = getPageCopy(code);
-  const c = getChrome(code);
-  const titles = { how: p.howTitle, families: p.familiesTitle, privacy: p.privacyTitle };
-  const descs = { how: p.howDesc, families: p.familiesDesc, privacy: p.privacyDesc };
-  return `<article class="wrap page narrow"><p class="eyebrow">${titles[kind]}</p><h1>${titles[kind]}</h1><p class="lede">${descs[kind]}</p><div class="actions"><a class="button" href="${APP}">${c.create}</a><a class="button quiet" href="${localePath(code, '/')}">${c.homeLink}</a></div></article>`;
+  return `<details class="lang-switch">
+  <summary aria-label="${c.lang}: ${active.label}"><span>${active.label}</span></summary>
+  <div class="lang-menu" role="list">${links}</div>
+</details>`;
 }
