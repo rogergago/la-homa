@@ -122,7 +122,7 @@ function finishGuide(){
      for(const m of pending){
       const inv=await window.HomaCloudTransport.invite(m.email,m.id,m.role==='adult'?'adult':'child');
       transact(s=>{const x=s.members.find(y=>y.id===m.id);if(x)x.inviteStatus='pending';},null);
-      showInviteResult(inv,m.name);
+      showInviteResult(inv,m.name,m.phone||"");
      }
     }catch(err){toast(err.message||t5('invitesCreateFail'),true);}
    });
