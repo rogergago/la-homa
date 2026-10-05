@@ -68,6 +68,26 @@
   const plural = (n, one, many) => `${Number(n || 0)} ${Number(n) === 1 ? one : many}`;
   const percent = (part, total) => total ? Math.round((Number(part || 0) / Number(total)) * 100) : 0;
   const provider = value => value === 'google' ? 'Google' : 'Correo';
+  const COUNTRIES = {
+    ES: 'España', AD: 'Andorra', PT: 'Portugal', FR: 'France', IT: 'Italia', DE: 'Deutschland',
+    GB: 'United Kingdom', US: 'United States', MX: 'México', AR: 'Argentina', CO: 'Colombia',
+    CL: 'Chile', PE: 'Perú', UY: 'Uruguay', OTHER: 'Otro'
+  };
+  const countryLabel = code => {
+    const key = String(code || '').trim();
+    return key ? (COUNTRIES[key] || key) : '';
+  };
+  const fact = (label, value, html) => `<li><span>${esc(label)}</span><b>${value ? (html ? value : esc(value)) : '—'}</b></li>`;
+  function ageYears(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+    const born = new Date(`${iso}T12:00:00`);
+    if (Number.isNaN(born.getTime())) return null;
+    const now = new Date();
+    let years = now.getFullYear() - born.getFullYear();
+    const month = now.getMonth() - born.getMonth();
+    if (month < 0 || (month === 0 && now.getDate() < born.getDate())) years -= 1;
+    return years >= 0 && years < 150 ? years : null;
+  }
   const fullName = contact => [contact?.firstName, contact?.lastName].filter(Boolean).join(' ');
   const phoneDigits = value => String(value || '').replace(/[^\d+]/g, '');
 
@@ -566,6 +586,11 @@
     const acc = data.account;
     const me = session.user.id;
     const canDelete = !acc.isOperator && acc.userId !== me;
+    const years = ageYears(acc.birthday);
+    const digits = phoneDigits(acc.phone);
+    const birthdayLabel = acc.birthday
+      ? `${day(acc.birthday)}${years != null ? ` · ${years} años` : ''}`
+      : '';
     const content = `
       <a class="back" href="#/cuentas">← Todas las cuentas</a>
       <section class="card hero-card">
@@ -574,22 +599,36 @@
           <p class="help">${esc(acc.email)} · Alta el ${esc(day(acc.createdAt))} · Último acceso: ${esc(ago(acc.lastSignIn).toLowerCase())}</p></div></div>
         <div class="hero-actions">
           <a class="button" href="mailto:${esc(acc.email)}">Escribir</a>
+          ${digits.length >= 8 ? `<a class="quiet" href="tel:${esc(digits)}">Llamar</a>` : ''}
           ${acc.householdId ? `<a class="quiet" href="#/familia/${esc(acc.householdId)}">Ver familia</a>` : ''}
         </div>
       </section>
       <section class="grid-2">
-        <div class="card">
-          <div class="card-head"><h2>Datos de la cuenta</h2></div>
-          <ul class="facts">
-            <li><span>Correo</span><b>${esc(acc.email)}</b></li>
-            <li><span>Entra con</span><b>${provider(acc.provider)}</b></li>
-            <li><span>Correo confirmado</span><b>${acc.confirmed ? 'Sí' : 'No'}</b></li>
-            <li><span>Operadora</span><b>${acc.isOperator ? 'Sí' : 'No'}</b></li>
-            <li><span>Casa</span><b>${acc.householdId ? `<a href="#/familia/${esc(acc.householdId)}">${esc(acc.householdName)}</a>` : 'Sin casa'}</b></li>
-            <li><span>Papel</span><b>${acc.householdId ? (acc.role === 'owner' ? 'Titular' : 'Adulto') : '—'}</b></li>
-            <li><span>Alta</span><b>${esc(day(acc.createdAt))}</b></li>
-            <li><span>Último acceso</span><b>${esc(ago(acc.lastSignIn))}</b></li>
-          </ul>
+        <div class="stack">
+          <div class="card">
+            <div class="card-head"><h2>Datos del registro</h2><span class="help">Lo que indicó al crear la cuenta</span></div>
+            <ul class="facts">
+              ${fact('Nombre', acc.name)}
+              ${fact('Correo', acc.email)}
+              ${fact('Teléfono', acc.phone)}
+              ${fact('Cumpleaños', birthdayLabel)}
+              ${fact('País', countryLabel(acc.country))}
+              ${fact('Provincia', acc.province)}
+            </ul>
+            <p class="help">Si faltan datos, la cuenta es anterior al registro completo o entró con Google sin rellenarlos.</p>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Cuenta</h2></div>
+            <ul class="facts">
+              ${fact('Entra con', provider(acc.provider))}
+              ${fact('Correo confirmado', acc.confirmed ? 'Sí' : 'No')}
+              ${fact('Operadora', acc.isOperator ? 'Sí' : 'No')}
+              ${fact('Casa', acc.householdId ? `<a href="#/familia/${esc(acc.householdId)}">${esc(acc.householdName)}</a>` : '', Boolean(acc.householdId))}
+              ${fact('Papel', acc.householdId ? (acc.role === 'owner' ? 'Titular' : 'Adulto') : '')}
+              ${fact('Alta', day(acc.createdAt))}
+              ${fact('Último acceso', ago(acc.lastSignIn))}
+            </ul>
+          </div>
         </div>
         <div class="card danger-zone"><div class="card-head"><h2>Eliminar cuenta</h2></div>
           ${canDelete ? `<p>Borra esta cuenta de autenticación. La persona dejará de poder entrar. Si es la única cuenta de su casa, la casa se queda sin nadie que la abra; en ese caso, mejor elimina la familia.</p>
@@ -772,9 +811,10 @@
   }
 
   function exportAccounts() {
-    const rows = filteredAccounts().map(acc => [acc.name, acc.email, provider(acc.provider), acc.householdName || '', acc.role === 'owner' ? 'Titular' : acc.role ? 'Adulto' : '',
+    const rows = filteredAccounts().map(acc => [acc.name, acc.email, acc.phone || '', acc.birthday || '', countryLabel(acc.country) || acc.country || '', acc.province || '',
+      provider(acc.provider), acc.householdName || '', acc.role === 'owner' ? 'Titular' : acc.role ? 'Adulto' : '',
       day(acc.createdAt), when(acc.lastSignIn), acc.confirmed ? 'Sí' : 'No', acc.isOperator ? 'Sí' : 'No']);
-    download(`la-homa-cuentas-${stamp()}.csv`, [['Nombre', 'Correo', 'Entra con', 'Casa', 'Papel', 'Alta', 'Último acceso', 'Correo confirmado', 'Operadora'], ...rows]);
+    download(`la-homa-cuentas-${stamp()}.csv`, [['Nombre', 'Correo', 'Teléfono', 'Cumpleaños', 'País', 'Provincia', 'Entra con', 'Casa', 'Papel', 'Alta', 'Último acceso', 'Correo confirmado', 'Operadora'], ...rows]);
   }
 
   async function mutate(work, text) {
