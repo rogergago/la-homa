@@ -11,7 +11,7 @@
   let mfa = null;
   let idleTimer = null;
   const IDLE_MS = 30 * 60 * 1000;
-  const data = { dashboard: null, households: null, accounts: null, posts: null, log: null, detail: null };
+  const data = { dashboard: null, households: null, accounts: null, posts: null, log: null, detail: null, account: null };
   const ui = { familyQuery: '', familyStatus: 'todas', familySort: 'recientes', accountQuery: '', accountFilter: 'todas' };
 
   const STATUS = {
@@ -217,7 +217,7 @@
 
   function layout(title, subtitle, content, tools) {
     const current = route().section;
-    const active = current === 'familia' ? 'familias' : current;
+    const active = current === 'familia' ? 'familias' : current === 'cuenta' ? 'cuentas' : current;
     app.className = 'shell';
     app.innerHTML = `
       <aside class="side">
@@ -488,7 +488,7 @@
             <td>${acc.revokedAt ? '<span class="badge bad">Sin acceso</span>' : '<span class="badge ok">Con acceso</span>'}</td>
             <td class="row-actions">${acc.revokedAt
               ? `<button class="quiet small" type="button" data-action="restore-access" data-user="${esc(acc.userId)}">Devolver acceso</button>`
-              : acc.userId === me ? '' : `<button class="danger small" type="button" data-action="revoke-access" data-user="${esc(acc.userId)}" data-email="${esc(acc.email)}">Quitar acceso</button>`}</td>
+              : acc.userId === me ? '' : `<button class="danger small" type="button" data-action="revoke-access" data-user="${esc(acc.userId)}" data-email="${esc(acc.email)}">Quitar acceso</button>`}${acc.isOperator || acc.userId === me ? '' : `<button class="danger small" type="button" data-action="delete-account" data-user="${esc(acc.userId)}" data-email="${esc(acc.email)}">Eliminar cuenta</button>`}</td>
           </tr>`).join('') : '<tr><td colspan="7" class="empty-row">Esta casa no tiene ninguna cuenta. Nadie puede abrirla.</td></tr>'}</tbody>
         </table></div>
       </section>
@@ -534,16 +534,14 @@
 
   function accountRows() {
     const rows = filteredAccounts();
-    const me = session.user.id;
-    if (!rows.length) return '<tr><td colspan="7" class="empty-row">Ninguna cuenta coincide.</td></tr>';
-    return rows.map(acc => `<tr>
-      <td><b>${esc(acc.name || 'Sin nombre')}</b><small>${esc(acc.email)}</small></td>
+    if (!rows.length) return '<tr><td colspan="6" class="empty-row">Ninguna cuenta coincide.</td></tr>';
+    return rows.map(acc => `<tr class="clickable" data-action="open-account" data-user="${esc(acc.userId)}">
+      <td><a href="#/cuenta/${esc(acc.userId)}" class="strong">${esc(acc.name || 'Sin nombre')}</a><small>${esc(acc.email)}</small></td>
       <td>${provider(acc.provider)}</td>
       <td>${acc.householdId ? `<a href="#/familia/${esc(acc.householdId)}">${esc(acc.householdName)}</a><small>${acc.role === 'owner' ? 'Titular' : 'Adulto'}</small>` : '<span class="muted">Sin casa</span>'}</td>
       <td>${esc(day(acc.createdAt))}</td>
       <td>${esc(ago(acc.lastSignIn))}</td>
       <td>${acc.isOperator ? '<span class="badge new">Operadora</span> ' : ''}${acc.confirmed ? '<span class="badge ok">Confirmada</span>' : '<span class="badge warn">Sin confirmar</span>'}</td>
-      <td class="row-actions"><a class="quiet small" href="mailto:${esc(acc.email)}">Escribir</a>${acc.isOperator || acc.userId === me ? '' : `<button class="danger small" type="button" data-action="delete-account" data-user="${esc(acc.userId)}" data-email="${esc(acc.email)}">Eliminar</button>`}</td>
     </tr>`).join('');
   }
 
@@ -556,12 +554,50 @@
           <label class="select"><span class="sr">Filtro</span><select data-filter="accountFilter">${option('todas', 'Todas las cuentas')}${option('con-casa', 'Con casa')}${option('sin-casa', 'Sin casa')}${option('sin-confirmar', 'Sin confirmar')}${option('google', 'Entran con Google')}${option('operadoras', 'Operadoras')}</select></label>
         </div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Persona</th><th>Entra con</th><th>Casa</th><th>Alta</th><th>Último acceso</th><th>Estado</th><th></th></tr></thead>
+          <thead><tr><th>Persona</th><th>Entra con</th><th>Casa</th><th>Alta</th><th>Último acceso</th><th>Estado</th></tr></thead>
           <tbody id="rows">${accountRows()}</tbody>
         </table></div>
       </section>`;
-    layout('Cuentas', 'Todas las personas adultas registradas. Los niños no tienen cuenta y no aparecen aquí.', content,
+    layout('Cuentas', 'Todas las personas adultas registradas. Los niños no tienen cuenta y no aparecen aquí. Pulsa una fila para ver la ficha.', content,
       '<button class="quiet" type="button" data-action="export-accounts">Exportar CSV</button>');
+  }
+
+  function cuentaView() {
+    const acc = data.account;
+    const me = session.user.id;
+    const canDelete = !acc.isOperator && acc.userId !== me;
+    const content = `
+      <a class="back" href="#/cuentas">← Todas las cuentas</a>
+      <section class="card hero-card">
+        <div class="hero-main"><span class="avatar big">${esc((acc.name || acc.email || '?').slice(0, 1).toUpperCase())}</span>
+          <div><h2>${esc(acc.name || 'Sin nombre')}</h2>
+          <p class="help">${esc(acc.email)} · Alta el ${esc(day(acc.createdAt))} · Último acceso: ${esc(ago(acc.lastSignIn).toLowerCase())}</p></div></div>
+        <div class="hero-actions">
+          <a class="button" href="mailto:${esc(acc.email)}">Escribir</a>
+          ${acc.householdId ? `<a class="quiet" href="#/familia/${esc(acc.householdId)}">Ver familia</a>` : ''}
+        </div>
+      </section>
+      <section class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Datos de la cuenta</h2></div>
+          <ul class="facts">
+            <li><span>Correo</span><b>${esc(acc.email)}</b></li>
+            <li><span>Entra con</span><b>${provider(acc.provider)}</b></li>
+            <li><span>Correo confirmado</span><b>${acc.confirmed ? 'Sí' : 'No'}</b></li>
+            <li><span>Operadora</span><b>${acc.isOperator ? 'Sí' : 'No'}</b></li>
+            <li><span>Casa</span><b>${acc.householdId ? `<a href="#/familia/${esc(acc.householdId)}">${esc(acc.householdName)}</a>` : 'Sin casa'}</b></li>
+            <li><span>Papel</span><b>${acc.householdId ? (acc.role === 'owner' ? 'Titular' : 'Adulto') : '—'}</b></li>
+            <li><span>Alta</span><b>${esc(day(acc.createdAt))}</b></li>
+            <li><span>Último acceso</span><b>${esc(ago(acc.lastSignIn))}</b></li>
+          </ul>
+        </div>
+        <div class="card danger-zone"><div class="card-head"><h2>Eliminar cuenta</h2></div>
+          ${canDelete ? `<p>Borra esta cuenta de autenticación. La persona dejará de poder entrar. Si es la única cuenta de su casa, la casa se queda sin nadie que la abra; en ese caso, mejor elimina la familia.</p>
+          <p class="help">Tu cuenta y las de otras operadoras no se pueden borrar desde aquí.</p>
+          <div class="actions"><button class="danger solid" type="button" data-action="delete-account" data-user="${esc(acc.userId)}" data-email="${esc(acc.email)}">Eliminar esta cuenta</button></div>`
+          : `<p class="help">${acc.userId === me ? 'No puedes eliminar tu propia cuenta.' : 'Las cuentas de operadora no se pueden eliminar desde el panel.'}</p>`}</div>
+      </section>`;
+    layout('Ficha de cuenta', '', content);
   }
 
   // Artículos
@@ -631,6 +667,11 @@
       } else if (section === 'cuentas') {
         if (!data.accounts) { loading('Cuentas'); data.accounts = await rpc('homa_admin_accounts'); }
         cuentasView();
+      } else if (section === 'cuenta' && id) {
+        if (!data.accounts) { loading('Cuenta'); data.accounts = await rpc('homa_admin_accounts'); }
+        data.account = (data.accounts || []).find(acc => acc.userId === id) || null;
+        if (!data.account) { say('Esa cuenta no existe o ya se eliminó.', true); location.hash = '#/cuentas'; return; }
+        cuentaView();
       } else if (section === 'articulos') {
         if (!data.posts) { loading('Artículos'); await loadPosts(); }
         articulosView();
@@ -645,6 +686,7 @@
       if (/MFA_REQUIRED|código de verificación/i.test(String(err.message || ''))) return;
       say(err.message, true);
       if (section === 'familia') { data.detail = null; location.hash = '#/familias'; return; }
+      if (section === 'cuenta') { data.account = null; location.hash = '#/cuentas'; return; }
       layout('No se pudieron leer los datos', '', '<div class="card empty"><p class="help">Comprueba la conexión y pulsa Actualizar.</p></div>');
     }
   }
@@ -787,7 +829,27 @@
       danger: true
     });
     if (!answer) return;
-    await mutate(() => rpc('homa_admin_delete_account', { p_user: userId, p_confirm: email }), `Cuenta ${email} eliminada.`);
+    const fromAccount = route().section === 'cuenta';
+    const fromFamily = route().section === 'familia' && data.detail;
+    try {
+      await rpc('homa_admin_delete_account', { p_user: userId, p_confirm: email });
+      say(`Cuenta ${email} eliminada.`);
+      invalidate();
+      data.account = null;
+      if (fromFamily) {
+        data.detail = await rpc('homa_admin_household', { p_id: data.detail.id });
+        await show();
+        return;
+      }
+      if (fromAccount) {
+        location.hash = '#/cuentas';
+        return;
+      }
+      await show();
+    } catch (err) {
+      say(err.message, true);
+      await show();
+    }
   }
 
   async function onRevoke(userId, email) {
@@ -812,7 +874,8 @@
   async function onAction(target) {
     const { action, id, user, email } = target.dataset;
     if (action === 'open-family') { location.hash = `#/familia/${id}`; return; }
-    if (action === 'reload') { invalidate(); data.posts = null; if (data.detail) data.detail = null; await show(); return; }
+    if (action === 'open-account') { location.hash = `#/cuenta/${user}`; return; }
+    if (action === 'reload') { invalidate(); data.posts = null; data.account = null; if (data.detail) data.detail = null; await show(); return; }
     if (action === 'logout') { await logout(); return; }
     if (action === 'boot') { await boot(); return; }
     if (action === 'password') { await onPassword(); return; }
@@ -973,6 +1036,7 @@
     const target = event.target.closest('[data-action]');
     if (!target) return;
     if (target.dataset.action === 'open-family' && event.target.closest('a, button')) return;
+    if (target.dataset.action === 'open-account' && event.target.closest('a, button')) return;
     event.preventDefault();
     onAction(target);
   });
