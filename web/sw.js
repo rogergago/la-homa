@@ -1,4 +1,4 @@
-const CACHE='lahoma-7a17e5feafd6',SHELL=["./","./index.html","./core.js","./app.js","./styles.css","./entity-sync.js","./asset-store.js","./recipe-import.js","./cloud-transport.js","./i18n.js","./supabase.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
+const CACHE='lahoma-5f16605188b3',SHELL=["./","./index.html","./core.js","./app.js","./styles.css","./entity-sync.js","./asset-store.js","./recipe-import.js","./cloud-transport.js","./i18n.js","./supabase.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('lahoma-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting();});
