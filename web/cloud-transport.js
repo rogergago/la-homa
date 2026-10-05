@@ -104,6 +104,8 @@
     const msg = error?.message || String(error || '');
     if (/VERSION_CONFLICT/.test(msg)) return 'Otro dispositivo ha cambiado este dato. Pulsa «Recargar desde la nube» y repite el cambio.';
     if (/INVITE_INVALID/.test(msg)) return 'El código de invitación no es válido, ya se usó o ha caducado.';
+    if (/INVITE_EMAIL_MISMATCH/.test(msg)) return 'Esta invitación es para otro correo. Entra con el correo invitado.';
+    if (/INVALID_EMAIL/.test(msg)) return 'Revisa el correo de la invitación.';
     if (/ALREADY_IN_HOUSEHOLD/.test(msg)) return 'Esta cuenta ya pertenece a un hogar.';
     if (/TOO_MANY_ATTEMPTS/.test(msg)) return 'Demasiados códigos incorrectos. Espera una hora o pide un código nuevo.';
     if (/TOO_MANY_INVITES/.test(msg)) return 'Ya hay 10 invitaciones sin usar. Espera a que se usen o caduquen.';
@@ -158,10 +160,12 @@
     async activate(session, name, inviteCode) {
       const client = await this.clientFor(session);
       const code = String(inviteCode || '').trim().toLowerCase();
+      let inviteMeta = null;
       if (code) {
         const { data: joined, error } = await client.rpc('homa_accept', { p_code: code });
         if (error) throw new Error(explain(error));
         if (!joined) throw new Error(explain('INVITE_INVALID'));
+        inviteMeta = typeof joined === 'object' ? joined : { householdId: joined };
       }
       const { data: householdId, error } = await client.rpc('homa_bootstrap', { p_name: String(name || 'Mi hogar').slice(0, 120) });
       if (error) throw new Error(explain(error));
@@ -175,6 +179,7 @@
         state.settings.familyName = 'Familia de ' + (name || 'casa');
         state.settings.pin = null;
         state.settings.teamReward = 'Un plan en familia';
+        state.settings.allowAdultsSwitchProfiles = false;
         const member = { id: Core.uid('member'), name: name || 'Adulto', avatar: '🧑', color: '#8b6ce0', role: 'adult', age: null, active: true };
         state.settings.familyReady = false;
         state.members = [member];
@@ -184,8 +189,9 @@
         state.updatedAt = new Date().toISOString();
         Core.validateState(state);
       }
+      const link = await this.myLink();
       this.listen();
-      return { state, householdId, revision: 0 };
+      return { state, householdId, revision: 0, membership: link, invite: inviteMeta };
     },
     async pull() {
       const { data, error } = await this.client.rpc('homa_pull');
@@ -227,10 +233,25 @@
         if (this.refreshAgain) { this.refreshAgain = false; this.refresh(); }
       }
     },
-    async invite() {
-      const { data, error } = await this.client.rpc('homa_invite');
+    async invite(email = '', memberId = null, role = 'adult') {
+      const { data, error } = await this.client.rpc('homa_invite_person', {
+        p_email: String(email || '').trim().toLowerCase(),
+        p_member_id: memberId || null,
+        p_role: role === 'child' || role === 'member' ? 'child' : 'adult'
+      });
       if (error) throw new Error(explain(error));
-      return String(data || '');
+      if (data && typeof data === 'object') return data;
+      return { code: String(data || ''), email: String(email || ''), role: role === 'child' || role === 'member' ? 'child' : 'adult', memberId: memberId || null };
+    },
+    async myLink() {
+      const { data, error } = await this.client.rpc('homa_my_link');
+      if (error) throw new Error(explain(error));
+      const row = data && typeof data === 'object' ? data : {};
+      return {
+        role: row.role || null,
+        linkedMemberId: row.linkedMemberId || row.linked_member_id || null,
+        isOwner: !!(row.isOwner ?? row.is_owner)
+      };
     },
     listen() {
       if (!this.client || !this.householdId || this.channel) return;

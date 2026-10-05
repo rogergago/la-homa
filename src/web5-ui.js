@@ -14,14 +14,14 @@ function guideDraft(){
  if(ui.guide)return ui.guide;
  const adult=state.members.find(m=>m.role==='adult'&&m.active!==false);
  const given=String(adult?.name||'');
- ui.guide={step:0,familyName:state.settings.familyName||'',adultName:given==='Adulto'?'':given,people:[{name:'',role:'member'}],pets:[{name:'',species:'perro'}]};
+ ui.guide={step:0,familyName:state.settings.familyName||'',adultName:given==='Adulto'?'':given,people:[{name:'',role:'member',email:''}],pets:[{name:'',species:'perro'}]};
  return ui.guide;
 }
 function readGuide(form){
  const g=guideDraft();if(!form)return g;
  if(form.elements.familyName)g.familyName=form.elements.familyName.value;
  if(form.elements.adultName)g.adultName=form.elements.adultName.value;
- const people=[...form.querySelectorAll('[data-guide-person]')].map(row=>({name:row.querySelector('[name=personName]').value,role:row.querySelector('[name=personRole]').value}));
+ const people=[...form.querySelectorAll('[data-guide-person]')].map(row=>({name:row.querySelector('[name=personName]').value,role:row.querySelector('[name=personRole]').value,email:(row.querySelector('[name=personEmail]')?.value||'').trim().toLowerCase()}));
  const pets=[...form.querySelectorAll('[data-guide-pet]')].map(row=>({name:row.querySelector('[name=petName]').value,species:row.querySelector('[name=petSpecies]').value}));
  if(people.length)g.people=people;if(pets.length)g.pets=pets;return g;
 }
@@ -33,18 +33,32 @@ function finishGuide(){
   s.settings.familyName=family.slice(0,80);s.settings.familyReady=true;
   const adult=s.members.find(m=>m.role==='adult'&&m.active!==false);if(adult)adult.name=adultName.slice(0,80);
   let n=s.members.length;
-  for(const p of g.people){const name=p.name.trim();if(!name)continue;s.members.push({id:C.uid('member'),name:name.slice(0,80),role:p.role==='adult'?'adult':'member',avatar:p.role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[n%colors.length],age:null,active:true});n++;}
+  for(const p of g.people){const name=p.name.trim();if(!name)continue;const email=String(p.email||'').trim().toLowerCase();s.members.push({id:C.uid('member'),name:name.slice(0,80),role:p.role==='adult'?'adult':'member',avatar:p.role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[n%colors.length],age:null,active:true,email:email||'',inviteStatus:'none'});n++;}
   for(const p of g.pets){const name=p.name.trim();if(!name)continue;const species=['perro','gato','otro'].includes(p.species)?p.species:'otro';s.members.push({id:C.uid('member'),name:name.slice(0,80),role:'pet',species,avatar:petEmoji[species],color:colors[n%colors.length],age:null,active:true});n++;}
   const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
   if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
  },t5('familyReady'));
  if(!ok)return;
  ui.guide=null;ui.view='home';ui.tour={step:0};render();
+ if(access.mode==='cloud'&&typeof canManageInvites==='function'&&canManageInvites()){
+  const pending=state.members.filter(m=>m.active!==false&&m.role!=='pet'&&m.email&&m.inviteStatus!=='joined'&&m.userId!==access.user?.id);
+  if(pending.length){
+   queueMicrotask(async()=>{
+    try{
+     for(const m of pending){
+      const inv=await window.HomaCloudTransport.invite(m.email,m.id,m.role==='adult'?'adult':'child');
+      transact(s=>{const x=s.members.find(y=>y.id===m.id);if(x)x.inviteStatus='pending';},null);
+      showInviteResult(inv,m.name);
+     }
+    }catch(err){toast(err.message||'No se pudieron crear las invitaciones.',true);}
+   });
+  }
+ }
 }
 function renderFamilyGuide(){
  const g=guideDraft(),step=g.step,titles=[t5('guideTitle0'),t5('guideTitle1'),t5('guideTitle2')];
  const body=step===0?`${field(t5('familyName'),'familyName',g.familyName,'text','required maxlength="80" placeholder="Familia"')}${field(t5('adultName'),'adultName',g.adultName,'text','required maxlength="80"')}<p class="small muted">${esc(t5('guideAdultHint'))}</p>`
-  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p>${g.people.map((p,i)=>`<div class="guide-row" data-guide-person><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRole"><option value="member" ${p.role!=='adult'?'selected':''}>${esc(t5('child'))}</option><option value="adult" ${p.role==='adult'?'selected':''}>${esc(t5('adult'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
+  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p><p class="tiny muted mb">${esc(t5('guideEmailHint'))}</p>${g.people.map((p,i)=>`<div class="guide-person" data-guide-person><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRole"><option value="member" ${p.role!=='adult'?'selected':''}>${esc(t5('child'))}</option><option value="adult" ${p.role==='adult'?'selected':''}>${esc(t5('adult'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('optionalEmail'))}</span><input name="personEmail" type="email" maxlength="254" value="${esc(p.email||'')}" placeholder="opcional@correo.com"></label></div>`).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
   :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('guideEyebrow'))}</span><h1>${esc(t5('guideStoryTitle'))}</h1><p>${esc(t5('guideStoryText'))}</p><label class="field mt"><span>${esc(t5('chooseLang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(window.HomaI18n.getLocale()):'<option value="es">Español</option>'}</select></label></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">${esc(t5('guideStep',{n:step+1}))}</span><h2>${esc(titles[step])}</h2>${body}<div class="guide-actions">${step?btn(t5('back'),'guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?esc(t5('enterHome')):esc(t5('continue'))}</button></div></form></section></div>`;
 }
@@ -72,7 +86,7 @@ function render(){
   if(access.blocked){enhanceAuth5();return;}
   if(ui.view==='kitchen'){writeRoute5();return;}
   const group=group5(),nav=$('.sidebar-nav');
-  if(nav){const groups=isAdult()?groups5():[{id:'member',name:t5('navTasks'),icon:'tasks',views:['member','tasks','routines']},{id:'money',name:t5('setupMoney'),icon:'wallet',views:['money']},{id:'rewards',name:'★',icon:'gift',views:['rewards']},{id:'events',name:t5('navCalendar'),icon:'calendar',views:['events','calendar']}];nav.innerHTML=groups.map(g=>`<button type="button" class="nav-link ${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}${esc(g.name)}</button>`).join('')+`<div class="nav-label">${esc(t5('navShared'))}</div><button type="button" class="nav-link" data-action="nav" data-view="kitchen">${icon('tablet')}${esc(t5('tabletView'))}</button>`;}
+  if(nav){const groups=isAdult()?groups5():[{id:'member',name:t5('navTasks'),icon:'tasks',views:['member','tasks','routines']},{id:'money',name:t5('setupMoney'),icon:'wallet',views:['money']},{id:'rewards',name:'★',icon:'gift',views:['rewards']},{id:'events',name:t5('navCalendar'),icon:'calendar',views:['events','calendar']}];nav.innerHTML=groups.map(g=>`<button type="button" class="nav-link ${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}${esc(g.name)}</button>`).join('')+(typeof canSwitchProfiles==='function'&&canSwitchProfiles()?`<div class="nav-label">${esc(t5('navShared'))}</div><button type="button" class="nav-link" data-action="nav" data-view="kitchen">${icon('tablet')}${esc(t5('tabletView'))}</button>`:'');}
   const mobile=$('.bottom-nav');if(mobile){const groups=isAdult()?groups5():[{id:'member',name:t5('navTasks'),icon:'tasks',views:['member','tasks','routines']},{id:'money',name:t5('setupMoney'),icon:'wallet',views:['money']},{id:'rewards',name:'★',icon:'gift',views:['rewards']},{id:'events',name:t5('navCalendar'),icon:'calendar',views:['events','calendar']}];mobile.innerHTML=groups.map(g=>`<button type="button" class="${g.views.includes(ui.view)?'active':''}" data-action="nav" data-view="${g.id}" ${g.views.includes(ui.view)?'aria-current="page"':''}>${icon(g.icon)}<span>${esc(g.name)}</span></button>`).join('');}
   const main=$('#main-content');
   if(main){main.setAttribute('tabindex','-1');let views=isAdult()?group.views.filter(v=>v!=='member'):ui.view==='member'||ui.view==='tasks'||ui.view==='routines'?['member','tasks','routines']:ui.view==='calendar'||ui.view==='events'?['events','calendar']:[];
@@ -173,14 +187,14 @@ async function web5Action(a,d,el,event){
  case 'backup-export':{if(!needAdult())return true;const bundle=await window.HomaAssets.exportBundle(KEY,state.eventFiles.map(f=>f.id));downloadFile('la-homa-copia-completa-'+C.iso()+'.json',JSON.stringify({...state,assetBundle:bundle},null,2),'application/json');toast('Copia completa creada, incluidos los adjuntos disponibles.');return true;}
  case 'web5-forgot':resetPassword5();return true;
  case 'guide-back':{const g=readGuide($('#family-guide'));g.step=Math.max(0,g.step-1);render();return true;}
- case 'guide-add':{const g=readGuide($('#family-guide'));if(d.kind==='pet')g.pets.push({name:'',species:'perro'});else g.people.push({name:'',role:'member'});render();return true;}
+ case 'guide-add':{const g=readGuide($('#family-guide'));if(d.kind==='pet')g.pets.push({name:'',species:'perro'});else g.people.push({name:'',role:'member',email:''});render();return true;}
  case 'guide-remove':{const g=readGuide($('#family-guide'));const list=d.kind==='pet'?g.pets:g.people;const i=Number(d.index);if(list.length<=1)list[0].name='';else list.splice(i,1);render();return true;}
  case 'web5-timezone':openModal('Zona horaria del hogar',`${field('Zona horaria IANA','zone',state.settings.timeZone,'text','required maxlength="80" placeholder="Europe/Madrid"')}<p class="note">Se guarda una sola zona para el hogar. El servidor la usar\u00e1 al activar la nube. Este prototipo a\u00fan usa el reloj del dispositivo para las operaciones locales.</p>${footer('Guardar')}`,fd=>transact(s=>{new Intl.DateTimeFormat('es',{timeZone:fd.get('zone')});s.settings.timeZone=fd.get('zone');},'Zona horaria guardada.'));return true;
  case 'web5-connections':openModal('Conexiones de la web',`<div class="connection-row"><b>Datos locales</b><span>Activos en este navegador</span></div><div class="connection-row"><b>Cuenta y base de datos web</b><span>${cloudConfigured()?'Conectada a Supabase':'Pendiente de conectar Supabase'}</span></div><div class="connection-row"><b>Google Calendar</b><span>Pendiente de autorizar una conexi\u00f3n de calendario; iniciar sesi\u00f3n con Google no la activa</span></div><div class="connection-row"><b>Apple Calendar</b><span>Intercambio ICS; suscripci\u00f3n privada prevista en servidor</span></div><div class="connection-row"><b>Avisos con la web cerrada</b><span>Pendiente de servicio de env\u00edo y permisos</span></div><p class="note mt">El proyecto incluye la gu\u00eda de despliegue y el estado real de cada integraci\u00f3n. No se muestran conexiones simuladas.</p><div class="modal-footer">${btn('Entendido','close','','primary')}</div>`);return true;
  }
  return false;
 }
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
 document.addEventListener('submit',e=>{if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
 window.addEventListener('beforeunload',e=>{if($('#modal')?.open&&modalSubmit&&web5.modalInitial&&modalSnapshot5()!==web5.modalInitial){e.preventDefault();e.returnValue='';}});
 $('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});

@@ -1294,7 +1294,12 @@ function ensureWeb5(s) {
   s.taskReviewRequests ||= []; s.savedMenus ||= []; s.eventFiles ||= []; s.notifications ||= [];
   s.settings.notifications ||= {enabled:true,events:true,checklists:true,approvals:true,allowance:true,leadMinutes:60,quietStart:'21:00',quietEnd:'08:00'};
   for (const x of s.shopping||[]) x.listId ||= 'groceries';
-  s.settings.onboardingDismissed ??= false; s.settings.tutorialDismissed ??= !!s.settings.familyReady; s.settings.locale ||= (globalThis.HomaI18n?.getLocale?.() || 'es'); s.usualProducts ||= [];
+  s.settings.onboardingDismissed ??= false; s.settings.tutorialDismissed ??= !!s.settings.familyReady; s.settings.locale ||= (globalThis.HomaI18n?.getLocale?.() || 'es'); s.settings.allowAdultsSwitchProfiles ??= false; s.usualProducts ||= [];
+  for (const m of s.members || []) {
+    if (m.email != null) m.email = String(m.email).trim().toLowerCase().slice(0, 254);
+    if (m.userId != null) m.userId = String(m.userId).slice(0, 80);
+    if (m.inviteStatus != null && !['none', 'pending', 'joined'].includes(m.inviteStatus)) m.inviteStatus = 'none';
+  }
   if(typeof s.settings.familyReady!=='boolean'){const people=(s.members||[]).filter(m=>m.active!==false);s.settings.familyReady=!!(s.demo||people.length>1||(s.templates||[]).some(t=>t.active!==false));}
   if(globalThis.HomaI18n&&s.settings.locale)globalThis.HomaI18n.setLocale(s.settings.locale,false);
   for(const x of s.shopping||[])if(x.checked&&!s.usualProducts.some(y=>foodKey(y.name)===foodKey(x.name)))s.usualProducts.push({...copy(x),id:uid('usual')});
