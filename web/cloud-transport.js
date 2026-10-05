@@ -180,7 +180,7 @@
         state.settings.pin = null;
         state.settings.teamReward = 'Un plan en familia';
         state.settings.allowAdultsSwitchProfiles = false;
-        const member = { id: Core.uid('member'), name: name || 'Adulto', avatar: '🧑', color: '#8b6ce0', role: 'adult', age: null, active: true };
+        const member = { id: Core.uid('member'), name: name || 'Adulto', avatar: '🧑', color: '#8b6ce0', role: 'adult', age: null, birthday: '', phone: '', active: true };
         state.settings.familyReady = false;
         state.members = [member];
         for (const key of ['templates', 'rewards', 'weeks', 'events', 'shopping', 'mealPlan', 'routines', 'absences', 'swaps', 'preparations', 'pantry', 'vouchers', 'meetings', 'houseLog', 'presencePlans', 'presenceOverrides', 'taskReviewRequests', 'savedMenus', 'eventFiles', 'notifications', 'usualProducts']) state[key] = [];

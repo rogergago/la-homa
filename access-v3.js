@@ -3,6 +3,22 @@ if(typeof t!=='function'){var t=(k,v)=>{const i18n=typeof window!=='undefined'?w
  * The persistent local session key is a convenience, not a bank-grade lock.
  * No data leaves this browser unless cloud configuration and login are provided.
  */
+const normalizePhone=v=>String(v||'').trim().replace(/[^\d+]/g,'').slice(0,40);
+const validPhone=v=>{const d=String(v||'').replace(/\D/g,'');return d.length>=9&&d.length<=15;};
+const readProfileFields=fd=>{
+ const birthday=String(fd.get('birthday')||'').trim();
+ const phone=normalizePhone(fd.get('phone'));
+ const country=String(fd.get('country')||'').trim().slice(0,80);
+ const province=String(fd.get('province')||'').trim().slice(0,80);
+ return {birthday,phone,country,province};
+};
+const requireAdultProfile=(p,{needLocation=false}={})=>{
+ if(!p.birthday||!C.validDate(p.birthday)||p.birthday>C.iso())throw new Error(t('birthdayInvalid'));
+ if(!validPhone(p.phone))throw new Error(t('phoneInvalid'));
+ if(needLocation){if(!p.country)throw new Error(t('countryRequired'));if(!p.province)throw new Error(t('provinceRequired'));}
+ const age=C.ageFromBirthday(p.birthday);
+ return {...p,age};
+};
 
 const ACCESS_SESSION='family-points-v3-session',ACCESS_CONFIG='family-points-v3-cloud-config';
 const access={blocked:true,mode:'guest',user:null,key:null,rawKey:null,record:null,tab:'login',target:'cloud',busy:false,message:'',error:false,pending:0,saveError:'',chain:Promise.resolve(),cloud:null,revision:0,suppress:false,cloudPending:null,pendingInvite:'',membership:null};
@@ -22,9 +38,12 @@ async function passwordKey(password,salt){
 }
 async function seal(data,key){const iv=crypto.getRandomValues(new Uint8Array(12));return {iv:toB64(iv),data:toB64(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(data))))};}
 async function unseal(vault,key){return C.validateState(JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(vault.iv)},key,fromB64(vault.data)))));}
-function freshFamily(name){
+function freshFamily(name,profile={}){
  const s=C.seed();s.demo=false;s.settings.familyName='Familia de '+name;s.settings.pin=null;s.settings.teamReward='Un plan en familia';
- const m={id:C.uid('member'),name,avatar:'\u{1F9D1}',color:'#8b6ce0',role:'adult',age:null,active:true};s.members=[m];
+ s.settings.country=profile.country||'';s.settings.province=profile.province||'';s.settings.familyReady=false;
+ const age=profile.birthday?C.ageFromBirthday(profile.birthday):null;
+ const m={id:C.uid('member'),name,avatar:'\u{1F9D1}',color:'#8b6ce0',role:'adult',age,birthday:profile.birthday||'',phone:profile.phone||'',active:true};
+ s.members=[m];
  for(const n of ['templates','rewards','weeks','events','shopping','mealPlan','routines','absences','swaps','preparations','pantry','vouchers','meetings','houseLog','presencePlans','presenceOverrides','taskReviewRequests','savedMenus','eventFiles','notifications','usualProducts'])s[n]=[];
  s.finance={accounts:[],ledger:[],dues:[],requests:[],goals:[],labs:[],savingsPlans:[]};C.generateWeek(s,C.monday());s.updatedAt=new Date().toISOString();C.validateState(s);return s;
 }
@@ -64,7 +83,7 @@ function renderAuth(){
  const signup=access.tab==='register',cloud=access.target==='cloud',configured=cloudConfigured()&&cloudOriginReady(),cfg=cloudConfig();
  const lang=window.HomaI18n?window.HomaI18n.getLocale():'es';
  const title=signup?t('authTitleRegister'):t('authTitleLogin');
- return `<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t('authEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(t('authSub'))}</p></section><section class="auth-panel"><div class="auth-card"><label class="field"><span>${esc(t('chooseLang'))}</span><select name="locale" data-change="app-locale" aria-label="${esc(t('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(lang):'<option value="es">Español</option>'}</select></label><h2>${esc(title)}</h2><p class="auth-sub">${esc(t('authSub'))}</p>${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}${cloud&&!configured?`<div class="note warning mb">${esc(t('cloudNotReady'))}${location.protocol==='file:'?esc(t('openAppUrl')):esc(t('reloadPage'))}</div>`:''}<form id="access-form"><input type="hidden" name="target" value="${access.target}">${signup?field(t('name'),'name','','text','required maxlength="60" autocomplete="given-name"'):''}${field(t('email'),'email','','email','required maxlength="254" autocomplete="username"')}${field(t('password'),'password','','password',`required minlength="${signup?10:1}" maxlength="200" autocomplete="${signup?'new-password':'current-password'}"`)}${signup?`${field(t('repeat'),'repeat','','password','required minlength="10" maxlength="200" autocomplete="new-password"')}${cloud?field(t('invite'),'invite','','text','maxlength="32" autocomplete="off"'):''}`:''}<button type="submit" class="btn primary wide" ${access.busy||(cloud&&!configured)?'disabled':''}>${access.busy?esc(t('checking')):signup?esc(t('register')):esc(t('login'))}</button></form><div class="auth-switch">${signup?esc(t('haveAccount')):esc(t('noAccount'))} <button type="button" class="text-btn" data-action="access-tab" data-tab="${signup?'login':'register'}">${signup?esc(t('login')):esc(t('register'))}</button></div><div class="auth-divider"><span>${esc(t('orContinue'))}</span></div><div class="social-buttons"><button type="button" class="btn secondary" data-action="access-oauth" data-provider="google" ${!configured?'disabled':''}><b>G</b> ${esc(t('googleBtn'))}</button></div><p class="tiny muted center mt">${esc(t('kidsNote'))}</p><p class="tiny muted">${esc(t('sessionNote'))}</p><p class="tiny muted center mt"><a href="https://lahoma.app">${esc(t('whatIs'))}</a></p></div></section></div>`;
+ return `<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t('authEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(t('authSub'))}</p></section><section class="auth-panel"><div class="auth-card"><label class="field"><span>${esc(t('chooseLang'))}</span><select name="locale" data-change="app-locale" aria-label="${esc(t('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(lang):'<option value="es">Español</option>'}</select></label><h2>${esc(title)}</h2><p class="auth-sub">${esc(t('authSub'))}</p>${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}${cloud&&!configured?`<div class="note warning mb">${esc(t('cloudNotReady'))}${location.protocol==='file:'?esc(t('openAppUrl')):esc(t('reloadPage'))}</div>`:''}<form id="access-form"><input type="hidden" name="target" value="${access.target}">${signup?`${field(t('name'),'name','','text','required maxlength="60" autocomplete="given-name"')}${adultContactFieldsHtml({withLocation:true})}`:''}${field(t('email'),'email','','email','required maxlength="254" autocomplete="username"')}${field(t('password'),'password','','password',`required minlength="${signup?10:1}" maxlength="200" autocomplete="${signup?'new-password':'current-password'}"`)}${signup?`${field(t('repeat'),'repeat','','password','required minlength="10" maxlength="200" autocomplete="new-password"')}${cloud?field(t('invite'),'invite','','text','maxlength="32" autocomplete="off"'):''}`:''}<button type="submit" class="btn primary wide" ${access.busy||(cloud&&!configured)?'disabled':''}>${access.busy?esc(t('checking')):signup?esc(t('register')):esc(t('login'))}</button></form><div class="auth-switch">${signup?esc(t('haveAccount')):esc(t('noAccount'))} <button type="button" class="text-btn" data-action="access-tab" data-tab="${signup?'login':'register'}">${signup?esc(t('login')):esc(t('register'))}</button></div><div class="auth-divider"><span>${esc(t('orContinue'))}</span></div><div class="social-buttons"><button type="button" class="btn secondary" data-action="access-oauth" data-provider="google" ${!configured?'disabled':''}><b>G</b> ${esc(t('googleBtn'))}</button></div><p class="tiny muted center mt">${esc(t('kidsNote'))}</p><p class="tiny muted">${esc(t('sessionNote'))}</p><p class="tiny muted center mt"><a href="https://lahoma.app">${esc(t('whatIs'))}</a></p></div></section></div>`;
 }
 function accountCard(){return `<div class="settings-group account-card"><div class="flex between wrap"><div><span class="eyebrow">${esc(t('accountEyebrow'))}</span><h3>${esc(access.user?.email||t('noAccountLabel'))}</h3><p>${esc(access.mode==='cloud'?t('accountCloud'):access.mode==='local'?t('accountLocal'):t('accountBrowser'))}</p></div><span class="pill ${access.saveError?'coral':'green'}">${esc(accessStatus())}</span></div>${access.saveError?`<div class="note warning mt">${esc(access.saveError)}. ${esc(t('keepCopyNote'))}</div>`:''}<div class="flex wrap mt">${access.user?btn(esc(t('signOut')),'access-logout','','secondary','logout'):btn(esc(t('createOrAccess')),'access-open','','primary','users')}${access.mode==='cloud'?btn(esc(t('reloadCloud')),'access-reload','','secondary','refresh')+btn(esc(t('retrySave')),'access-retry','','secondary','upload')+btn(esc(t('inviteFamily')),'access-invite','','secondary','users'):window.FAMILY_CLOUD?.url?'':btn(esc(t('connectCloud')),'access-config','','secondary','cloud')}${btn(esc(t('exportCopy')),'backup-export','','secondary','download')}</div><p class="tiny muted mt">${esc(access.mode==='local'?t('accountLocalNote'):t('accountCloudNote'))}</p></div>`;}
 async function activateLocal(record,key,remember=true){
@@ -81,7 +100,8 @@ async function localCredentials(fd,signup){
   if(password.length<10||password!==fd.get('repeat'))throw new Error(t('passwordsMatchLen'));
   if(users.some(u=>u.email===email))throw new Error(t('localAccountExists'));
   const name=String(fd.get('name')).trim();if(!name)throw new Error(t('writeYourName'));
-  const salt=toB64(crypto.getRandomValues(new Uint8Array(16))),key=await passwordKey(password,salt),next=fd.get('keep')?C.copy(state):freshFamily(name);next.demo=false;
+  const profile=requireAdultProfile(readProfileFields(fd),{needLocation:true});
+  const salt=toB64(crypto.getRandomValues(new Uint8Array(16))),key=await passwordKey(password,salt),next=fd.get('keep')?C.copy(state):freshFamily(name,profile);next.demo=false;
   const record={id:C.uid('account'),email,name,salt,vault:await seal(next,key),updatedAt:new Date().toISOString()};await vaultPut(record);await activateLocal(record,key);return;
  }
  const record=users.find(u=>u.email===email);if(!record)throw new Error(t('badLocalCreds'));
@@ -118,7 +138,7 @@ async function cloudClient(){
  access.cloud.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&access.mode==='cloud'){setTimeout(()=>{if(!access.pending&&!access.saveError){localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-previous');sessionStorage.removeItem(KEY+'-profile');localStorage.removeItem(ACCESS_SESSION);}access.blocked=true;access.message=t('sessionRevoked');access.user=null;closeModal();render();},0);}});
  return access.cloud;
 }
-async function activateCloud(session,name=''){
+async function activateCloud(session,name='',profile={}){
  if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('v5AdapterMissing'));
  if(!session?.user)throw new Error(t('noValidSession'));
  const invite=access.pendingInvite||'';access.pendingInvite='';
@@ -132,12 +152,20 @@ async function activateCloud(session,name=''){
  let mid=link?.linkedMemberId||inviteMeta?.memberId||null;
  let person=mid?next.members.find(m=>m.id===mid):null;
  if(!person&&user.email){person=next.members.find(m=>m.email&&m.email.toLowerCase()===String(user.email).toLowerCase());if(person){mid=person.id;if(link)link.linkedMemberId=mid;}}
- if(person){person.userId=user.id;person.email=person.email||user.email||'';person.inviteStatus='joined';}
- else if(mid||link?.role==='adult'||inviteMeta?.role==='adult'){
+ const metaBirthday=profile.birthday||user.user_metadata?.birthday||'';
+ const metaPhone=profile.phone||user.user_metadata?.phone||'';
+ const metaCountry=profile.country||user.user_metadata?.country||'';
+ const metaProvince=profile.province||user.user_metadata?.province||'';
+ if(person){
+  person.userId=user.id;person.email=person.email||user.email||'';person.inviteStatus='joined';
+  if(metaBirthday){person.birthday=metaBirthday;person.age=C.ageFromBirthday(metaBirthday);}
+  if(metaPhone)person.phone=metaPhone;
+ }else if(mid||link?.role==='adult'||inviteMeta?.role==='adult'||link?.isOwner||!invite){
   const nm=name||user.user_metadata?.name||(user.email||'Adulto').split('@')[0];
-  const created={id:mid||C.uid('member'),name:nm,avatar:'\u{1F9D1}',color:colors[next.members.length%colors.length],role:link?.role==='child'?'member':'adult',age:null,active:true,email:user.email||'',userId:user.id,inviteStatus:'joined'};
+  const created={id:mid||C.uid('member'),name:nm,avatar:'\u{1F9D1}',color:colors[next.members.length%colors.length],role:link?.role==='child'?'member':'adult',age:metaBirthday?C.ageFromBirthday(metaBirthday):null,birthday:metaBirthday,phone:metaPhone,active:true,email:user.email||'',userId:user.id,inviteStatus:'joined'};
   next.members.push(created);if(link)link.linkedMemberId=created.id;
  }
+ if((link?.isOwner||link?.role==='owner'||!invite)&&metaCountry){next.settings.country=metaCountry;next.settings.province=metaProvince||next.settings.province||'';}
  if(link?.isOwner||link?.role==='owner')next.settings.allowAdultsSwitchProfiles??=false;
  localStorage.setItem(ACCESS_SESSION,JSON.stringify({mode:'cloud',id:user.id,householdId:result.householdId,membership:access.membership}));
  applyAccountState(next,cacheKey);
@@ -157,7 +185,15 @@ async function saveCloudSnapshot(snapshot){
 async function cloudCredentials(fd,signup){
  access.pendingInvite=signup?String(fd.get('invite')||'').trim():'';
  const client=await cloudClient(),email=String(fd.get('email')).trim(),password=String(fd.get('password')),redirect=location.origin+location.pathname;
- if(signup){if(password.length<10||password!==fd.get('repeat'))throw new Error(t('passwordsMatchLen'));const name=String(fd.get('name')).trim();const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{name}}});if(error)throw error;if(!data.session){access.message=t('confirmEmailThenLogin');access.error=false;access.tab='login';render();return;}await activateCloud(data.session,name);}
+ if(signup){
+  if(password.length<10||password!==fd.get('repeat'))throw new Error(t('passwordsMatchLen'));
+  const name=String(fd.get('name')).trim();if(!name)throw new Error(t('writeYourName'));
+  const joining=!!access.pendingInvite;
+  const profile=requireAdultProfile(readProfileFields(fd),{needLocation:!joining});
+  const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{name,birthday:profile.birthday,phone:profile.phone,country:profile.country,province:profile.province}}});
+  if(error)throw error;if(!data.session){access.message=t('confirmEmailThenLogin');access.error=false;access.tab='login';render();return;}
+  await activateCloud(data.session,name,profile);
+ }
  else{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw new Error(t('cloudLoginFail'));await activateCloud(data.session);}
 }
 async function accessAction(a,d){
@@ -168,7 +204,7 @@ async function accessAction(a,d){
  case 'access-tab':access.tab=d.tab;access.message='';render();return true;
  case 'access-guest':await guestAccess();return true;
  case 'access-config':if(access.blocked||needAdult())cloudConfigForm();return true;
- case 'access-invite':{if(!needAdult()||access.mode!=='cloud'||!canManageInvites())return true;openModal(t('inviteFamily'),`<p class="dialog-description">${esc(t('inviteFamilyNote'))}</p><label class="field"><span>${esc(t('email'))}</span><input name="email" type="email" required maxlength="254" placeholder="${esc(t('emailPh'))}"></label><label class="field"><span>${esc(t('fieldName'))}</span><input name="name" type="text" required maxlength="80" placeholder="${esc(t('homeNamePh'))}"></label><label class="field"><span>${esc(t('whoIs'))}</span><select name="role"><option value="adult">${esc(t('adult'))}</option><option value="member">${esc(t('roleChildLabel'))}</option></select></label><div class="note">${esc(t('inviteCodeNote'))}</div>${footer(esc(t('createInvite')))}`,async fd=>{const email=String(fd.get('email')).trim().toLowerCase(),name=String(fd.get('name')).trim(),role=fd.get('role')==='adult'?'adult':'member';if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t('needNameEmail'));let memberId=null;const ok=transact(s=>{const existing=s.members.find(m=>m.email===email&&m.active!==false);if(existing){memberId=existing.id;existing.inviteStatus='pending';}else{memberId=C.uid('member');s.members.push({id:memberId,name,role,avatar:role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[s.members.length%colors.length],age:null,active:true,email,inviteStatus:'pending'});const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);if(w){const shot=C.memberSnapshot(s.members.find(m=>m.id===memberId));const snap=w.members.find(x=>x.id===memberId);if(snap)Object.assign(snap,shot);else w.members.push(shot);}}},null);if(!ok)return false;const inv=await window.HomaCloudTransport.invite(email,memberId,role==='adult'?'adult':'child');closeModal(true);showInviteResult(inv,name);return false;});return true;}
+ case 'access-invite':{if(!needAdult()||access.mode!=='cloud'||!canManageInvites())return true;openModal(t('inviteFamily'),`<p class="dialog-description">${esc(t('inviteFamilyNote'))}</p><label class="field"><span>${esc(t('email'))}</span><input name="email" type="email" required maxlength="254" placeholder="${esc(t('emailPh'))}"></label><label class="field"><span>${esc(t('fieldName'))}</span><input name="name" type="text" required maxlength="80" placeholder="${esc(t('homeNamePh'))}"></label><label class="field"><span>${esc(t('whoIs'))}</span><select name="role" data-change="invite-role"><option value="adult">${esc(t('adult'))}</option><option value="member">${esc(t('roleChildLabel'))}</option></select></label><div id="invite-adult-fields">${adultContactFieldsHtml()}</div><div class="note">${esc(t('inviteCodeNote'))}</div>${footer(esc(t('createInvite')))}`,async fd=>{const email=String(fd.get('email')).trim().toLowerCase(),name=String(fd.get('name')).trim(),role=fd.get('role')==='adult'?'adult':'member';if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t('needNameEmail'));let birthday='',phone='',age=null;if(role==='adult'){const p=requireAdultProfile(readProfileFields(fd));birthday=p.birthday;phone=p.phone;age=p.age;}else{birthday=String(fd.get('birthday')||'').trim();if(birthday&&(!C.validDate(birthday)||birthday>C.iso()))throw new Error(t('birthdayInvalid'));age=birthday?C.ageFromBirthday(birthday):null;phone=normalizePhone(fd.get('phone'));}let memberId=null;const ok=transact(s=>{const existing=s.members.find(m=>m.email===email&&m.active!==false);if(existing){memberId=existing.id;existing.inviteStatus='pending';if(birthday){existing.birthday=birthday;existing.age=age;}if(phone)existing.phone=phone;}else{memberId=C.uid('member');s.members.push({id:memberId,name,role,avatar:role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[s.members.length%colors.length],age,birthday,phone,active:true,email,inviteStatus:'pending'});const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);if(w){const shot=C.memberSnapshot(s.members.find(m=>m.id===memberId));const snap=w.members.find(x=>x.id===memberId);if(snap)Object.assign(snap,shot);else w.members.push(shot);}}},null);if(!ok)return false;const inv=await window.HomaCloudTransport.invite(email,memberId,role==='adult'?'adult':'child');closeModal(true);showInviteResult(inv,name);return false;});return true;}
  case 'access-logout':if(!needAdult())return true;confirmDialog(t('signOut'),t('signOutBody'),async()=>{await logOut();return true;},t('signOut'));return true;
  case 'access-oauth':{if(d.provider!=='google')throw new Error(t('accessNotExist'));if(!cloudConfigured()||!cloudOriginReady())throw new Error(t('cloudNotReady'));const c=await cloudClient();const options={redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}};const {error}=await c.auth.signInWithOAuth({provider:'google',options});if(error)throw new Error(/provider is not enabled|unsupported provider/i.test(error.message)?t('googleNotConnected'):t('googleOpenFail'));return true;}
  case 'access-retry':if(needAdult()){access.saveError='';queueAccountSave(C.copy(state));await access.chain;render();}return true;

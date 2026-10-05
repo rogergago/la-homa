@@ -14,7 +14,26 @@
   const uid = prefix => `${prefix||'id'}_${globalThis.crypto?.randomUUID?.() || Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)}`;
   const copy = x => JSON.parse(JSON.stringify(x));
   const contribution = task => task.status === 'done' ? task.points : task.status === 'missed' ? -task.points : 0;
-  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
+  function ageFromBirthday(b, today = iso()) {
+    if (!validDate(b) || !validDate(today) || b > today) return null;
+    const bd = date(b), td = date(today);
+    let age = td.getFullYear() - bd.getFullYear();
+    const md = td.getMonth() - bd.getMonth();
+    if (md < 0 || (md === 0 && td.getDate() < bd.getDate())) age -= 1;
+    return age < 0 || age > 120 ? null : age;
+  }
+  function syncMemberAges(s) {
+    if (!s?.members) return s;
+    for (const m of s.members) {
+      if (m.role === 'pet') { m.birthday = m.birthday || ''; continue; }
+      if (m.birthday && validDate(m.birthday) && m.birthday <= iso()) {
+        const a = ageFromBirthday(m.birthday);
+        if (a != null) m.age = a;
+      } else if (m.birthday === undefined) m.birthday = '';
+    }
+    return s;
+  }
+  const memberSnapshot = m => {const o={id:m.id,name:m.name,avatar:m.avatar,photo:m.photo||'',color:m.color,role:m.role,age:m.age??null,birthday:m.birthday||'',phone:m.phone||''};if(m.role==='pet')o.species=String(m.species||'otro').slice(0,40);return o;};
   function generateWeek(state, start) {
     if (state.weeks.some(w=>w.start===start)) return state.weeks.find(w=>w.start===start);
     const members=state.members.filter(m=>m.active!==false);
@@ -107,8 +126,11 @@
     check(s.settings&&text(s.settings.familyName,80)&&text(s.settings.teamReward,160)&&Number.isInteger(s.settings.teamTarget)&&s.settings.teamTarget>=0&&s.settings.teamTarget<=100000,'configuración.');
     const ids=(arr,k)=>{check(new Set(arr.map(x=>x.id)).size===arr.length,'identificadores repetidos en '+k);for(const x of arr) check(text(x.id,200)&&/^[A-Za-z0-9_.:@-]+$/.test(x.id),'identificador.');};
     for(const k of ['members','templates','rewards','weeks','shopping','recipes','mealPlan','events']) ids(s[k],k);
-    const member=m=>check(text(m.name,80)&&m.name.trim()&&text(m.avatar,20)&&/^#[0-9a-f]{6}$/i.test(m.color)&&['adult','member','pet'].includes(m.role)&&(m.age==null||(Number.isInteger(m.age)&&m.age>=1&&m.age<=120))&&(m.species==null||(typeof m.species==='string'&&m.species.length<=40)),'miembro.');
+    const member=m=>check(text(m.name,80)&&m.name.trim()&&text(m.avatar,20)&&/^#[0-9a-f]{6}$/i.test(m.color)&&['adult','member','pet'].includes(m.role)&&(m.age==null||(Number.isInteger(m.age)&&m.age>=0&&m.age<=120))&&(m.birthday==null||m.birthday===''||(validDate(m.birthday)&&m.birthday<=iso()))&&(m.phone==null||(typeof m.phone==='string'&&m.phone.length<=40))&&(m.species==null||(typeof m.species==='string'&&m.species.length<=40)),'miembro.');
     s.members.forEach(member);
+    syncMemberAges(s);
+    check(s.settings.country==null||(typeof s.settings.country==='string'&&s.settings.country.length<=80),'país.');
+    check(s.settings.province==null||(typeof s.settings.province==='string'&&s.settings.province.length<=80),'provincia.');
     check(s.members.some(m=>m.role==='adult'&&m.active!==false),'debe existir un adulto activo.');
     const positive=n=>Number.isInteger(n)&&n>0&&n<=1000;
     const reward=r=>check(text(r.title,160)&&text(r.description||'',2000)&&text(r.icon,20)&&text(r.memberId,200)&&['weekly','fixed'].includes(r.mode)&&(r.mode==='weekly'||positive(r.threshold)),'recompensa.');
@@ -136,7 +158,8 @@
   }
   function seed(today=iso()) {
     const s={schemaVersion:1,demo:true,createdAt:new Date().toISOString(),settings:{familyName:'Familia de ejemplo',teamTarget:180,teamReward:'Una tarde de juegos en familia',closePending:true,pin:null},members:[],templates:[],rewards:[],weeks:[],shopping:[],recipes:[],mealPlan:[],events:[]};
-    s.members=[{id:'ana',name:'Ana',avatar:'\u{1F680}',color:'#8b6ce0',role:'member',age:10,active:true},{id:'leo',name:'Leo',avatar:'\u{1F981}',color:'#dc9860',role:'member',age:7,active:true},{id:'mama',name:'Mamá',avatar:'\u{1F33C}',color:'#5da896',role:'adult',age:null,active:true},{id:'papa',name:'Papá',avatar:'\u{1F43B}',color:'#6a9bcb',role:'adult',age:null,active:true}];
+    const by=y=>{const d=date(today);d.setFullYear(d.getFullYear()-y);return iso(d);};
+    s.members=[{id:'ana',name:'Ana',avatar:'\u{1F680}',color:'#8b6ce0',role:'member',age:10,birthday:by(10),active:true},{id:'leo',name:'Leo',avatar:'\u{1F981}',color:'#dc9860',role:'member',age:7,birthday:by(7),active:true},{id:'mama',name:'Mamá',avatar:'\u{1F33C}',color:'#5da896',role:'adult',age:null,birthday:'',active:true},{id:'papa',name:'Papá',avatar:'\u{1F43B}',color:'#6a9bcb',role:'adult',age:null,birthday:'',active:true}];
     const make=(id,title,p,m,days,icon,category)=>({id,title,points:p,memberIds:m,days,icon,category,frequency:days.length===7?'daily':days.length===1?'weekly':'custom',description:'',active:true});
     s.templates=[make('cama','Hacer la cama',2,['ana','leo'],[0,1,2,3,4,5,6],'bed','Habitación'),make('mesa','Poner la mesa',3,['ana'],[0,1,2,3,4,5,6],'utensils','Cocina'),make('juguetes','Recoger los juguetes',3,['leo'],[0,1,2,3,4,5,6],'blocks','Habitación'),make('plantas','Regar las plantas',5,['leo'],[2,5],'leaf','Casa'),make('habitacion','Ordenar la habitación',10,['ana'],[5],'sparkles','Habitación'),make('cena','Preparar la cena',8,['mama'],[0,2,4,5],'utensils','Cocina'),make('ropa','Poner una lavadora',6,['mama'],[1,3,6],'shirt','Ropa'),make('basura','Sacar la basura',5,['papa'],[0,2,4,5],'trash','Casa'),make('paseo','Pasear a Coco',4,['papa'],[0,1,2,3,4,5,6],'paw','Mascotas')];
     s.rewards=[{id:'reward_ana',memberId:'ana',title:'Elegir la película',description:'Tu eliges la peli de nuestra noche de cine.',icon:'\u{1F37F}',mode:'weekly',threshold:null,active:true},{id:'reward_leo',memberId:'leo',title:'Un postre especial',description:'Preparamos juntos tu postre favorito.',icon:'\u{1F368}',mode:'weekly',threshold:null,active:true},{id:'reward_mama',memberId:'mama',title:'Una hora para mi',description:'Un ratito para descansar, leer o desconectar.',icon:'\u{1F4D6}',mode:'weekly',threshold:null,active:true},{id:'reward_papa',memberId:'papa',title:'Elegir la excursión',description:'El próximo plan de fin de semana lo eliges tu.',icon:'\u{1F333}',mode:'weekly',threshold:null,active:true}];
@@ -1286,5 +1309,5 @@ function seedEvents31(s,today){
   }
 
   /* @web5-core */
-  return Object.freeze({ensureWeb5,householdDay,taskOnDay,taskPermission,requestTaskReview,resolveTaskReview,setTaskEarlyPermission,recurringDates,saveEventSeries,deleteEventSeries,addShoppingList,archiveShoppingList,setShoppingState,menuServings,copyMenu,saveMenu,applySavedMenu,reminderItems,approvalItems,validateWeb5,iso,date,validDate,addDays,monday,uid,copy,contribution,memberSnapshot,generateWeek,appendTemplate,syncTemplate,closeWeek,rollover,stats,rewardState,setStatus,addRecovery,claimReward,validateState,seed,scaleQuantity,mergeQuantity,addIngredients,exportICS,parseICS,resetV2,upgradeState,syncV2,validateV2,logHouse,norm,moneyCents,balances,postMoney,transferMoney,addGoal,configureAllowance,syncAllowanceDues,payAllowance,requestSpend,resolveSpend,reverseMoney,syncVouchers,requestVoucher,approveVoucher,useVoucher,routineTasks,addAbsence,applyAbsences,cancelAbsence,proposeSwap,resolveSwap,PREP_SETS,createPrep,togglePrep,quantity,qtyLabel,stock,missingIngredients,addMissing,receiveShopping,consumeMeal,meeting,addProposal,voteProposal,ensureV3,safePhoto,photoGuard,validateTiers,tierFor,allowanceQuote,RATE_DAYS,configureSavings,accrueInterest,savingsProjection,dailySavingsBase,presencePattern,configurePresence,setPresenceOverride,presenceOn,cancelPresence,foodIcon,foodKey,foodRecord,upsertFood,SHOPS,RECIPE_LIBRARY,addRecipeLibrary,validateV3,enableHomaRules,configureHomaTarget,homaNominalTarget,taskPoints,homaAllowanceEligibility,EVENT_TYPES,eventType,eventParticipants,eventForPerson,eventOnDate,eventProgress,canCheckEventItem,setPrepItemState,saveFamilyEvent,deleteFamilyEvent,validateEvents31});
+  return Object.freeze({ensureWeb5,householdDay,taskOnDay,taskPermission,requestTaskReview,resolveTaskReview,setTaskEarlyPermission,recurringDates,saveEventSeries,deleteEventSeries,addShoppingList,archiveShoppingList,setShoppingState,menuServings,copyMenu,saveMenu,applySavedMenu,reminderItems,approvalItems,validateWeb5,iso,date,validDate,addDays,monday,uid,copy,contribution,memberSnapshot,ageFromBirthday,syncMemberAges,generateWeek,appendTemplate,syncTemplate,closeWeek,rollover,stats,rewardState,setStatus,addRecovery,claimReward,validateState,seed,scaleQuantity,mergeQuantity,addIngredients,exportICS,parseICS,resetV2,upgradeState,syncV2,validateV2,logHouse,norm,moneyCents,balances,postMoney,transferMoney,addGoal,configureAllowance,syncAllowanceDues,payAllowance,requestSpend,resolveSpend,reverseMoney,syncVouchers,requestVoucher,approveVoucher,useVoucher,routineTasks,addAbsence,applyAbsences,cancelAbsence,proposeSwap,resolveSwap,PREP_SETS,createPrep,togglePrep,quantity,qtyLabel,stock,missingIngredients,addMissing,receiveShopping,consumeMeal,meeting,addProposal,voteProposal,ensureV3,safePhoto,photoGuard,validateTiers,tierFor,allowanceQuote,RATE_DAYS,configureSavings,accrueInterest,savingsProjection,dailySavingsBase,presencePattern,configurePresence,setPresenceOverride,presenceOn,cancelPresence,foodIcon,foodKey,foodRecord,upsertFood,SHOPS,RECIPE_LIBRARY,addRecipeLibrary,validateV3,enableHomaRules,configureHomaTarget,homaNominalTarget,taskPoints,homaAllowanceEligibility,EVENT_TYPES,eventType,eventParticipants,eventForPerson,eventOnDate,eventProgress,canCheckEventItem,setPrepItemState,saveFamilyEvent,deleteFamilyEvent,validateEvents31});
 });
