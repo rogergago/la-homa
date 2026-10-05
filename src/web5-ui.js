@@ -274,7 +274,7 @@ async function web5Action(a,d,el,event){
  }
  case 'web5-file-open':{if(!needAdult())return true;const f=state.eventFiles.find(f=>f.id===d.id);const blob=await window.HomaAssets.get(KEY,d.id);if(!blob)throw new Error(t5('fileNotOnDevice'));const url=URL.createObjectURL(blob),ael=document.createElement('a');ael.href=url;ael.download=f.name;ael.click();setTimeout(()=>URL.revokeObjectURL(url),30000);return true;}
  case 'web5-file-delete':{if(!needAdult())return true;confirmDialog(t5('deleteDoc'),t5('deleteDocBody'),async()=>{const ok=transact(s=>s.eventFiles=s.eventFiles.filter(f=>f.id!==d.id));if(ok)await window.HomaAssets.remove(KEY,d.id);return ok;},t5('delete'));return true;}
- case 'backup-export':{if(!needAdult())return true;const bundle=await window.HomaAssets.exportBundle(KEY,state.eventFiles.map(f=>f.id));downloadFile('la-homa-copia-completa-'+C.iso()+'.json',JSON.stringify({...state,assetBundle:bundle},null,2),'application/json');toast(t5('fullBackupCreated'));return true;}
+ case 'backup-export':return true;
  case 'web5-forgot':resetPassword5();return true;
  case 'guide-back':{const g=readGuide($('#family-guide'));g.step=Math.max(0,g.step-1);render();return true;}
  case 'guide-add':{const g=readGuide($('#family-guide'));if(d.kind==='pet')g.pets.push({name:'',species:'perro',birthday:''});else g.people.push({name:'',role:'member',relation:'hijo',ownProfile:false,email:'',birthday:'',phone:''});render();return true;}
