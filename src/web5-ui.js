@@ -142,6 +142,13 @@ function renderAdultProfileGate(){
  const name=person?.name&&person.name!==t5('adultFallbackName')&&person.name!=='Adulto'?person.name:(access.user?.name||'');
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('adultProfileEyebrow'))}</span><h1>${esc(t5('adultProfileTitle'))}</h1><p>${esc(t5('adultProfileText'))}</p></section><section class="auth-panel"><form id="adult-profile-form" class="auth-card"><h2>${esc(t5('adultProfileTitle'))}</h2><p class="auth-sub">${esc(needLoc?t5('adultProfileSub'):t5('adultProfileSubInvite'))}</p>${field(t5('name'),'name',name,'text','required maxlength="80" autocomplete="name"')}${adultContactFieldsHtml({birthday:person?.birthday||'',phone:person?.phone||'',country:state.settings.country||'ES',province:state.settings.province||'',withLocation:needLoc})}<button type="submit" class="btn primary wide">${esc(t5('adultProfileSave'))}</button><p class="tiny muted center mt">${esc(access.user?.email||'')}</p></form></section></div>`;
 }
+function renderJoinFamilyGate(){
+ const mode=ui.joinFamily==='code'?'code':'choice';
+ const body=mode==='code'
+  ?`<p class="auth-sub">${esc(t5('joinFamilyCodeSub'))}</p>${field(t5('invite'),'inviteCode','','text','required maxlength="64" autocomplete="off" spellcheck="false" inputmode="text")}${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}<button type="submit" class="btn primary wide" ${access.busy?'disabled':''}>${access.busy?esc(t5('joiningFamily')):esc(t5('joinFamilySubmit'))}</button><button type="button" class="text-btn wide mt" data-action="join-family-back">${esc(t5('back'))}</button>`
+  :`<p class="auth-sub">${esc(t5('joinFamilySub'))}</p><button type="button" class="btn primary wide" data-action="join-family-code">${esc(t5('joinFamilyWithCode'))}</button><button type="button" class="btn secondary wide mt" data-action="join-family-create">${esc(t5('joinFamilyCreate'))}</button>`;
+ $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('joinFamilyEyebrow'))}</span><h1>${esc(t5('joinFamilyTitle'))}</h1><p>${esc(t5('joinFamilyStory'))}</p></section><section class="auth-panel"><form id="join-family-form" class="auth-card"><h2>${esc(mode==='code'?t5('joinFamilyWithCode'):t5('joinFamilyTitle'))}</h2>${body}</form></section></div>`;
+}
 
 const TOUR_STEPS=[{view:'home',title:'tour1Title',text:'tour1Text'},{view:'family',title:'tour2Title',text:'tour2Text'},{view:'tasks',title:'tour3Title',text:'tour3Text'},{view:'calendar',title:'tour4Title',text:'tour4Text'},{view:'recipes',title:'tour5Title',text:'tour5Text'},{view:'money',title:'tour6Title',text:'tour6Text'}];
 function clearTour(persist){ui.tour=null;if(persist)transact(s=>{s.settings.tutorialDismissed=true;},null);}
@@ -170,6 +177,7 @@ function render(){
   }
   // After Google (or any login), collect registration contact before the family guide.
   if(!access.blocked&&typeof adultProfileIncomplete==='function'&&adultProfileIncomplete()){renderAdultProfileGate();return;}
+  if(!access.blocked&&typeof needsFamilyChoice==='function'&&needsFamilyChoice()){renderJoinFamilyGate();return;}
   if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
   if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
   renderBefore5();
@@ -279,19 +287,39 @@ async function web5Action(a,d,el,event){
  case 'guide-back':{const g=readGuide($('#family-guide'));g.step=Math.max(0,g.step-1);render();return true;}
  case 'guide-add':{const g=readGuide($('#family-guide'));if(d.kind==='pet')g.pets.push({name:'',species:'perro',birthday:''});else g.people.push({name:'',role:'member',relation:'hijo',ownProfile:false,email:'',birthday:'',phone:''});render();return true;}
  case 'guide-remove':{const g=readGuide($('#family-guide'));const list=d.kind==='pet'?g.pets:g.people;const i=Number(d.index);if(list.length<=1)list[0].name='';else list.splice(i,1);render();return true;}
+ case 'join-family-code':ui.joinFamily='code';access.message='';access.error=false;render();return true;
+ case 'join-family-back':ui.joinFamily='choice';access.message='';access.error=false;render();return true;
+ case 'join-family-create':{
+  access.familyChoice='create';ui.joinFamily=null;access.message='';access.error=false;
+  try{const s=JSON.parse(localStorage.getItem(ACCESS_SESSION)||'null');if(s){s.familyChoice='create';localStorage.setItem(ACCESS_SESSION,JSON.stringify(s));}}catch(_){}
+  render();return true;
+ }
  case 'web5-timezone':openModal(esc(t5('timezoneTitle')),`${field(t5('timezoneField'),'zone',state.settings.timeZone,'text','required maxlength="80" placeholder="Europe/Madrid"')}<p class="note">${esc(t5('timezoneNote'))}</p>${footer(t5('save'))}`,fd=>transact(s=>{new Intl.DateTimeFormat('es',{timeZone:fd.get('zone')});s.settings.timeZone=fd.get('zone');},t5('timezoneSaved')));return true;
  case 'web5-connections':openModal(esc(t5('howSavedTitle')),`<div class="connection-row"><b>${esc(t5('howSavedDevice'))}</b><span>${esc(t5('howSavedDeviceText'))}</span></div><div class="connection-row"><b>${esc(t5('howSavedAccount'))}</b><span>${esc(cloudConfigured()?(access.mode==='cloud'?t5('howSavedCloudOn'):t5('howSavedCloudReady')):t5('howSavedCloudOff'))}</span></div><div class="connection-row"><b>${esc(t5('howSavedCal'))}</b><span>${esc(t5('howSavedCalText'))}</span></div><div class="connection-row"><b>${esc(t5('howSavedPush'))}</b><span>${esc(t5('howSavedPushText'))}</span></div><p class="note mt">${esc(t5('howSavedBackupNote'))}</p><div class="modal-footer">${btn(esc(t5('understood')),'close','','primary')}</div>`);return true;
  }
  return false;
 }
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='guide-own-profile'){const row=el.closest('[data-guide-person]');const box=row?.querySelector('.guide-own-fields');if(box){box.classList.toggle('hidden',!el.checked);box.querySelectorAll('input').forEach(inp=>{if(el.checked)inp.setAttribute('required','');else inp.removeAttribute('required');});}return;}if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);$('#member-pet-birthday')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='invite-role'){const box=$('#invite-adult-fields');if(box)box.classList.toggle('hidden',el.value!=='adult');}if(el.dataset.change==='profile-country'){const wrap=el.closest('form')||el.closest('.modal-body')||document;const prov=wrap.querySelector('[name=province]');if(!prov)return;const box=prov.closest('label.field')||prov;const v=el.value,cur=prov.value;if(v==='ES'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><select name="province" required>${selectOptions([{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))],ES_PROVINCES.includes(cur)?cur:'')}</select></label>`;}else if(prov.tagName==='SELECT'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><input name="province" type="text" required maxlength="80" value="${esc(cur&&!ES_PROVINCES.includes(cur)?cur:'')}" placeholder="${esc(t('provincePh'))}"></label>`;}}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(typeof applyDocumentLocale==='function')applyDocumentLocale();if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
-document.addEventListener('submit',e=>{
+document.addEventListener('submit',async e=>{
  if(e.target.id==='adult-profile-form'){
   e.preventDefault();
   try{
    const ok=completeAdultProfile(new FormData(e.target));
    if(ok)render();
   }catch(err){toast(err.message||t5('adultProfileNeed'),true);}
+  return;
+ }
+ if(e.target.id==='join-family-form'){
+  e.preventDefault();
+  if(ui.joinFamily!=='code'||access.busy)return;
+  const code=String(new FormData(e.target).get('inviteCode')||'').trim();
+  try{
+   await joinCloudFamily(code);
+  }catch(err){
+   access.message=err.message||t5('joinFamilyFail');
+   access.error=true;
+   render();
+  }
   return;
  }
  if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step===0&&!normalizeRelation(g.adultRelation)){toast(t5('guideNeedRelation'),true);return;}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});

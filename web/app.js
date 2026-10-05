@@ -843,7 +843,7 @@ function completeAdultProfile(fd){
 window.FPAdultProfile={incomplete:()=>adultProfileIncomplete(),needsLocation:()=>adultNeedsLocation()};
 
 const ACCESS_SESSION='family-points-v3-session',ACCESS_CONFIG='family-points-v3-cloud-config';
-const access={blocked:true,mode:'guest',user:null,key:null,rawKey:null,record:null,tab:'login',target:'cloud',busy:false,message:'',error:false,pending:0,saveError:'',chain:Promise.resolve(),cloud:null,revision:0,suppress:false,cloudPending:null,pendingInvite:'',invitePrefill:'',membership:null};
+const access={blocked:true,mode:'guest',user:null,key:null,rawKey:null,record:null,tab:'login',target:'cloud',busy:false,message:'',error:false,pending:0,saveError:'',chain:Promise.resolve(),cloud:null,revision:0,suppress:false,cloudPending:null,pendingInvite:'',invitePrefill:'',membership:null,joinedViaInvite:false,familyChoice:null};
 window.FPAccess=access;
 function accessStatus(){if(access.saveError)return t('statusSavePending');if(access.pending)return t('statusSaving');return access.mode==='cloud'?t('statusCloud'):access.mode==='local'?t('statusLocal'):t('statusBrowser');}
 function toB64(bytes){let s='';for(const b of new Uint8Array(bytes))s+=String.fromCharCode(b);return btoa(s);}
@@ -908,7 +908,7 @@ function renderAuth(){
  const signup=access.tab==='register',cloud=access.target==='cloud',configured=cloudConfigured()&&cloudOriginReady(),cfg=cloudConfig();
  const lang=window.HomaI18n?window.HomaI18n.getLocale():'es';
  const title=signup?t('authTitleRegister'):t('authTitleLogin');
- return `<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t('authEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(t('authSub'))}</p></section><section class="auth-panel"><div class="auth-card"><label class="field"><span>${esc(t('chooseLang'))}</span><select name="locale" data-change="app-locale" aria-label="${esc(t('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(lang):'<option value="es">Español</option>'}</select></label><h2>${esc(title)}</h2><p class="auth-sub">${esc(t('authSub'))}</p>${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}${cloud&&!configured?`<div class="note warning mb">${esc(t('cloudNotReady'))}${location.protocol==='file:'?esc(t('openAppUrl')):esc(t('reloadPage'))}</div>`:''}<form id="access-form"><input type="hidden" name="target" value="${access.target}">${signup?`${field(t('name'),'name','','text','required maxlength="60" autocomplete="given-name"')}${adultContactFieldsHtml({withLocation:!access.invitePrefill})}`:''}${field(t('email'),'email','','email','required maxlength="254" autocomplete="username"')}${field(t('password'),'password','','password',`required minlength="${signup?10:1}" maxlength="200" autocomplete="${signup?'new-password':'current-password'}"`)}${signup?`${field(t('repeat'),'repeat','','password','required minlength="10" maxlength="200" autocomplete="new-password"')}${cloud?field(t('invite'),'invite',access.invitePrefill||'','text','maxlength="64" autocomplete="off"'):''}`:''}<button type="submit" class="btn primary wide" ${access.busy||(cloud&&!configured)?'disabled':''}>${access.busy?esc(t('checking')):signup?esc(t('register')):esc(t('login'))}</button></form><div class="auth-switch">${signup?esc(t('haveAccount')):esc(t('noAccount'))} <button type="button" class="text-btn" data-action="access-tab" data-tab="${signup?'login':'register'}">${signup?esc(t('login')):esc(t('register'))}</button></div><div class="auth-divider"><span>${esc(t('orContinue'))}</span></div><div class="social-buttons"><button type="button" class="btn secondary" data-action="access-oauth" data-provider="google" ${!configured?'disabled':''}><b>G</b> ${esc(t('googleBtn'))}</button></div></div></section></div>`;
+ return `<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t('authEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(t('authSub'))}</p></section><section class="auth-panel"><div class="auth-card"><label class="field"><span>${esc(t('chooseLang'))}</span><select name="locale" data-change="app-locale" aria-label="${esc(t('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(lang):'<option value="es">Español</option>'}</select></label><h2>${esc(title)}</h2><p class="auth-sub">${esc(t('authSub'))}</p>${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}${cloud&&!configured?`<div class="note warning mb">${esc(t('cloudNotReady'))}${location.protocol==='file:'?esc(t('openAppUrl')):esc(t('reloadPage'))}</div>`:''}<form id="access-form"><input type="hidden" name="target" value="${access.target}">${signup?`${field(t('name'),'name','','text','required maxlength="60" autocomplete="given-name"')}${adultContactFieldsHtml({withLocation:!access.invitePrefill})}`:''}${field(t('email'),'email','','email','required maxlength="254" autocomplete="username"')}${field(t('password'),'password','','password',`required minlength="${signup?10:1}" maxlength="200" autocomplete="${signup?'new-password':'current-password'}"`)}${signup?field(t('repeat'),'repeat','','password','required minlength="10" maxlength="200" autocomplete="new-password"'):''}<button type="submit" class="btn primary wide" ${access.busy||(cloud&&!configured)?'disabled':''}>${access.busy?esc(t('checking')):signup?esc(t('register')):esc(t('login'))}</button></form><div class="auth-switch">${signup?esc(t('haveAccount')):esc(t('noAccount'))} <button type="button" class="text-btn" data-action="access-tab" data-tab="${signup?'login':'register'}">${signup?esc(t('login')):esc(t('register'))}</button></div><div class="auth-divider"><span>${esc(t('orContinue'))}</span></div><div class="social-buttons"><button type="button" class="btn secondary" data-action="access-oauth" data-provider="google" ${!configured?'disabled':''}><b>G</b> ${esc(t('googleBtn'))}</button></div></div></section></div>`;
 }
 function accountCard(){return `<div class="settings-group account-card"><div class="flex between wrap"><div><span class="eyebrow">${esc(t('accountEyebrow'))}</span><h3>${esc(access.user?.email||t('noAccountLabel'))}</h3><p>${esc(access.mode==='cloud'?t('accountCloud'):access.mode==='local'?t('accountLocal'):t('accountBrowser'))}</p></div><span class="pill ${access.saveError?'coral':'green'}">${esc(accessStatus())}</span></div>${access.saveError?`<div class="note warning mt">${esc(access.saveError)}</div>`:''}<div class="flex wrap mt">${access.user?btn(esc(t('signOut')),'access-logout','','secondary','logout'):btn(esc(t('createOrAccess')),'access-open','','primary','users')}${access.mode==='cloud'?btn(esc(t('inviteFamily')),'access-invite','','secondary','users'):window.FAMILY_CLOUD?.url?'':btn(esc(t('connectCloud')),'access-config','','secondary','cloud')}</div><p class="tiny muted mt">${esc(access.mode==='local'?t('accountLocalNote'):t('accountCloudNote'))}</p></div>`;}
 async function activateLocal(record,key,remember=true){
@@ -969,7 +969,7 @@ function withTimeout(promise,ms,message){
 async function activateCloud(session,name='',profile={}){
  if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('v5AdapterMissing'));
  if(!session?.user)throw new Error(t('noValidSession'));
- const invite=access.pendingInvite||'';access.pendingInvite='';
+ const invite=String(access.pendingInvite||access.invitePrefill||'').trim();access.pendingInvite='';
  // Ensure a single auth client exists before transport RPCs (avoids PKCE race).
  if(!access.cloud)await cloudClient();
  access.busy=true;access.message=t('creatingHome');access.error=false;render();
@@ -977,48 +977,77 @@ async function activateCloud(session,name='',profile={}){
  try{
   result=await withTimeout(window.HomaCloudTransport.activate(session,name,invite),45000,t('creatingHomeTimeout'));
  }finally{access.busy=false;}
- const user=session.user;access.mode='cloud';access.target='cloud';access.user={id:user.id,email:user.email||'',name:name||user.user_metadata?.name||t('myFamilyDefault'),householdId:result.householdId};
+ if(invite){access.joinedViaInvite=true;access.invitePrefill='';access.familyChoice=null;}
+ else{access.joinedViaInvite=false;access.familyChoice=null;}
+ settleCloudHousehold(session,result,name,profile,!!invite);
+}
+function settleCloudHousehold(session,result,name='',profile={},viaInvite=false){
+ const user=session.user||access.cloud?.auth?.user||{};
+ const uid=user.id||access.user?.id;
+ const email=user.email||access.user?.email||'';
+ access.mode='cloud';access.target='cloud';
+ access.user={id:uid,email,name:name||user.user_metadata?.name||access.user?.name||t('myFamilyDefault'),householdId:result.householdId};
  access.membership=result.membership||{role:null,linkedMemberId:null,isOwner:false};
  access.revision=result.revision||0;access.saveError='';access.cloudPending=null;access.message='';
  let next=C.validateState(result.state);const cacheKey='family-points-v3-cloud-'+result.householdId,cache=localStorage.getItem(cacheKey);
  const cloudFresh=next.settings?.familyReady===false&&!(next.members||[]).some(m=>m.birthday||m.phone);
- if(cache&&!cloudFresh){try{const local=C.validateState(JSON.parse(cache));if((local.updatedAt||'')>(next.updatedAt||''))next=local;}catch(_){}}
+ if(cache&&!cloudFresh&&!viaInvite){try{const local=C.validateState(JSON.parse(cache));if((local.updatedAt||'')>(next.updatedAt||''))next=local;}catch(_){}}
  const link=access.membership;const inviteMeta=result.invite;
  let mid=link?.linkedMemberId||inviteMeta?.memberId||null;
  let person=mid?next.members.find(m=>m.id===mid):null;
- if(!person&&user.email){person=next.members.find(m=>m.email&&m.email.toLowerCase()===String(user.email).toLowerCase());if(person){mid=person.id;if(link)link.linkedMemberId=mid;}}
- const metaBirthday=profile.birthday||user.user_metadata?.birthday||'';
- const metaPhone=profile.phone||user.user_metadata?.phone||'';
- const metaCountry=profile.country||user.user_metadata?.country||'';
- const metaProvince=profile.province||user.user_metadata?.province||'';
- access._meta={birthday:metaBirthday,phone:metaPhone,country:metaCountry,province:metaProvince,relation:profile.relation||user.user_metadata?.relation||''};
- // Reuse the bootstrap adult placeholder instead of creating a second master card.
- if(!person&&!invite){
-  const orphan=next.members.find(m=>m.active!==false&&m.role==='adult'&&!m.userId&&!(m.email&&user.email&&m.email.toLowerCase()===String(user.email).toLowerCase()));
+ if(!person&&email){person=next.members.find(m=>m.email&&m.email.toLowerCase()===String(email).toLowerCase());if(person){mid=person.id;if(link)link.linkedMemberId=mid;}}
+ const metaBirthday=profile.birthday||user.user_metadata?.birthday||access._meta?.birthday||'';
+ const metaPhone=profile.phone||user.user_metadata?.phone||access._meta?.phone||'';
+ const metaCountry=profile.country||user.user_metadata?.country||access._meta?.country||'';
+ const metaProvince=profile.province||user.user_metadata?.province||access._meta?.province||'';
+ access._meta={birthday:metaBirthday,phone:metaPhone,country:metaCountry,province:metaProvince,relation:profile.relation||user.user_metadata?.relation||access._meta?.relation||''};
+ if(!person&&!viaInvite){
+  const orphan=next.members.find(m=>m.active!==false&&m.role==='adult'&&!m.userId&&!(m.email&&email&&m.email.toLowerCase()===String(email).toLowerCase()));
   if(orphan&&(link?.isOwner||link?.role==='owner'||link?.role==='adult'||!link?.role)){
    person=orphan;mid=orphan.id;if(link)link.linkedMemberId=mid;
   }
  }
  if(person){
-  const nm=name||user.user_metadata?.name||person.name||(user.email||t('adultFallbackName')).split('@')[0];
+  const nm=name||user.user_metadata?.name||person.name||(email||t('adultFallbackName')).split('@')[0];
   person.name=String(nm).slice(0,80);
-  person.userId=user.id;person.email=person.email||user.email||'';person.inviteStatus='joined';
+  person.userId=uid;person.email=person.email||email||'';person.inviteStatus='joined';
   if(metaBirthday){person.birthday=metaBirthday;person.age=C.ageFromBirthday(metaBirthday);}
   if(metaPhone)person.phone=metaPhone;
   if(link)link.linkedMemberId=person.id;
- }else if(mid||link?.role==='adult'||inviteMeta?.role==='adult'||link?.isOwner||!invite){
-  const nm=name||user.user_metadata?.name||(user.email||t('adultFallbackName')).split('@')[0];
-  const created={id:mid||C.uid('member'),name:nm,avatar:'\u{1F9D1}',color:colors[next.members.length%colors.length],role:link?.role==='child'?'member':'adult',age:metaBirthday?C.ageFromBirthday(metaBirthday):null,birthday:metaBirthday,phone:metaPhone,active:true,email:user.email||'',userId:user.id,inviteStatus:'joined'};
+ }else if(mid||link?.role==='adult'||inviteMeta?.role==='adult'||link?.isOwner||!viaInvite){
+  const nm=name||user.user_metadata?.name||(email||t('adultFallbackName')).split('@')[0];
+  const created={id:mid||C.uid('member'),name:nm,avatar:'\u{1F9D1}',color:colors[next.members.length%colors.length],role:link?.role==='child'?'member':'adult',age:metaBirthday?C.ageFromBirthday(metaBirthday):null,birthday:metaBirthday,phone:metaPhone,active:true,email:email||'',userId:uid,inviteStatus:'joined'};
   next.members.push(created);if(link)link.linkedMemberId=created.id;
  }
- // Collapse accidental duplicate master cards left by older clients.
  dedupeMasterMembers(next,person?.id||link?.linkedMemberId||'');
- if((link?.isOwner||link?.role==='owner'||!invite)&&metaCountry){next.settings.country=metaCountry;next.settings.province=metaProvince||next.settings.province||'';}
+ if((link?.isOwner||link?.role==='owner'||!viaInvite)&&metaCountry){next.settings.country=metaCountry;next.settings.province=metaProvince||next.settings.province||'';}
  if(link?.isOwner||link?.role==='owner')next.settings.allowAdultsSwitchProfiles??=false;
- localStorage.setItem(ACCESS_SESSION,JSON.stringify({mode:'cloud',id:user.id,householdId:result.householdId,membership:access.membership}));
+ localStorage.setItem(ACCESS_SESSION,JSON.stringify({mode:'cloud',id:uid,householdId:result.householdId,membership:access.membership,joinedViaInvite:!!access.joinedViaInvite,familyChoice:access.familyChoice||null}));
  applyAccountState(next,cacheKey);
- if(link?.role==='child'){const mid=link.linkedMemberId||next.members.find(m=>m.userId===user.id)?.id;if(mid){actor={role:'member',memberId:mid};try{sessionStorage.setItem(KEY+'-profile',JSON.stringify(actor));}catch(_){}ui.view='member';ui.memberId=mid;}}
+ if(link?.role==='child'){const childMid=link.linkedMemberId||next.members.find(m=>m.userId===uid)?.id;if(childMid){actor={role:'member',memberId:childMid};try{sessionStorage.setItem(KEY+'-profile',JSON.stringify(actor));}catch(_){}ui.view='member';ui.memberId=childMid;}}
  else if(link?.role==='adult'||link?.isOwner){actor={role:'adult',memberId:null};try{sessionStorage.setItem(KEY+'-profile',JSON.stringify(actor));}catch(_){}}
+}
+async function joinCloudFamily(code){
+ if(!window.HomaCloudTransport||typeof window.HomaCloudTransport.join!=='function')throw new Error(t('v5AdapterMissing'));
+ const raw=String(code||'').trim().toLowerCase();
+ if(!raw)throw new Error(t('joinFamilyNeedCode'));
+ access.busy=true;access.message=t('joiningFamily');access.error=false;render();
+ let result;
+ try{
+  result=await withTimeout(window.HomaCloudTransport.join(raw),45000,t('joiningFamilyTimeout'));
+ }finally{access.busy=false;}
+ access.joinedViaInvite=true;access.familyChoice=null;access.invitePrefill='';access.pendingInvite='';ui.joinFamily=null;
+ const session={user:{id:access.user?.id,email:access.user?.email,user_metadata:{name:access.user?.name,...(access._meta||{})}}};
+ settleCloudHousehold(session,result,access.user?.name||'',access._meta||{},true);
+ toast(t('joinFamilyOk'));
+}
+window.FPJoinFamily={needs:()=>needsFamilyChoice(),join:code=>joinCloudFamily(code)};
+function needsFamilyChoice(){
+ if(access.blocked||access.mode!=='cloud'||!isAdult())return false;
+ if(state?.settings?.familyReady!==false)return false;
+ if(access.joinedViaInvite||access.familyChoice==='create')return false;
+ if(access.membership?.role==='child')return false;
+ return !!(access.membership?.isOwner||access.membership?.role==='owner'||!access.membership?.role);
 }
 async function saveCloudSnapshot(snapshot){
  if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('multiDevicePending'));
@@ -1031,7 +1060,8 @@ async function saveCloudSnapshot(snapshot){
  access.revision=Number(data);localStorage.removeItem(marker);
 }
 async function cloudCredentials(fd,signup){
- access.pendingInvite=signup?String(fd.get('invite')||'').trim():'';
+ // Invite code only from tokenized URL (?invite=), never from the register form.
+ access.pendingInvite=String(access.pendingInvite||access.invitePrefill||'').trim();
  const client=await cloudClient(),email=String(fd.get('email')).trim(),password=String(fd.get('password')),redirect=location.origin+location.pathname;
  if(signup){
   if(password.length<10||password!==fd.get('repeat'))throw new Error(t('passwordsMatchLen'));
@@ -1081,6 +1111,8 @@ async function bootAccess(){
   const oauthError=oauthReturnError();
   const session=JSON.parse(localStorage.getItem(ACCESS_SESSION)||'null');
   if(session?.membership)access.membership=session.membership;
+  if(session?.joinedViaInvite)access.joinedViaInvite=true;
+  if(session?.familyChoice)access.familyChoice=session.familyChoice;
   if(session?.mode==='local')localStorage.removeItem(ACCESS_SESSION);
   if(cloudConfigured()&&cloudOriginReady()){
    const client=await cloudClient(),{data,error}=await client.auth.getSession();if(error)throw error;if(data.session){await activateCloud(data.session,sessionName(data.session));return;}
@@ -1358,6 +1390,13 @@ function renderAdultProfileGate(){
  const name=person?.name&&person.name!==t5('adultFallbackName')&&person.name!=='Adulto'?person.name:(access.user?.name||'');
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('adultProfileEyebrow'))}</span><h1>${esc(t5('adultProfileTitle'))}</h1><p>${esc(t5('adultProfileText'))}</p></section><section class="auth-panel"><form id="adult-profile-form" class="auth-card"><h2>${esc(t5('adultProfileTitle'))}</h2><p class="auth-sub">${esc(needLoc?t5('adultProfileSub'):t5('adultProfileSubInvite'))}</p>${field(t5('name'),'name',name,'text','required maxlength="80" autocomplete="name"')}${adultContactFieldsHtml({birthday:person?.birthday||'',phone:person?.phone||'',country:state.settings.country||'ES',province:state.settings.province||'',withLocation:needLoc})}<button type="submit" class="btn primary wide">${esc(t5('adultProfileSave'))}</button><p class="tiny muted center mt">${esc(access.user?.email||'')}</p></form></section></div>`;
 }
+function renderJoinFamilyGate(){
+ const mode=ui.joinFamily==='code'?'code':'choice';
+ const body=mode==='code'
+  ?`<p class="auth-sub">${esc(t5('joinFamilyCodeSub'))}</p>${field(t5('invite'),'inviteCode','','text','required maxlength="64" autocomplete="off" spellcheck="false" inputmode="text")}${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}<button type="submit" class="btn primary wide" ${access.busy?'disabled':''}>${access.busy?esc(t5('joiningFamily')):esc(t5('joinFamilySubmit'))}</button><button type="button" class="text-btn wide mt" data-action="join-family-back">${esc(t5('back'))}</button>`
+  :`<p class="auth-sub">${esc(t5('joinFamilySub'))}</p><button type="button" class="btn primary wide" data-action="join-family-code">${esc(t5('joinFamilyWithCode'))}</button><button type="button" class="btn secondary wide mt" data-action="join-family-create">${esc(t5('joinFamilyCreate'))}</button>`;
+ $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('joinFamilyEyebrow'))}</span><h1>${esc(t5('joinFamilyTitle'))}</h1><p>${esc(t5('joinFamilyStory'))}</p></section><section class="auth-panel"><form id="join-family-form" class="auth-card"><h2>${esc(mode==='code'?t5('joinFamilyWithCode'):t5('joinFamilyTitle'))}</h2>${body}</form></section></div>`;
+}
 
 const TOUR_STEPS=[{view:'home',title:'tour1Title',text:'tour1Text'},{view:'family',title:'tour2Title',text:'tour2Text'},{view:'tasks',title:'tour3Title',text:'tour3Text'},{view:'calendar',title:'tour4Title',text:'tour4Text'},{view:'recipes',title:'tour5Title',text:'tour5Text'},{view:'money',title:'tour6Title',text:'tour6Text'}];
 function clearTour(persist){ui.tour=null;if(persist)transact(s=>{s.settings.tutorialDismissed=true;},null);}
@@ -1386,6 +1425,7 @@ function render(){
   }
   // After Google (or any login), collect registration contact before the family guide.
   if(!access.blocked&&typeof adultProfileIncomplete==='function'&&adultProfileIncomplete()){renderAdultProfileGate();return;}
+  if(!access.blocked&&typeof needsFamilyChoice==='function'&&needsFamilyChoice()){renderJoinFamilyGate();return;}
   if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
   if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
   renderBefore5();
@@ -1495,19 +1535,39 @@ async function web5Action(a,d,el,event){
  case 'guide-back':{const g=readGuide($('#family-guide'));g.step=Math.max(0,g.step-1);render();return true;}
  case 'guide-add':{const g=readGuide($('#family-guide'));if(d.kind==='pet')g.pets.push({name:'',species:'perro',birthday:''});else g.people.push({name:'',role:'member',relation:'hijo',ownProfile:false,email:'',birthday:'',phone:''});render();return true;}
  case 'guide-remove':{const g=readGuide($('#family-guide'));const list=d.kind==='pet'?g.pets:g.people;const i=Number(d.index);if(list.length<=1)list[0].name='';else list.splice(i,1);render();return true;}
+ case 'join-family-code':ui.joinFamily='code';access.message='';access.error=false;render();return true;
+ case 'join-family-back':ui.joinFamily='choice';access.message='';access.error=false;render();return true;
+ case 'join-family-create':{
+  access.familyChoice='create';ui.joinFamily=null;access.message='';access.error=false;
+  try{const s=JSON.parse(localStorage.getItem(ACCESS_SESSION)||'null');if(s){s.familyChoice='create';localStorage.setItem(ACCESS_SESSION,JSON.stringify(s));}}catch(_){}
+  render();return true;
+ }
  case 'web5-timezone':openModal(esc(t5('timezoneTitle')),`${field(t5('timezoneField'),'zone',state.settings.timeZone,'text','required maxlength="80" placeholder="Europe/Madrid"')}<p class="note">${esc(t5('timezoneNote'))}</p>${footer(t5('save'))}`,fd=>transact(s=>{new Intl.DateTimeFormat('es',{timeZone:fd.get('zone')});s.settings.timeZone=fd.get('zone');},t5('timezoneSaved')));return true;
  case 'web5-connections':openModal(esc(t5('howSavedTitle')),`<div class="connection-row"><b>${esc(t5('howSavedDevice'))}</b><span>${esc(t5('howSavedDeviceText'))}</span></div><div class="connection-row"><b>${esc(t5('howSavedAccount'))}</b><span>${esc(cloudConfigured()?(access.mode==='cloud'?t5('howSavedCloudOn'):t5('howSavedCloudReady')):t5('howSavedCloudOff'))}</span></div><div class="connection-row"><b>${esc(t5('howSavedCal'))}</b><span>${esc(t5('howSavedCalText'))}</span></div><div class="connection-row"><b>${esc(t5('howSavedPush'))}</b><span>${esc(t5('howSavedPushText'))}</span></div><p class="note mt">${esc(t5('howSavedBackupNote'))}</p><div class="modal-footer">${btn(esc(t5('understood')),'close','','primary')}</div>`);return true;
  }
  return false;
 }
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='guide-own-profile'){const row=el.closest('[data-guide-person]');const box=row?.querySelector('.guide-own-fields');if(box){box.classList.toggle('hidden',!el.checked);box.querySelectorAll('input').forEach(inp=>{if(el.checked)inp.setAttribute('required','');else inp.removeAttribute('required');});}return;}if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);$('#member-pet-birthday')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='invite-role'){const box=$('#invite-adult-fields');if(box)box.classList.toggle('hidden',el.value!=='adult');}if(el.dataset.change==='profile-country'){const wrap=el.closest('form')||el.closest('.modal-body')||document;const prov=wrap.querySelector('[name=province]');if(!prov)return;const box=prov.closest('label.field')||prov;const v=el.value,cur=prov.value;if(v==='ES'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><select name="province" required>${selectOptions([{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))],ES_PROVINCES.includes(cur)?cur:'')}</select></label>`;}else if(prov.tagName==='SELECT'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><input name="province" type="text" required maxlength="80" value="${esc(cur&&!ES_PROVINCES.includes(cur)?cur:'')}" placeholder="${esc(t('provincePh'))}"></label>`;}}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(typeof applyDocumentLocale==='function')applyDocumentLocale();if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
-document.addEventListener('submit',e=>{
+document.addEventListener('submit',async e=>{
  if(e.target.id==='adult-profile-form'){
   e.preventDefault();
   try{
    const ok=completeAdultProfile(new FormData(e.target));
    if(ok)render();
   }catch(err){toast(err.message||t5('adultProfileNeed'),true);}
+  return;
+ }
+ if(e.target.id==='join-family-form'){
+  e.preventDefault();
+  if(ui.joinFamily!=='code'||access.busy)return;
+  const code=String(new FormData(e.target).get('inviteCode')||'').trim();
+  try{
+   await joinCloudFamily(code);
+  }catch(err){
+   access.message=err.message||t5('joinFamilyFail');
+   access.error=true;
+   render();
+  }
   return;
  }
  if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step===0&&!normalizeRelation(g.adultRelation)){toast(t5('guideNeedRelation'),true);return;}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});

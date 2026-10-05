@@ -1,22 +1,22 @@
 {
   "version": "5.0.0-beta.1",
-  "hash": "f86c84381269",
+  "hash": "fd7430818560",
   "files": {
     "core.js": {
       "bytes": 124573,
       "sha256": "22b21b8c5e6855f947a5afb7c137564d534f179139bf127d962dc1a67d02a343"
     },
     "app.js": {
-      "bytes": 328765,
-      "sha256": "08b28251a2eb95c46b3bb18a36d6990369e9d075a549395905b38db7c3a62de5"
+      "bytes": 333265,
+      "sha256": "bc0022ea04e9f1de5a263bf1147b031fbe1b70e89924bb357de69f0cf8f85d46"
     },
     "styles.css": {
       "bytes": 93000,
       "sha256": "78b5ba3b99ed258d45efaa4d7536f75e36f70a6984a5a2dd7ce87e26df3d8458"
     },
     "i18n.js": {
-      "bytes": 952781,
-      "sha256": "5cf9f5d02b8b98a59ab1531afc20d6a84020867a2a4a279b4d9aaf12410f59bd"
+      "bytes": 962295,
+      "sha256": "7add750378a1677008562f137b16966e47ab3c2da0e216cd16248483643c8e16"
     },
     "asset-store.js": {
       "bytes": 2429,
@@ -31,8 +31,8 @@
       "sha256": "54cd0dfdfbe7c7e87e676d6ce793bbc57472c6fef11b429e60387421e6ba6a61"
     },
     "cloud-transport.js": {
-      "bytes": 14177,
-      "sha256": "7e34ed559fa7f64f412556385a698f800fc689417a2fcf95a71a18b58f4a4cb6"
+      "bytes": 15362,
+      "sha256": "8344f97bfac3d1801fddc8479251507e4b386a02126c8a6f391458ef49b0f422"
     }
   }
 }

@@ -253,6 +253,29 @@
       if (data && typeof data === 'object') return data;
       return { code: String(data || ''), email: String(email || ''), role: role === 'child' || role === 'member' ? 'child' : 'adult', memberId: memberId || null };
     },
+    async join(inviteCode) {
+      if (!this.client) throw new Error('No hay sesión en la nube.');
+      const code = String(inviteCode || '').trim().toLowerCase();
+      if (!code) throw new Error(explain('INVITE_INVALID'));
+      const { data: joined, error } = await this.client.rpc('homa_accept', { p_code: code });
+      if (error) throw new Error(explain(error));
+      if (!joined) throw new Error(explain('INVITE_INVALID'));
+      const inviteMeta = typeof joined === 'object' ? joined : { householdId: joined };
+      const householdId = inviteMeta.householdId || inviteMeta.household_id;
+      if (!householdId) throw new Error(explain('INVITE_INVALID'));
+      if (this.channel) {
+        try { await this.client.removeChannel(this.channel); } catch (_) {}
+        this.channel = null;
+      }
+      this.householdId = householdId;
+      this.known = new Map();
+      const rows = await this.pull();
+      let state = rows.length ? assemble(rows) : null;
+      if (!state) throw new Error(explain('INVITE_INVALID'));
+      const link = await this.myLink();
+      this.listen();
+      return { state, householdId, revision: 0, membership: link, invite: inviteMeta };
+    },
     async myLink() {
       const { data, error } = await this.client.rpc('homa_my_link');
       if (error) throw new Error(explain(error));
