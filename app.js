@@ -40,7 +40,7 @@ const locationFieldsHtml=(country='',province='')=>{
  const provOpts=c==='ES'?[{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))]:null;
  return `<div class="form-grid mt">${selectField(t('countryField'),'country',COUNTRY_OPTS(),c,'data-change="profile-country" required')}${provOpts?selectField(t('provinceField'),'province',provOpts,province,'required'):field(t('provinceField'),'province',province,'text',`required maxlength="80" placeholder="${esc(t('provincePh'))}"`)}</div><p class="tiny muted">${esc(t('homeLocationNote'))}</p>`;
 };
-const birthdayFieldAttrs=(required=false)=>`${required?'required ':''}maxlength="10" inputmode="numeric" autocomplete="bday" placeholder="${esc(t('birthdayPh'))}"`;
+const birthdayFieldAttrs=(required=false)=>`${required?'required ':''}maxlength="10" inputmode="numeric" autocomplete="bday" data-mask="date" placeholder="${esc(t('birthdayPh'))}"`;
 const adultContactFieldsHtml=(opts={})=>`${field(t('birthdayRequired'),'birthday',formatTypedDate(opts.birthday||''),'text',birthdayFieldAttrs(true))}${field(t('phoneRequired'),'phone',opts.phone||'','tel',`required maxlength="40" autocomplete="tel" placeholder="${esc(t('phonePh'))}"`)}${opts.withLocation?locationFieldsHtml(opts.country||'ES',opts.province||''):''}`;
 const RELATION_VALUES=['padre','madre','hijo','hija'];
 const normalizeRelation=v=>RELATION_VALUES.includes(String(v||'').trim())?String(v).trim():'';
@@ -400,7 +400,11 @@ document.addEventListener('click',async event=>{
  case 'install':installHelp();break;
  }}catch(e){toast(e.message||t('actionFailed'),true);}
 });
-document.addEventListener('input',event=>{const d=event.target.dataset;if(d.input==='task-search'){ui.query=event.target.value;render();}if(d.input==='recipe-search'){ui.recipeQuery=event.target.value;render();}});
+document.addEventListener('input',event=>{
+ const el=event.target;
+ if(el&&(el.dataset?.mask==='date'||el.getAttribute?.('autocomplete')==='bday'||/birthday$/i.test(el.name||'')))applyTypedDateMask(el);
+ const d=el?.dataset;if(d?.input==='task-search'){ui.query=el.value;render();}if(d?.input==='recipe-search'){ui.recipeQuery=el.value;render();}
+});
 document.addEventListener('change',event=>{const el=event.target,d=el.dataset;try{if(v2Change(el))return;switch(d.change){
  case 'app-locale':if(window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);applyDocumentLocale();if(state?.settings&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else if(state?.settings)state.settings.locale=code;render();}break;
  case 'task-week':ui.selectedWeek=el.value;render();break;
@@ -656,6 +660,29 @@ function formatTypedDate(iso){
  if(!iso||!C.validDate(iso))return String(iso||'').trim();
  const [y,mo,d]=iso.split('-');
  return `${d}/${mo}/${y}`;
+}
+function maskTypedDate(raw){
+ const digits=String(raw||'').replace(/\D/g,'').slice(0,8);
+ let out=digits.slice(0,2);
+ if(digits.length>2)out+='/'+digits.slice(2,4);
+ if(digits.length>4)out+='/'+digits.slice(4,8);
+ return out;
+}
+function applyTypedDateMask(el){
+ if(!el||el.type==='date'||el.dataset.masking==='1')return;
+ const before=el.value,start=el.selectionStart??before.length;
+ const digitsBefore=[...before.slice(0,start)].filter(ch=>/\d/.test(ch)).length;
+ const next=maskTypedDate(before);
+ if(next===before)return;
+ el.dataset.masking='1';
+ el.value=next;
+ let seen=0,pos=next.length;
+ for(let i=0;i<next.length;i++){
+  if(/\d/.test(next[i])){seen++;if(seen>=digitsBefore){pos=i+1;break;}}
+ }
+ if(digitsBefore===0)pos=0;
+ try{el.setSelectionRange(pos,pos);}catch(_){}
+ el.dataset.masking='';
 }
 const normalizePhone=v=>String(v||'').trim().replace(/[^\d+]/g,'').slice(0,40);
 const validPhone=v=>{const d=String(v||'').replace(/\D/g,'');return d.length>=9&&d.length<=15;};
@@ -1268,8 +1295,8 @@ function finishGuide(){
 function renderFamilyGuide(){
  const g=guideDraft(),step=g.step,titles=[t5('guideTitle0'),t5('guideTitle1'),t5('guideTitle2')];
  const body=step===0?`${field(t5('familyName'),'familyName',g.familyName,'text',`required maxlength="80" placeholder="${esc(t5('familyPh'))}"`)}${field(t5('adultName'),'adultName',g.adultName,'text','required maxlength="80"')}${selectField(t5('iAm'),'adultRelation',relationOpts(true),g.adultRelation||'','required')}<p class="small muted">${esc(t5('guideAdultHint'))}</p>`
-  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p>${g.people.map((p,i)=>{const own=!!p.ownProfile;return `<div class="guide-person" data-guide-person><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRelation">${selectOptions(relationOpts(true),normalizeRelation(p.relation)||(p.role==='adult'?'padre':'hijo'))}</select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="personBirthday" type="text" maxlength="10" inputmode="numeric" autocomplete="bday" placeholder="${esc(t5('birthdayPh'))}" value="${esc(typeof formatTypedDate==='function'?formatTypedDate(p.birthday||''):(p.birthday||''))}"></label><label class="check-label mt"><input type="checkbox" name="personOwnProfile" data-change="guide-own-profile" ${own?'checked':''}>${esc(t5('guideOwnProfile'))}</label><div class="guide-own-fields ${own?'':'hidden'}"><p class="tiny muted mb">${esc(t5('guideOwnProfileHint'))}</p><label class="field"><span>${esc(t5('email'))}</span><input name="personEmail" type="email" maxlength="254" value="${esc(p.email||'')}" placeholder="${esc(t5('optionalEmailPh'))}" ${own?'required':''}></label><label class="field"><span>${esc(t5('phoneRequired'))}</span><input name="personPhone" type="tel" maxlength="40" value="${esc(p.phone||'')}" placeholder="${esc(t5('phonePh'))}" ${own?'required':''}></label></div></div>`;}).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
-  :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-pet" data-guide-pet><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="petBirthday" type="text" maxlength="10" inputmode="numeric" autocomplete="bday" placeholder="${esc(t5('birthdayPh'))}" value="${esc(typeof formatTypedDate==='function'?formatTypedDate(p.birthday||''):(p.birthday||''))}"></label></div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
+  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p>${g.people.map((p,i)=>{const own=!!p.ownProfile;return `<div class="guide-person" data-guide-person><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRelation">${selectOptions(relationOpts(true),normalizeRelation(p.relation)||(p.role==='adult'?'padre':'hijo'))}</select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="personBirthday" type="text" maxlength="10" inputmode="numeric" autocomplete="bday" data-mask="date" placeholder="${esc(t5('birthdayPh'))}" value="${esc(typeof formatTypedDate==='function'?formatTypedDate(p.birthday||''):(p.birthday||''))}"></label><label class="check-label mt"><input type="checkbox" name="personOwnProfile" data-change="guide-own-profile" ${own?'checked':''}>${esc(t5('guideOwnProfile'))}</label><div class="guide-own-fields ${own?'':'hidden'}"><p class="tiny muted mb">${esc(t5('guideOwnProfileHint'))}</p><label class="field"><span>${esc(t5('email'))}</span><input name="personEmail" type="email" maxlength="254" value="${esc(p.email||'')}" placeholder="${esc(t5('optionalEmailPh'))}" ${own?'required':''}></label><label class="field"><span>${esc(t5('phoneRequired'))}</span><input name="personPhone" type="tel" maxlength="40" value="${esc(p.phone||'')}" placeholder="${esc(t5('phonePh'))}" ${own?'required':''}></label></div></div>`;}).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
+  :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-pet" data-guide-pet><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="petBirthday" type="text" maxlength="10" inputmode="numeric" autocomplete="bday" data-mask="date" placeholder="${esc(t5('birthdayPh'))}" value="${esc(typeof formatTypedDate==='function'?formatTypedDate(p.birthday||''):(p.birthday||''))}"></label></div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('guideEyebrow'))}</span><h1>${esc(t5('guideStoryTitle'))}</h1><p>${esc(t5('guideStoryText'))}</p><label class="field mt"><span>${esc(t5('chooseLang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(window.HomaI18n.getLocale()):'<option value="es">Español</option>'}</select></label></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">${esc(t5('guideStep',{n:step+1}))}</span><h2>${esc(titles[step])}</h2>${body}<div class="guide-actions">${step?btn(t5('back'),'guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?esc(t5('enterHome')):esc(t5('continue'))}</button></div></form></section></div>`;
 }
 function renderAdultProfileGate(){

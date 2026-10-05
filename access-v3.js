@@ -18,6 +18,29 @@ function formatTypedDate(iso){
  const [y,mo,d]=iso.split('-');
  return `${d}/${mo}/${y}`;
 }
+function maskTypedDate(raw){
+ const digits=String(raw||'').replace(/\D/g,'').slice(0,8);
+ let out=digits.slice(0,2);
+ if(digits.length>2)out+='/'+digits.slice(2,4);
+ if(digits.length>4)out+='/'+digits.slice(4,8);
+ return out;
+}
+function applyTypedDateMask(el){
+ if(!el||el.type==='date'||el.dataset.masking==='1')return;
+ const before=el.value,start=el.selectionStart??before.length;
+ const digitsBefore=[...before.slice(0,start)].filter(ch=>/\d/.test(ch)).length;
+ const next=maskTypedDate(before);
+ if(next===before)return;
+ el.dataset.masking='1';
+ el.value=next;
+ let seen=0,pos=next.length;
+ for(let i=0;i<next.length;i++){
+  if(/\d/.test(next[i])){seen++;if(seen>=digitsBefore){pos=i+1;break;}}
+ }
+ if(digitsBefore===0)pos=0;
+ try{el.setSelectionRange(pos,pos);}catch(_){}
+ el.dataset.masking='';
+}
 const normalizePhone=v=>String(v||'').trim().replace(/[^\d+]/g,'').slice(0,40);
 const validPhone=v=>{const d=String(v||'').replace(/\D/g,'');return d.length>=9&&d.length<=15;};
 const readProfileFields=fd=>{

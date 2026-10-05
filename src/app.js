@@ -40,7 +40,7 @@ const locationFieldsHtml=(country='',province='')=>{
  const provOpts=c==='ES'?[{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))]:null;
  return `<div class="form-grid mt">${selectField(t('countryField'),'country',COUNTRY_OPTS(),c,'data-change="profile-country" required')}${provOpts?selectField(t('provinceField'),'province',provOpts,province,'required'):field(t('provinceField'),'province',province,'text',`required maxlength="80" placeholder="${esc(t('provincePh'))}"`)}</div><p class="tiny muted">${esc(t('homeLocationNote'))}</p>`;
 };
-const birthdayFieldAttrs=(required=false)=>`${required?'required ':''}maxlength="10" inputmode="numeric" autocomplete="bday" placeholder="${esc(t('birthdayPh'))}"`;
+const birthdayFieldAttrs=(required=false)=>`${required?'required ':''}maxlength="10" inputmode="numeric" autocomplete="bday" data-mask="date" placeholder="${esc(t('birthdayPh'))}"`;
 const adultContactFieldsHtml=(opts={})=>`${field(t('birthdayRequired'),'birthday',formatTypedDate(opts.birthday||''),'text',birthdayFieldAttrs(true))}${field(t('phoneRequired'),'phone',opts.phone||'','tel',`required maxlength="40" autocomplete="tel" placeholder="${esc(t('phonePh'))}"`)}${opts.withLocation?locationFieldsHtml(opts.country||'ES',opts.province||''):''}`;
 const RELATION_VALUES=['padre','madre','hijo','hija'];
 const normalizeRelation=v=>RELATION_VALUES.includes(String(v||'').trim())?String(v).trim():'';
@@ -400,7 +400,11 @@ document.addEventListener('click',async event=>{
  case 'install':installHelp();break;
  }}catch(e){toast(e.message||t('actionFailed'),true);}
 });
-document.addEventListener('input',event=>{const d=event.target.dataset;if(d.input==='task-search'){ui.query=event.target.value;render();}if(d.input==='recipe-search'){ui.recipeQuery=event.target.value;render();}});
+document.addEventListener('input',event=>{
+ const el=event.target;
+ if(el&&(el.dataset?.mask==='date'||el.getAttribute?.('autocomplete')==='bday'||/birthday$/i.test(el.name||'')))applyTypedDateMask(el);
+ const d=el?.dataset;if(d?.input==='task-search'){ui.query=el.value;render();}if(d?.input==='recipe-search'){ui.recipeQuery=el.value;render();}
+});
 document.addEventListener('change',event=>{const el=event.target,d=el.dataset;try{if(v2Change(el))return;switch(d.change){
  case 'app-locale':if(window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);applyDocumentLocale();if(state?.settings&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else if(state?.settings)state.settings.locale=code;render();}break;
  case 'task-week':ui.selectedWeek=el.value;render();break;
@@ -656,6 +660,29 @@ function formatTypedDate(iso){
  if(!iso||!C.validDate(iso))return String(iso||'').trim();
  const [y,mo,d]=iso.split('-');
  return `${d}/${mo}/${y}`;
+}
+function maskTypedDate(raw){
+ const digits=String(raw||'').replace(/\D/g,'').slice(0,8);
+ let out=digits.slice(0,2);
+ if(digits.length>2)out+='/'+digits.slice(2,4);
+ if(digits.length>4)out+='/'+digits.slice(4,8);
+ return out;
+}
+function applyTypedDateMask(el){
+ if(!el||el.type==='date'||el.dataset.masking==='1')return;
+ const before=el.value,start=el.selectionStart??before.length;
+ const digitsBefore=[...before.slice(0,start)].filter(ch=>/\d/.test(ch)).length;
+ const next=maskTypedDate(before);
+ if(next===before)return;
+ el.dataset.masking='1';
+ el.value=next;
+ let seen=0,pos=next.length;
+ for(let i=0;i<next.length;i++){
+  if(/\d/.test(next[i])){seen++;if(seen>=digitsBefore){pos=i+1;break;}}
+ }
+ if(digitsBefore===0)pos=0;
+ try{el.setSelectionRange(pos,pos);}catch(_){}
+ el.dataset.masking='';
 }
 const normalizePhone=v=>String(v||'').trim().replace(/[^\d+]/g,'').slice(0,40);
 const validPhone=v=>{const d=String(v||'').replace(/\D/g,'');return d.length>=9&&d.length<=15;};
