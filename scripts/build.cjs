@@ -1,6 +1,6 @@
 'use strict';const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');const {readPublicConfig}=require('./public-config.cjs');const root=path.resolve(__dirname,'..'),src=path.join(root,'src'),out=path.join(root,'web');fs.mkdirSync(out,{recursive:true});const supabaseUrl=readPublicConfig(root).url;
 const read=n=>fs.readFileSync(path.join(src,n),'utf8');const core=read('core.js').replace('/* @web5-core */',read('web5-core.js'));const app=read('app.js').replace('/* @web5-ui */',read('web5-ui.js'));const css=read('styles.css')+'\n'+read('web5.css');
-const files={'core.js':core,'app.js':app,'styles.css':css,'i18n.js':read('i18n.js'),'asset-store.js':read('asset-store.js'),'entity-sync.js':read('entity-sync.js'),'recipe-import.js':read('recipe-import.js'),'cloud-transport.js':read('cloud-transport.js')};
+const files={'core.js':core,'app.js':app,'styles.css':css,'i18n.js':read('i18n-extra.js')+'\n'+read('i18n.js'),'asset-store.js':read('asset-store.js'),'entity-sync.js':read('entity-sync.js'),'recipe-import.js':read('recipe-import.js'),'cloud-transport.js':read('cloud-transport.js')};
 for(const [n,s] of Object.entries(files))fs.writeFileSync(path.join(out,n),s);
 fs.copyFileSync(path.join(root,'config.js'),path.join(out,'config.js'));fs.copyFileSync(path.join(root,'vendor','supabase.js'),path.join(out,'supabase.js'));fs.cpSync(path.join(root,'icons'),path.join(out,'icons'),{recursive:true});
 let base=read('index.template.html').replace(/Family Points(?: 2.1)?/g,'La Homa').replace('Un hogar, un equipo','Tu vida familiar, organizada');
@@ -10,7 +10,9 @@ const inline='<script>window.FAMILY_STANDALONE=true;</script>\n'+['i18n.js','ent
 fs.writeFileSync(path.join(root,'La-Homa-web-v5.html'),base.replace('<!--ASSETS-->','<style>\n'+css+'\n</style>').replace('<!--SCRIPTS-->',inline));
 fs.writeFileSync(path.join(root,'core.js'),core); // Stable import path for preserved regression tests.
 fs.writeFileSync(path.join(root,'app.js'),app);
-fs.writeFileSync(path.join(root,'access-v3.js'),app.slice(app.indexOf('/* Account access.'),app.indexOf('/* Event UI:')));
+const accessSlice=app.slice(app.indexOf('/* Account access.'),app.indexOf('/* Event UI:'));
+const accessTShim="if(typeof t!=='function'){var t=(k,v)=>{const i18n=typeof window!=='undefined'?window.HomaI18n:null;if(i18n&&typeof i18n.t==='function'){const out=i18n.t(k,v);if(out!=null&&out!==k)return out;}const dict=(typeof window!=='undefined'&&window.HomaI18nExtra&&window.HomaI18nExtra.es)||{};let s=dict[k]!=null?dict[k]:k;if(v&&typeof s==='string')for(const[a,b]of Object.entries(v))s=s.split('{'+a+'}').join(String(b));return s;};}\n";
+fs.writeFileSync(path.join(root,'access-v3.js'),accessTShim+accessSlice);
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify({name:'La Homa - Organizaci\u00f3n familiar',short_name:'La Homa',id:'./',start_url:'./',scope:'./',display:'standalone',background_color:'#f7f6fa',theme_color:'#7851b5',icons:[192,512].map(n=>({src:'icons/icon-'+n+'.png',sizes:n+'x'+n,type:'image/png',purpose:'any'}))},null,2));
 const hash=crypto.createHash('sha256').update(core+app+css).digest('hex').slice(0,12);
 const shell=['./','./index.html','./core.js','./app.js','./styles.css','./entity-sync.js','./asset-store.js','./recipe-import.js','./cloud-transport.js','./i18n.js','./supabase.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];

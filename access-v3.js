@@ -1,20 +1,22 @@
+if(typeof t!=='function'){var t=(k,v)=>{const i18n=typeof window!=='undefined'?window.HomaI18n:null;if(i18n&&typeof i18n.t==='function'){const out=i18n.t(k,v);if(out!=null&&out!==k)return out;}const dict=(typeof window!=='undefined'&&window.HomaI18nExtra&&window.HomaI18nExtra.es)||{};let s=dict[k]!=null?dict[k]:k;if(v&&typeof s==='string')for(const[a,b]of Object.entries(v))s=s.split('{'+a+'}').join(String(b));return s;};}
 /* Account access. Local encrypted vaults and an optional real Supabase backend.
  * The persistent local session key is a convenience, not a bank-grade lock.
  * No data leaves this browser unless cloud configuration and login are provided.
  */
+
 const ACCESS_SESSION='family-points-v3-session',ACCESS_CONFIG='family-points-v3-cloud-config';
 const access={blocked:true,mode:'guest',user:null,key:null,rawKey:null,record:null,tab:'login',target:'cloud',busy:false,message:'',error:false,pending:0,saveError:'',chain:Promise.resolve(),cloud:null,revision:0,suppress:false,cloudPending:null,pendingInvite:'',membership:null};
 window.FPAccess=access;
 function accessStatus(){if(access.saveError)return t('statusSavePending');if(access.pending)return t('statusSaving');return access.mode==='cloud'?t('statusCloud'):access.mode==='local'?t('statusLocal'):t('statusBrowser');}
 function toB64(bytes){let s='';for(const b of new Uint8Array(bytes))s+=String.fromCharCode(b);return btoa(s);}
 function fromB64(str){return Uint8Array.from(atob(str),c=>c.charCodeAt(0));}
-function openVault(){return new Promise((resolve,reject)=>{const r=indexedDB.open('family-points-accounts-v3',1);r.onupgradeneeded=()=>r.result.createObjectStore('accounts',{keyPath:'id'}).createIndex('email','email',{unique:true});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(new Error('No se pudo abrir el guardado de cuentas. Permite el almacenamiento del navegador.'));});}
-async function vaultOp(mode,fn){const db=await openVault();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('accounts',mode),r=fn(tx.objectStore('accounts'));let result;r.onsuccess=()=>{result=r.result;};tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error||new Error('No se pudo guardar la cuenta.'));tx.onabort=()=>reject(tx.error||new Error('Guardado interrumpido.'));});}finally{db.close();}}
+function openVault(){return new Promise((resolve,reject)=>{const r=indexedDB.open('family-points-accounts-v3',1);r.onupgradeneeded=()=>r.result.createObjectStore('accounts',{keyPath:'id'}).createIndex('email','email',{unique:true});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(new Error(t('vaultOpenFail')));});}
+async function vaultOp(mode,fn){const db=await openVault();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('accounts',mode),r=fn(tx.objectStore('accounts'));let result;r.onsuccess=()=>{result=r.result;};tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error||new Error(t('vaultSaveFail')));tx.onabort=()=>reject(tx.error||new Error(t('vaultSaveAborted')));});}finally{db.close();}}
 const vaultGet=id=>vaultOp('readonly',s=>s.get(id));
 const vaultAll=()=>vaultOp('readonly',s=>s.getAll());
 const vaultPut=record=>vaultOp('readwrite',s=>s.put(record));
 async function passwordKey(password,salt){
- if(!crypto?.subtle)throw new Error('Este navegador requiere HTTPS o localhost para crear cuentas. Usa el servidor incluido.');
+ if(!crypto?.subtle)throw new Error(t('httpsAccountsNeed'));
  const input=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
  return crypto.subtle.deriveKey({name:'PBKDF2',salt:fromB64(salt),iterations:600000,hash:'SHA-256'},input,{name:'AES-GCM',length:256},true,['encrypt','decrypt']);
 }
@@ -48,11 +50,11 @@ function queueAccountSave(snapshot){
  const captured={mode:access.mode,user:access.user,key:access.key};
  access.chain=access.chain.catch(()=>{}).then(async()=>{
   if(captured.mode==='local'){
-   const old=await vaultGet(captured.user.id);if(!old)throw new Error('No se encuentra esta cuenta local. Exporta una copia.');
+   const old=await vaultGet(captured.user.id);if(!old)throw new Error(t('localAccountMissing'));
    if(old.updatedAt>snapshot.updatedAt)return;
    const vault=await seal(snapshot,captured.key);await vaultPut({...old,vault,updatedAt:snapshot.updatedAt});
   }else{access.cloudPending=snapshot;await saveCloudSnapshot(snapshot);access.cloudPending=null;}
- }).catch(e=>{access.saveError=e.message||'No se pudo guardar. Exporta una copia.';toast(access.saveError,true);}).finally(()=>{access.pending--;refreshV3Chrome();});
+ }).catch(e=>{access.saveError=e.message||t('saveFailedShort');toast(access.saveError,true);}).finally(()=>{access.pending--;refreshV3Chrome();});
 }
 access.queueSave=queueAccountSave;
 function cloudConfig(){const bundled=window.FAMILY_CLOUD&&window.FAMILY_CLOUD.url&&window.FAMILY_CLOUD.anonKey?window.FAMILY_CLOUD:null;if(bundled){try{localStorage.removeItem(ACCESS_CONFIG);}catch(_){}return bundled;}try{const stored=JSON.parse(localStorage.getItem(ACCESS_CONFIG)||'null');if(stored&&stored.url&&stored.anonKey)return stored;if(stored)localStorage.removeItem(ACCESS_CONFIG);}catch(_){}return {};}
@@ -74,54 +76,54 @@ async function activateLocal(record,key,remember=true){
 }
 async function localCredentials(fd,signup){
  const email=String(fd.get('email')).trim().toLowerCase(),password=String(fd.get('password')),users=await vaultAll();
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Revisa el correo.');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t('checkEmail'));
  if(signup){
-  if(password.length<10||password!==fd.get('repeat'))throw new Error('Las claves deben coincidir y tener al menos 10 caracteres.');
-  if(users.some(u=>u.email===email))throw new Error('Ya existe una cuenta local con este correo. Inicia sesi\u00f3n.');
-  const name=String(fd.get('name')).trim();if(!name)throw new Error('Escribe tu nombre.');
+  if(password.length<10||password!==fd.get('repeat'))throw new Error(t('passwordsMatchLen'));
+  if(users.some(u=>u.email===email))throw new Error(t('localAccountExists'));
+  const name=String(fd.get('name')).trim();if(!name)throw new Error(t('writeYourName'));
   const salt=toB64(crypto.getRandomValues(new Uint8Array(16))),key=await passwordKey(password,salt),next=fd.get('keep')?C.copy(state):freshFamily(name);next.demo=false;
   const record={id:C.uid('account'),email,name,salt,vault:await seal(next,key),updatedAt:new Date().toISOString()};await vaultPut(record);await activateLocal(record,key);return;
  }
- const record=users.find(u=>u.email===email);if(!record)throw new Error('Correo o contrase\u00f1a incorrectos en este navegador.');
- let key;try{key=await passwordKey(password,record.salt);await unseal(record.vault,key);}catch(_){throw new Error('Correo o contrase\u00f1a incorrectos en este navegador.');}await activateLocal(record,key);
+ const record=users.find(u=>u.email===email);if(!record)throw new Error(t('badLocalCreds'));
+ let key;try{key=await passwordKey(password,record.salt);await unseal(record.vault,key);}catch(_){throw new Error(t('badLocalCreds'));}await activateLocal(record,key);
 }
 async function logOut(){
- access.busy=true;await access.chain;if(access.saveError){access.busy=false;throw new Error('Hay cambios pendientes. Reintenta el guardado o exporta una copia antes de salir.');}
+ access.busy=true;await access.chain;if(access.saveError){access.busy=false;throw new Error(t('pendingChangesLogout'));}
  const oldKey=KEY;if(access.mode==='cloud'){const {error}=await access.cloud.auth.signOut({scope:'local'});if(error){access.busy=false;throw error;}}
  localStorage.removeItem(ACCESS_SESSION);localStorage.removeItem(oldKey);localStorage.removeItem(oldKey+'-previous');sessionStorage.removeItem(oldKey+'-profile');
- access.blocked=true;access.mode='guest';access.user=null;access.key=null;access.rawKey=null;access.record=null;access.busy=false;access.message='Sesi\u00f3n cerrada. Tus datos permanecen guardados en tu cuenta.';access.error=false;access.tab='login';
+ access.blocked=true;access.mode='guest';access.user=null;access.key=null;access.rawKey=null;access.record=null;access.busy=false;access.message=t('sessionClosedMsg');access.error=false;access.tab='login';
  KEY='family-points-v3-guest';BACKUP=KEY+'-previous';state=C.seed();lastSavedJSON=localStorage.getItem(KEY);actor={role:'member',memberId:null};closeModal();render();
 }
 async function guestAccess(){
- access.blocked=true;access.mode='guest';access.user=null;access.message='La Homa solo se usa con una cuenta.';access.error=true;render();
+ access.blocked=true;access.mode='guest';access.user=null;access.message=t('lahomaAccountOnly');access.error=true;render();
 }
 function cloudConfigForm(){
  if(window.FAMILY_CLOUD?.url&&window.FAMILY_CLOUD?.anonKey)return;
  const cfg=cloudConfig();
- openModal('Conectar una cuenta en la nube',`<p class="dialog-description">Necesitas un proyecto Supabase con la tabla y las reglas incluidas en el ZIP, y alojar la app en HTTPS (o localhost durante el desarrollo). Esto no crea el servidor ni configura los proveedores por s&iacute; solo.</p>${field('URL del proyecto Supabase','url',cfg.url||'','url','placeholder="https://tu-proyecto.supabase.co" required')}${field('Clave p&uacute;blica (publishable o anon)','anonKey',cfg.anonKey||'','text','required autocomplete="off"')}<div class="note warning">Nunca uses una clave secret o service_role en el navegador.</div><label class="check-label mt"><input type="checkbox" name="google" ${cfg.googleEnabled?'checked':''}>He configurado Google en el proyecto y su consola.</label><p class="small muted mt">La conexi&oacute;n de la cuenta no sube tus datos locales autom&aacute;ticamente. Podr&aacute;s exportarlos y restaurarlos en tu cuenta tras acceder.</p>${footer('Guardar conexi&oacute;n')}`,fd=>{
-  const url=String(fd.get('url')).trim().replace(/\/$/,''),key=String(fd.get('anonKey')).trim();let parsed;try{parsed=new URL(url);}catch(_){throw new Error('URL no v\u00e1lida.');}
-  if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.username||parsed.password||parsed.pathname!=='/')throw new Error('Usa la URL HTTPS original de tu proyecto supabase.co.');
-  if(key.startsWith('sb_secret_'))throw new Error('Esta clave es privada. No la guardes en el navegador.');
-  if(!key.startsWith('sb_publishable_')){try{const payload=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));if(payload.role!=='anon')throw Error();}catch(_){throw new Error('Usa una clave publishable o anon; nunca service_role.');}}
-  if(access.mode==='cloud')throw new Error('Cierra la sesi\u00f3n actual antes de cambiar de proyecto.');
-  localStorage.setItem(ACCESS_CONFIG,JSON.stringify({url,anonKey:key,googleEnabled:!!fd.get('google')}));access.cloud=null;access.target='cloud';access.message='Conexión guardada en este navegador. Ya puedes crear la cuenta en la nube.';access.error=false;render();return true;
+ openModal(t('connectCloud'),`<p class="dialog-description">${esc(t('cloudConnectBody'))}</p>${field(t('supabaseProjectUrl'),'url',cfg.url||'','url','placeholder="https://your-project.supabase.co" required')}${field(t('publicAnonKey'),'anonKey',cfg.anonKey||'','text','required autocomplete="off"')}<div class="note warning">${esc(t('neverSecretKey'))}</div><label class="check-label mt"><input type="checkbox" name="google" ${cfg.googleEnabled?'checked':''}>${esc(t('googleConfiguredCheck'))}</label><p class="small muted mt">${esc(t('cloudConnectNote'))}</p>${footer(esc(t('saveConnection')))}`,fd=>{
+  const url=String(fd.get('url')).trim().replace(/\/$/,''),key=String(fd.get('anonKey')).trim();let parsed;try{parsed=new URL(url);}catch(_){throw new Error(t('invalidUrl'));}
+  if(parsed.protocol!=='https:'||!parsed.hostname.endsWith('.supabase.co')||parsed.username||parsed.password||parsed.pathname!=='/')throw new Error(t('useSupabaseUrl'));
+  if(key.startsWith('sb_secret_'))throw new Error(t('privateKeyBrowser'));
+  if(!key.startsWith('sb_publishable_')){try{const payload=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));if(payload.role!=='anon')throw Error();}catch(_){throw new Error(t('usePublishableKey'));}}
+  if(access.mode==='cloud')throw new Error(t('closeSessionFirst'));
+  localStorage.setItem(ACCESS_CONFIG,JSON.stringify({url,anonKey:key,googleEnabled:!!fd.get('google')}));access.cloud=null;access.target='cloud';access.message=t('connectionSaved');access.error=false;render();return true;
  });
 }
 async function cloudClient(){
  if(access.cloud)return access.cloud;
- if(!cloudOriginReady())throw new Error('Abre la app desde HTTPS o localhost. Un archivo file:// no admite este acceso.');
- if(!cloudConfigured())throw new Error('El adaptador de hogares v5 sigue pendiente de conectar.');
- if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./supabase.js';script.onload=resolve;script.onerror=()=>reject(new Error('No se pudo cargar el servicio de acceso. Revisa la conexi\u00f3n.'));document.head.appendChild(script);});
+ if(!cloudOriginReady())throw new Error(t('openHttpsLocalhost'));
+ if(!cloudConfigured())throw new Error(t('v5PendingConnect'));
+ if(!window.supabase)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='./supabase.js';script.onload=resolve;script.onerror=()=>reject(new Error(t('accessServiceLoadFail')));document.head.appendChild(script);});
  const cfg=cloudConfig();access.cloud=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
- access.cloud.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&access.mode==='cloud'){setTimeout(()=>{if(!access.pending&&!access.saveError){localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-previous');sessionStorage.removeItem(KEY+'-profile');localStorage.removeItem(ACCESS_SESSION);}access.blocked=true;access.message='Sesi\u00f3n cerrada o revocada. Inicia sesi\u00f3n de nuevo.';access.user=null;closeModal();render();},0);}});
+ access.cloud.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&access.mode==='cloud'){setTimeout(()=>{if(!access.pending&&!access.saveError){localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-previous');sessionStorage.removeItem(KEY+'-profile');localStorage.removeItem(ACCESS_SESSION);}access.blocked=true;access.message=t('sessionRevoked');access.user=null;closeModal();render();},0);}});
  return access.cloud;
 }
 async function activateCloud(session,name=''){
- if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error('El adaptador de hogares v5 aún no está conectado.');
- if(!session?.user)throw new Error('No se ha recibido una sesión válida.');
+ if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('v5AdapterMissing'));
+ if(!session?.user)throw new Error(t('noValidSession'));
  const invite=access.pendingInvite||'';access.pendingInvite='';
  const result=await window.HomaCloudTransport.activate(session,name,invite);
- const user=session.user;access.mode='cloud';access.target='cloud';access.user={id:user.id,email:user.email||'',name:name||user.user_metadata?.name||'Mi familia',householdId:result.householdId};
+ const user=session.user;access.mode='cloud';access.target='cloud';access.user={id:user.id,email:user.email||'',name:name||user.user_metadata?.name||t('myFamilyDefault'),householdId:result.householdId};
  access.membership=result.membership||{role:null,linkedMemberId:null,isOwner:false};
  access.revision=result.revision||0;access.saveError='';access.cloudPending=null;
  let next=C.validateState(result.state);const cacheKey='family-points-v3-cloud-'+result.householdId,cache=localStorage.getItem(cacheKey);
@@ -143,20 +145,20 @@ async function activateCloud(session,name=''){
  else if(link?.role==='adult'||link?.isOwner){actor={role:'adult',memberId:null};try{sessionStorage.setItem(KEY+'-profile',JSON.stringify(actor));}catch(_){}}
 }
 async function saveCloudSnapshot(snapshot){
- if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error('El guardado multidispositivo est\u00e1 pendiente de conectar.');
+ if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('multiDevicePending'));
  return window.HomaCloudTransport.save(snapshot);
  /* Legacy implementation, intentionally unreachable. */
- if(!access.cloud||!access.user)throw new Error('No hay sesi\u00f3n en la nube.');
+ if(!access.cloud||!access.user)throw new Error(t('noCloudSession'));
  const marker=KEY+'-pending';localStorage.setItem(marker,JSON.stringify({revision:access.revision}));const expected=access.revision;
  const {data,error}=await access.cloud.rpc('save_family_state',{expected_revision:expected,p_data:snapshot});
- if(error)throw new Error(error.message.includes('VERSION_CONFLICT')?'Otro dispositivo ha cambiado la familia. Exporta tus cambios antes de recargar desde la nube.':'Guardado local; pendiente de nube: '+error.message);
+ if(error)throw new Error(error.message.includes('VERSION_CONFLICT')?t('versionConflictExport'):t('localSaveCloudPending',{msg:error.message}));
  access.revision=Number(data);localStorage.removeItem(marker);
 }
 async function cloudCredentials(fd,signup){
  access.pendingInvite=signup?String(fd.get('invite')||'').trim():'';
  const client=await cloudClient(),email=String(fd.get('email')).trim(),password=String(fd.get('password')),redirect=location.origin+location.pathname;
- if(signup){if(password.length<10||password!==fd.get('repeat'))throw new Error('Las claves deben coincidir y tener al menos 10 caracteres.');const name=String(fd.get('name')).trim();const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{name}}});if(error)throw error;if(!data.session){access.message='Revisa tu correo y confirma la cuenta. Despu\u00e9s podr\u00e1s iniciar sesi\u00f3n.';access.error=false;access.tab='login';render();return;}await activateCloud(data.session,name);}
- else{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw new Error('No se pudo acceder. Revisa correo, contrase\u00f1a y confirmaci\u00f3n del correo.');await activateCloud(data.session);}
+ if(signup){if(password.length<10||password!==fd.get('repeat'))throw new Error(t('passwordsMatchLen'));const name=String(fd.get('name')).trim();const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{name}}});if(error)throw error;if(!data.session){access.message=t('confirmEmailThenLogin');access.error=false;access.tab='login';render();return;}await activateCloud(data.session,name);}
+ else{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw new Error(t('cloudLoginFail'));await activateCloud(data.session);}
 }
 async function accessAction(a,d){
  switch(a){
@@ -166,19 +168,19 @@ async function accessAction(a,d){
  case 'access-tab':access.tab=d.tab;access.message='';render();return true;
  case 'access-guest':await guestAccess();return true;
  case 'access-config':if(access.blocked||needAdult())cloudConfigForm();return true;
- case 'access-invite':{if(!needAdult()||access.mode!=='cloud'||!canManageInvites())return true;openModal('Invitar a la familia',`<p class="dialog-description">Puedes invitar a un adulto o a un niño que ya tenga correo. También puedes hacerlo desde la ficha de cada persona en Familia.</p><label class="field"><span>Correo</span><input name="email" type="email" required maxlength="254" placeholder="correo@ejemplo.com"></label><label class="field"><span>Nombre</span><input name="name" type="text" required maxlength="80" placeholder="Cómo se llama en casa"></label><label class="field"><span>Es</span><select name="role"><option value="adult">Adulto</option><option value="member">Niño o niña</option></select></label><div class="note">Recibirá un correo que puedes enviar desde tu app de mail con el código. Debe registrarse con ese mismo correo.</div>${footer('Crear invitación')}`,async fd=>{const email=String(fd.get('email')).trim().toLowerCase(),name=String(fd.get('name')).trim(),role=fd.get('role')==='adult'?'adult':'member';if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Escribe nombre y un correo válido.');let memberId=null;const ok=transact(s=>{const existing=s.members.find(m=>m.email===email&&m.active!==false);if(existing){memberId=existing.id;existing.inviteStatus='pending';}else{memberId=C.uid('member');s.members.push({id:memberId,name,role,avatar:role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[s.members.length%colors.length],age:null,active:true,email,inviteStatus:'pending'});const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);if(w){const shot=C.memberSnapshot(s.members.find(m=>m.id===memberId));const snap=w.members.find(x=>x.id===memberId);if(snap)Object.assign(snap,shot);else w.members.push(shot);}}},null);if(!ok)return false;const inv=await window.HomaCloudTransport.invite(email,memberId,role==='adult'?'adult':'child');closeModal(true);showInviteResult(inv,name);return false;});return true;}
- case 'access-logout':if(!needAdult())return true;confirmDialog('Cerrar sesi&oacute;n','Se ocultar&aacute;n los datos familiares. Podr&aacute;s recuperarlos al iniciar sesi&oacute;n con la misma cuenta.',async()=>{await logOut();return true;},'Cerrar sesi&oacute;n');return true;
- case 'access-oauth':{if(d.provider!=='google')throw new Error('Ese acceso no existe.');if(!cloudConfigured()||!cloudOriginReady())throw new Error('La nube no est\u00e1 lista.');const c=await cloudClient();const options={redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}};const {error}=await c.auth.signInWithOAuth({provider:'google',options});if(error)throw new Error(/provider is not enabled|unsupported provider/i.test(error.message)?'Google a\u00fan no est\u00e1 conectado. Falta el cliente de Google en el proyecto.':'No se pudo abrir el acceso.');return true;}
+ case 'access-invite':{if(!needAdult()||access.mode!=='cloud'||!canManageInvites())return true;openModal(t('inviteFamily'),`<p class="dialog-description">${esc(t('inviteFamilyNote'))}</p><label class="field"><span>${esc(t('email'))}</span><input name="email" type="email" required maxlength="254" placeholder="${esc(t('emailPh'))}"></label><label class="field"><span>${esc(t('fieldName'))}</span><input name="name" type="text" required maxlength="80" placeholder="${esc(t('homeNamePh'))}"></label><label class="field"><span>${esc(t('whoIs'))}</span><select name="role"><option value="adult">${esc(t('adult'))}</option><option value="member">${esc(t('roleChildLabel'))}</option></select></label><div class="note">${esc(t('inviteCodeNote'))}</div>${footer(esc(t('createInvite')))}`,async fd=>{const email=String(fd.get('email')).trim().toLowerCase(),name=String(fd.get('name')).trim(),role=fd.get('role')==='adult'?'adult':'member';if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t('needNameEmail'));let memberId=null;const ok=transact(s=>{const existing=s.members.find(m=>m.email===email&&m.active!==false);if(existing){memberId=existing.id;existing.inviteStatus='pending';}else{memberId=C.uid('member');s.members.push({id:memberId,name,role,avatar:role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[s.members.length%colors.length],age:null,active:true,email,inviteStatus:'pending'});const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);if(w){const shot=C.memberSnapshot(s.members.find(m=>m.id===memberId));const snap=w.members.find(x=>x.id===memberId);if(snap)Object.assign(snap,shot);else w.members.push(shot);}}},null);if(!ok)return false;const inv=await window.HomaCloudTransport.invite(email,memberId,role==='adult'?'adult':'child');closeModal(true);showInviteResult(inv,name);return false;});return true;}
+ case 'access-logout':if(!needAdult())return true;confirmDialog(t('signOut'),t('signOutBody'),async()=>{await logOut();return true;},t('signOut'));return true;
+ case 'access-oauth':{if(d.provider!=='google')throw new Error(t('accessNotExist'));if(!cloudConfigured()||!cloudOriginReady())throw new Error(t('cloudNotReady'));const c=await cloudClient();const options={redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}};const {error}=await c.auth.signInWithOAuth({provider:'google',options});if(error)throw new Error(/provider is not enabled|unsupported provider/i.test(error.message)?t('googleNotConnected'):t('googleOpenFail'));return true;}
  case 'access-retry':if(needAdult()){access.saveError='';queueAccountSave(C.copy(state));await access.chain;render();}return true;
- case 'access-reload':if(needAdult())confirmDialog('Cargar la versi&oacute;n de la nube','Se descargar&aacute; una copia local antes de sustituir los datos por la versi&oacute;n del servidor.',async()=>{await access.chain;downloadFile('la-homa-antes-de-sincronizar.json',JSON.stringify(state,null,2),'application/json');localStorage.removeItem(KEY+'-pending');const {data,error}=await access.cloud.auth.getSession();if(error)throw error;await activateCloud(data.session);return true;});return true;
+ case 'access-reload':if(needAdult())confirmDialog(t('loadCloudVersion'),t('loadCloudBody'),async()=>{await access.chain;downloadFile('la-homa-antes-de-sincronizar.json',JSON.stringify(state,null,2),'application/json');localStorage.removeItem(KEY+'-pending');const {data,error}=await access.cloud.auth.getSession();if(error)throw error;await activateCloud(data.session);return true;});return true;
  default:return false;
  }
 }
 document.addEventListener('submit',async e=>{
  if(e.target.id!=='access-form')return;e.preventDefault();if(access.busy)return;const form=e.target,fd=new FormData(form),signup=access.tab==='register';access.busy=true;const submit=form.querySelector('[type=submit]');submit.disabled=true;access.message='';
- try{access.target='cloud';await cloudCredentials(fd,signup);}catch(err){access.message=err.message||'No se pudo acceder.';access.error=true;access.blocked=true;}finally{access.busy=false;render();}
+ try{access.target='cloud';await cloudCredentials(fd,signup);}catch(err){access.message=err.message||t('couldNotAccess');access.error=true;access.blocked=true;}finally{access.busy=false;render();}
 });
-window.addEventListener('storage',e=>{if(e.key===ACCESS_SESSION&&!e.newValue&&access.user){access.blocked=true;access.key=null;access.rawKey=null;access.user=null;access.message='Sesi\u00f3n cerrada en otra pesta\u00f1a.';closeModal();render();}});
+window.addEventListener('storage',e=>{if(e.key===ACCESS_SESSION&&!e.newValue&&access.user){access.blocked=true;access.key=null;access.rawKey=null;access.user=null;access.message=t('sessionClosedOtherTab');closeModal();render();}});
 function sessionName(session){const m=session?.user?.user_metadata||{};return String(m.full_name||m.name||m.given_name||'').trim();}
 function oauthReturnError(){
  const q=new URLSearchParams(location.search),h=new URLSearchParams(String(location.hash||'').replace(/^#/,''));
@@ -186,8 +188,8 @@ function oauthReturnError(){
  if(!raw)return '';
  try{history.replaceState({},'',location.pathname);}catch(_){}
  const text=decodeURIComponent(raw.replace(/\+/g,' '));
- if(/provider is not enabled|unsupported provider/i.test(text))return 'Ese acceso todav\u00eda no est\u00e1 activado en el proyecto.';
- return 'No se pudo completar el acceso.';
+ if(/provider is not enabled|unsupported provider/i.test(text))return t('accessNotEnabledProject');
+ return t('accessIncomplete');
 }
 async function bootAccess(){
  render();try{
@@ -199,6 +201,6 @@ async function bootAccess(){
    const client=await cloudClient(),{data,error}=await client.auth.getSession();if(error)throw error;if(data.session){await activateCloud(data.session,sessionName(data.session));return;}
   }
   access.message=oauthError;access.error=!!oauthError;render();
- }catch(e){access.blocked=true;access.message=e.message||'Vuelve a iniciar sesi\u00f3n.';access.error=true;render();}
+ }catch(e){access.blocked=true;access.message=e.message||t('signInAgain');access.error=true;render();}
 }
 

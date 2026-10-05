@@ -5,6 +5,7 @@
   else root.HomaI18n = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
+  if (typeof require === 'function') { try { require('./i18n-extra.js'); } catch (_) {} }
   const STORAGE = 'lahoma-locale';
   const LOCALES = [
     { code: 'es', label: 'Español', native: 'Español', bcp: 'es-ES' },
@@ -712,6 +713,14 @@
   };
 
   function copy(base, patch) { return Object.assign({}, base, patch); }
+
+  if (typeof globalThis !== 'undefined' && globalThis.HomaI18nExtra) {
+    const extra = globalThis.HomaI18nExtra;
+    Object.assign(es, extra.es || {});
+    for (const code of Object.keys(extra)) {
+      if (code !== 'es' && extra[code]) { /* locale patches applied after dict is built */ }
+    }
+  }
 
   const dict = {
     es,
@@ -2127,8 +2136,8 @@
       emptySwapDetail: "Only pending tasks are swapped. Both people accept eta an heldu confirms.",
       emptyPresenceTitle: "The plan adapts to the familia.",
       emptyPresenceDetail: "Excused tasks neither add nedo subtract, eta are left out of task sharing. Completed ones eta closed histedoy stay unchanged.",
-      emptyVouchersTitle: "Achievements become moments.",
-      emptyVouchersDetail: "When an heldu issues a won sari, its voucher appears here.",
+      emptyVouchersTitle: "Lorpenak une bihurtzen dira.",
+      emptyVouchersDetail: "Heldu batek irabazitako saria ematen duenean, bere vale agertuko da hemen.",
       emptyEventsTitle: "First, a plan.",
       emptyEventsDetail: "Gehitu an event to the egutegi eta get ready.",
       emptyPantryTitle: "A pantry rekinout fuss.",
@@ -4675,8 +4684,8 @@
       emptySwapDetail: "Seules les compitos en attente s’echangent. Les deux personnes acceptent e un adulto confirme.",
       emptyPresenceTitle: "Le plan s’adapte a la famiglia.",
       emptyPresenceDetail: "Les compitos justifiees n’ajoutent ni ne retirent di punti, e sont exclues du partage. Les terminees e l’historique ferme ne changent pas.",
-      emptyVouchersTitle: "Les reussii tuoi deviennent dei moments.",
-      emptyVouchersDetail: "Quand un adulto emet une ricompensa gagnee, son bon apparait ici.",
+      emptyVouchersTitle: "I successi diventano momenti.",
+      emptyVouchersDetail: "Quando un adulto emette una ricompensa guadagnata, il buono compare qui.",
       emptyEventsTitle: "D’abord, un projet.",
       emptyEventsDetail: "Ajoute un evenement au calendario e prepare le necessaire.",
       emptyPantryTitle: "Un garde-manger senza complications.",
@@ -5312,8 +5321,8 @@
       emptySwapDetail: "Only pending tasks are swapped. Both people accept und Erwachsener confirms.",
       emptyPresenceTitle: "The plan adapts to family.",
       emptyPresenceDetail: "Excused tasks neither add nor subtract, und are left out of task sharing. Completed ones und closed history stay unchanged.",
-      emptyVouchersTitle: "Achievements become moments.",
-      emptyVouchersDetail: "When Erwachsener issues won Belohnung, its voucher appears here.",
+      emptyVouchersTitle: "Erfolge werden zu Momenten.",
+      emptyVouchersDetail: "Wenn eine erwachsene Person eine verdiente Belohnung ausstellt, erscheint der Gutschein hier.",
       emptyEventsTitle: "First, plan.",
       emptyEventsDetail: "Add event to Kalender und get ready.",
       emptyPantryTitle: "A pantry ohne fuss.",
@@ -5851,6 +5860,15 @@
     }
     try { document.documentElement.lang = current === 'va' ? 'ca' : current; } catch (_) {}
     return current;
+  }
+
+  const extraAll = (typeof globalThis !== 'undefined' && globalThis.HomaI18nExtra) || {};
+  if (extraAll.es) {
+    Object.assign(es, extraAll.es);
+    Object.assign(dict.es, extraAll.es);
+  }
+  for (const code of Object.keys(dict)) {
+    if (extraAll[code]) Object.assign(dict[code], extraAll.es || {}, extraAll[code]);
   }
 
   function t(key, vars) {
