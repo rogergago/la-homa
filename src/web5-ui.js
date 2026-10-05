@@ -63,10 +63,19 @@ function finishGuide(){
  const petEmoji={perro:'\u{1F436}',gato:'\u{1F431}',otro:'\u{1F43E}'};
  const ok=transact(s=>{
   s.settings.familyName=family.slice(0,80);s.settings.familyReady=true;s.settings.country=profile.country;s.settings.province=profile.province;
-  const person=s.members.find(m=>m.role==='adult'&&m.active!==false);if(person){person.name=adultName.slice(0,80);person.birthday=profile.birthday;person.age=profile.age;person.phone=profile.phone;person.relation=adultRelation;if(relationAvatar(adultRelation))person.avatar=relationAvatar(adultRelation);}
+  const master=(typeof linkedAdultMember==='function'&&linkedAdultMember())||s.members.find(m=>m.role==='adult'&&m.active!==false);
+  if(master){
+   master.name=adultName.slice(0,80);master.birthday=profile.birthday;master.age=profile.age;master.phone=profile.phone;master.relation=adultRelation;
+   if(relationAvatar(adultRelation))master.avatar=relationAvatar(adultRelation);
+   if(typeof access!=='undefined'&&access.user?.id)master.userId=master.userId||access.user.id;
+   if(typeof access!=='undefined'&&access.user?.email)master.email=master.email||access.user.email;
+  }
   let n=s.members.length;
+  const masterName=adultName.trim().toLowerCase();
   for(const p of g.people){
    const name=p.name.trim();if(!name)continue;
+   // Don't re-add the master as another household member.
+   if(name.toLowerCase()===masterName&&['padre','madre'].includes(normalizeRelation(p.relation)||adultRelation))continue;
    const ownProfile=!!p.ownProfile;
    const email=ownProfile?String(p.email||'').trim().toLowerCase():'';
    const phone=ownProfile?normalizePhone(p.phone):'';
@@ -74,6 +83,7 @@ function finishGuide(){
     if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t5('guideOwnNeedContact'));
     if(!validPhone(phone))throw new Error(t5('guideOwnNeedContact'));
    }
+   if(master&&email&&master.email&&email===String(master.email).toLowerCase())continue;
    const birthday=guideOptionalBirthday(p.birthday);
    const relation=normalizeRelation(p.relation);
    const role=relation?roleFromRelation(relation):(p.role==='adult'?'adult':'member');
@@ -85,6 +95,18 @@ function finishGuide(){
    const birthday=guideOptionalBirthday(p.birthday);
    const age=birthday?C.ageFromBirthday(birthday):null;
    s.members.push({id:C.uid('member'),name:name.slice(0,80),role:'pet',species,avatar:petEmoji[species],color:colors[n%colors.length],age,birthday,phone:'',relation:'',active:true});n++;
+  }
+  // Archive leftover duplicate master cards (same user/email/name without link).
+  if(typeof dedupeMasterMembers==='function')dedupeMasterMembers(s,master?.id||'');
+  else if(master){
+   const masterEmail=String(master.email||'').toLowerCase();
+   for(const m of s.members){
+    if(m.id===master.id||m.active===false||m.role==='pet')continue;
+    const sameUser=master.userId&&m.userId===master.userId;
+    const sameEmail=masterEmail&&m.email&&m.email.toLowerCase()===masterEmail;
+    const sameOrphanName=m.role==='adult'&&!m.userId&&!m.email&&String(m.name||'').trim().toLowerCase()===masterName;
+    if(sameUser||sameEmail||sameOrphanName)m.active=false;
+   }
   }
   const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
   if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
@@ -138,6 +160,14 @@ function removeTourDom(){document.querySelector('.tour-layer')?.remove();}
 
 function render(){
   C.ensureWeb5(state);
+  // One-shot cleanup if an older signup left two cards for the same master.
+  if(!access.blocked&&state?.settings?.familyReady&&!access._dedupedMaster&&typeof dedupeMasterMembers==='function'){
+   access._dedupedMaster=true;
+   if(dedupeMasterMembers(state)){
+    if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));
+    else if(typeof save==='function')save();
+   }
+  }
   // After Google (or any login), collect registration contact before the family guide.
   if(!access.blocked&&typeof adultProfileIncomplete==='function'&&adultProfileIncomplete()){renderAdultProfileGate();return;}
   if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}

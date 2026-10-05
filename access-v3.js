@@ -34,6 +34,33 @@ const requireAdultProfile=(p,{needLocation=false}={})=>{
  const age=C.ageFromBirthday(p.birthday);
  return {...p,age};
 };
+function dedupeMasterMembers(s,preferId=''){
+ if(!s?.members?.length)return false;
+ const linked=preferId||access.membership?.linkedMemberId||'';
+ const uid=access.user?.id||'';
+ const email=String(access.user?.email||'').toLowerCase();
+ let keep=linked?s.members.find(m=>m.id===linked&&m.active!==false):null;
+ if(!keep&&uid)keep=s.members.find(m=>m.userId===uid&&m.active!==false);
+ if(!keep&&email)keep=s.members.find(m=>m.email&&m.email.toLowerCase()===email&&m.active!==false);
+ if(!keep)keep=s.members.find(m=>m.role==='adult'&&m.active!==false);
+ if(!keep)return false;
+ const keepName=String(keep.name||'').trim().toLowerCase();
+ let changed=false;
+ for(const m of s.members){
+  if(m.id===keep.id||m.active===false||m.role==='pet')continue;
+  const sameUser=uid&&m.userId===uid;
+  const sameEmail=email&&m.email&&m.email.toLowerCase()===email;
+  const sameOrphan=m.role==='adult'&&!m.userId&&!m.email&&keepName&&String(m.name||'').trim().toLowerCase()===keepName;
+  if(!(sameUser||sameEmail||sameOrphan))continue;
+  if(!keep.relation&&m.relation)keep.relation=m.relation;
+  if(!keep.birthday&&m.birthday){keep.birthday=m.birthday;keep.age=m.age??keep.age;}
+  if(!keep.phone&&m.phone)keep.phone=m.phone;
+  if(relationAvatar(keep.relation)&&(!keep.avatar||keep.avatar==='\u{1F9D1}'))keep.avatar=relationAvatar(keep.relation);
+  m.active=false;changed=true;
+ }
+ if(access.membership&&keep.id)access.membership.linkedMemberId=keep.id;
+ return changed;
+}
 function linkedAdultMember(){
  if(access.blocked||access.mode==='guest'||access.membership?.role==='child')return null;
  const mid=access.membership?.linkedMemberId;
@@ -128,6 +155,7 @@ function freshFamily(name,profile={}){
 }
 function applyAccountState(next,key){
  access.suppress=true;state=C.validateState(C.copy(next));KEY=key;BACKUP=key+'-previous';storageIssue='';corruptRaw=null;lastSavedJSON=localStorage.getItem(KEY);C.rollover(state);
+ if(dedupeMasterMembers(state)&&!access.blocked){try{const json=JSON.stringify(state);localStorage.setItem(KEY,json);lastSavedJSON=json;}catch(_){}}
  actor=state.settings.pin?{role:'member',memberId:state.members.find(m=>m.role==='member'&&m.active!==false)?.id||state.members.find(m=>m.active!==false)?.id}:{role:'adult',memberId:null};
  try{const a=JSON.parse(sessionStorage.getItem(KEY+'-profile'));if(a?.role==='member'&&state.members.some(m=>m.id===a.memberId&&m.active!==false))actor=a;}catch(_){}
  ui.view='home';ui.kitchenActive=false;ui.kitchenMember=null;ui.memberId=null;ui.moneyMember=null;ui.presenceMember=null;ui.selectedWeek=C.monday();ui.profileWeek=null;ui.historyWeek=null;
@@ -248,15 +276,27 @@ async function activateCloud(session,name='',profile={}){
  const metaCountry=profile.country||user.user_metadata?.country||'';
  const metaProvince=profile.province||user.user_metadata?.province||'';
  access._meta={birthday:metaBirthday,phone:metaPhone,country:metaCountry,province:metaProvince,relation:profile.relation||user.user_metadata?.relation||''};
+ // Reuse the bootstrap adult placeholder instead of creating a second master card.
+ if(!person&&!invite){
+  const orphan=next.members.find(m=>m.active!==false&&m.role==='adult'&&!m.userId&&!(m.email&&user.email&&m.email.toLowerCase()===String(user.email).toLowerCase()));
+  if(orphan&&(link?.isOwner||link?.role==='owner'||link?.role==='adult'||!link?.role)){
+   person=orphan;mid=orphan.id;if(link)link.linkedMemberId=mid;
+  }
+ }
  if(person){
+  const nm=name||user.user_metadata?.name||person.name||(user.email||'Adulto').split('@')[0];
+  person.name=String(nm).slice(0,80);
   person.userId=user.id;person.email=person.email||user.email||'';person.inviteStatus='joined';
   if(metaBirthday){person.birthday=metaBirthday;person.age=C.ageFromBirthday(metaBirthday);}
   if(metaPhone)person.phone=metaPhone;
+  if(link)link.linkedMemberId=person.id;
  }else if(mid||link?.role==='adult'||inviteMeta?.role==='adult'||link?.isOwner||!invite){
   const nm=name||user.user_metadata?.name||(user.email||'Adulto').split('@')[0];
   const created={id:mid||C.uid('member'),name:nm,avatar:'\u{1F9D1}',color:colors[next.members.length%colors.length],role:link?.role==='child'?'member':'adult',age:metaBirthday?C.ageFromBirthday(metaBirthday):null,birthday:metaBirthday,phone:metaPhone,active:true,email:user.email||'',userId:user.id,inviteStatus:'joined'};
   next.members.push(created);if(link)link.linkedMemberId=created.id;
  }
+ // Collapse accidental duplicate master cards left by older clients.
+ dedupeMasterMembers(next,person?.id||link?.linkedMemberId||'');
  if((link?.isOwner||link?.role==='owner'||!invite)&&metaCountry){next.settings.country=metaCountry;next.settings.province=metaProvince||next.settings.province||'';}
  if(link?.isOwner||link?.role==='owner')next.settings.allowAdultsSwitchProfiles??=false;
  localStorage.setItem(ACCESS_SESSION,JSON.stringify({mode:'cloud',id:user.id,householdId:result.householdId,membership:access.membership}));
