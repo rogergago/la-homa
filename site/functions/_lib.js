@@ -101,7 +101,7 @@ ${alts}
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/site.css?v=14">
+<link rel="stylesheet" href="/site.css?v=15">
 ${ld}
 </head>
 <body>
