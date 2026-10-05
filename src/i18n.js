@@ -5,7 +5,12 @@
   else root.HomaI18n = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  if (typeof require === 'function') { try { require('./i18n-extra.js'); } catch (_) {} try { require('./i18n-kitchen.js'); } catch (_) {} }
+  if (typeof require === 'function') {
+    try { require('./i18n-extra.js'); } catch (_) {}
+    try { require('./i18n-kitchen.js'); } catch (_) {}
+    try { require('./i18n-locale-fill.js'); } catch (_) {}
+    try { require('./i18n-main-fill.js'); } catch (_) {}
+  }
   const STORAGE = 'lahoma-locale';
   const LOCALES = [
     { code: 'es', label: 'Español', native: 'Español', bcp: 'es-ES' },
@@ -5888,7 +5893,15 @@
     Object.assign(dict.es, extraAll.es);
   }
   for (const code of Object.keys(dict)) {
-    if (extraAll[code]) Object.assign(dict[code], extraAll.es || {}, extraAll[code]);
+    // Do not re-apply Spanish extras onto other locales — that wiped incomplete packs.
+    if (code === 'es') continue;
+    if (extraAll[code]) Object.assign(dict[code], extraAll[code]);
+  }
+  const mainFill = (typeof globalThis !== 'undefined' && globalThis.HomaI18nMainFill) || {};
+  const localeFill = (typeof globalThis !== 'undefined' && globalThis.HomaI18nLocaleFill) || {};
+  for (const code of Object.keys(dict)) {
+    if (mainFill[code]) Object.assign(dict[code], mainFill[code]);
+    if (localeFill[code]) Object.assign(dict[code], localeFill[code]);
   }
 
   function t(key, vars) {

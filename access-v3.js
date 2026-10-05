@@ -145,7 +145,7 @@ async function passwordKey(password,salt){
 async function seal(data,key){const iv=crypto.getRandomValues(new Uint8Array(12));return {iv:toB64(iv),data:toB64(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(data))))};}
 async function unseal(vault,key){return C.validateState(JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(vault.iv)},key,fromB64(vault.data)))));}
 function freshFamily(name,profile={}){
- const s=C.seed();s.demo=false;s.settings.familyName='Familia de '+name;s.settings.pin=null;s.settings.teamReward='Un plan en familia';
+ const s=C.seed();s.demo=false;s.settings.familyName=t('familyOfName',{name});s.settings.pin=null;s.settings.teamReward=t('familyPlanDefault');
  s.settings.country=profile.country||'';s.settings.province=profile.province||'';s.settings.familyReady=false;
  const age=profile.birthday?C.ageFromBirthday(profile.birthday):null;
  const m={id:C.uid('member'),name,avatar:'\u{1F9D1}',color:'#8b6ce0',role:'adult',age,birthday:profile.birthday||'',phone:profile.phone||'',active:true};
@@ -284,14 +284,14 @@ async function activateCloud(session,name='',profile={}){
   }
  }
  if(person){
-  const nm=name||user.user_metadata?.name||person.name||(user.email||'Adulto').split('@')[0];
+  const nm=name||user.user_metadata?.name||person.name||(user.email||t('adultFallbackName')).split('@')[0];
   person.name=String(nm).slice(0,80);
   person.userId=user.id;person.email=person.email||user.email||'';person.inviteStatus='joined';
   if(metaBirthday){person.birthday=metaBirthday;person.age=C.ageFromBirthday(metaBirthday);}
   if(metaPhone)person.phone=metaPhone;
   if(link)link.linkedMemberId=person.id;
  }else if(mid||link?.role==='adult'||inviteMeta?.role==='adult'||link?.isOwner||!invite){
-  const nm=name||user.user_metadata?.name||(user.email||'Adulto').split('@')[0];
+  const nm=name||user.user_metadata?.name||(user.email||t('adultFallbackName')).split('@')[0];
   const created={id:mid||C.uid('member'),name:nm,avatar:'\u{1F9D1}',color:colors[next.members.length%colors.length],role:link?.role==='child'?'member':'adult',age:metaBirthday?C.ageFromBirthday(metaBirthday):null,birthday:metaBirthday,phone:metaPhone,active:true,email:user.email||'',userId:user.id,inviteStatus:'joined'};
   next.members.push(created);if(link)link.linkedMemberId=created.id;
  }
