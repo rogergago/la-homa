@@ -4,7 +4,8 @@ const files={'core.js':core,'app.js':app,'styles.css':css,'i18n.js':read('i18n-e
 for(const [n,s] of Object.entries(files))fs.writeFileSync(path.join(out,n),s);
 fs.copyFileSync(path.join(root,'config.js'),path.join(out,'config.js'));fs.copyFileSync(path.join(root,'vendor','supabase.js'),path.join(out,'supabase.js'));fs.cpSync(path.join(root,'icons'),path.join(out,'icons'),{recursive:true});
 let base=read('index.template.html').replace(/Family Points(?: 2.1)?/g,'La Homa').replace('Un hogar, un equipo','Tu vida familiar, organizada');
-const favicon='<link rel="icon" href="./icons/icon-192.png">';const assets=favicon+'\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="stylesheet" href="./styles.css">';const scripts=['config.js','supabase.js','i18n.js','entity-sync.js','asset-store.js','recipe-import.js','cloud-transport.js','core.js','app.js'].map(n=>'<script src="./'+n+'"></script>').join('\n');
+const hash=crypto.createHash('sha256').update(core+app+css).digest('hex').slice(0,12);
+const favicon='<link rel="icon" href="./icons/icon-192.png">';const assets=favicon+'\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="stylesheet" href="./styles.css?v='+hash+'">';const scripts=['config.js','supabase.js','i18n.js','entity-sync.js','asset-store.js','recipe-import.js','cloud-transport.js','core.js','app.js'].map(n=>'<script src="./'+n+(n==='config.js'?'':'?v='+hash)+'"></script>').join('\n');
 fs.writeFileSync(path.join(out,'index.html'),base.replace('<!--ASSETS-->',assets).replace('<!--SCRIPTS-->',scripts));
 const inline='<script>window.FAMILY_STANDALONE=true;</script>\n'+['i18n.js','entity-sync.js','asset-store.js','recipe-import.js','cloud-transport.js','core.js','app.js'].map(n=>'<script>\n'+files[n].replace(/<\/script/gi,'<\\/script')+'\n</script>').join('\n');
 fs.writeFileSync(path.join(root,'La-Homa-web-v5.html'),base.replace('<!--ASSETS-->','<style>\n'+css+'\n</style>').replace('<!--SCRIPTS-->',inline));
@@ -14,9 +15,26 @@ const accessSlice=app.slice(app.indexOf('/* Account access.'),app.indexOf('/* Ev
 const accessTShim="if(typeof t!=='function'){var t=(k,v)=>{const i18n=typeof window!=='undefined'?window.HomaI18n:null;if(i18n&&typeof i18n.t==='function'){const out=i18n.t(k,v);if(out!=null&&out!==k)return out;}const dict=(typeof window!=='undefined'&&window.HomaI18nExtra&&window.HomaI18nExtra.es)||{};let s=dict[k]!=null?dict[k]:k;if(v&&typeof s==='string')for(const[a,b]of Object.entries(v))s=s.split('{'+a+'}').join(String(b));return s;};}\n";
 fs.writeFileSync(path.join(root,'access-v3.js'),accessTShim+accessSlice);
 fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify({name:'La Homa - Organizaci\u00f3n familiar',short_name:'La Homa',id:'./',start_url:'./',scope:'./',display:'standalone',background_color:'#f7f6fa',theme_color:'#7851b5',icons:[192,512].map(n=>({src:'icons/icon-'+n+'.png',sizes:n+'x'+n,type:'image/png',purpose:'any'}))},null,2));
-const hash=crypto.createHash('sha256').update(core+app+css).digest('hex').slice(0,12);
 const shell=['./','./index.html','./core.js','./app.js','./styles.css','./entity-sync.js','./asset-store.js','./recipe-import.js','./cloud-transport.js','./i18n.js','./supabase.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
-fs.writeFileSync(path.join(out,'sw.js'),`const CACHE='lahoma-${hash}',SHELL=${JSON.stringify(shell)};self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('lahoma-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin||u.pathname.endsWith('config.js')||u.pathname.includes('/api/'))return;if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).catch(()=>caches.match('./index.html')));return;}e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});self.addEventListener('push',e=>{let d={};try{d=e.data.json();}catch{}e.waitUntil(self.registration.showNotification('La Homa',{body:d.body||'Tienes un aviso familiar.',icon:'./icons/icon-192.png',tag:d.tag||'homa',data:{url:d.url&&d.url.startsWith('./')?d.url:'./#/notifications'}}));});self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(self.clients.openWindow(e.notification.data?.url||'./#/notifications'));});`);
+fs.writeFileSync(path.join(out,'sw.js'),`const CACHE='lahoma-${hash}',SHELL=${JSON.stringify(shell)};
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('lahoma-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('message',e=>{if(e.data&&e.data.type==='SKIP_WAITING')self.skipWaiting();});
+self.addEventListener('fetch',e=>{
+  const u=new URL(e.request.url);
+  if(e.request.method!=='GET'||u.origin!==location.origin||u.pathname.endsWith('config.js')||u.pathname.includes('/api/'))return;
+  if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).catch(()=>caches.match('./index.html')));return;}
+  const critical=/\\.(?:js|css)$/.test(u.pathname)||/\\/(?:app|core|i18n|cloud-transport|entity-sync|asset-store|recipe-import|supabase)\\.js$/.test(u.pathname);
+  if(critical){
+    e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r;}).catch(()=>caches.match(e.request)));
+    return;
+  }
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+});
+self.addEventListener('push',e=>{let d={};try{d=e.data.json();}catch{}e.waitUntil(self.registration.showNotification('La Homa',{body:d.body||'Tienes un aviso familiar.',icon:'./icons/icon-192.png',tag:d.tag||'homa',data:{url:d.url&&d.url.startsWith('./')?d.url:'./#/notifications'}}));});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(self.clients.openWindow(e.notification.data?.url||'./#/notifications'));});
+`);
 fs.writeFileSync(path.join(out,'_headers'),`/*\n  ! Access-Control-Allow-Origin\n  Strict-Transport-Security: max-age=31536000; includeSubDomains\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n  X-Frame-Options: DENY\n  Cross-Origin-Opener-Policy: same-origin\n  Permissions-Policy: geolocation=(), microphone=(), camera=(self), payment=(), usb=()\n  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${supabaseUrl}; connect-src 'self' ${supabaseUrl} ${supabaseUrl.replace('https:','wss:')}; frame-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'\n/config.js\n  Cache-Control: no-store\n/index.html\n  Cache-Control: no-cache\n/sw.js\n  Cache-Control: no-cache\n`);
 fs.writeFileSync(path.join(out,'_redirects'),'/* /index.html 200\n');
 fs.writeFileSync(path.join(root,'build-manifest.json'),JSON.stringify({version:'5.0.0-beta.1',hash,files:Object.fromEntries(Object.entries(files).map(([n,s])=>[n,{bytes:Buffer.byteLength(s),sha256:crypto.createHash('sha256').update(s).digest('hex')}]))},null,2));console.log('Built',hash,'web directory and standalone preview');
+
