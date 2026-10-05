@@ -22,8 +22,9 @@ function readGuide(form){
  if(form.elements.familyName)g.familyName=form.elements.familyName.value;
  if(form.elements.adultName)g.adultName=form.elements.adultName.value;
  if(form.elements.adultRelation)g.adultRelation=form.elements.adultRelation.value;
- if(form.elements.birthday)g.adultBirthday=form.elements.birthday.value;
- if(form.elements.phone)g.adultPhone=form.elements.phone.value;
+ // No leer name="birthday"/"phone": en mascotas/personas chocarían o vaciarían el perfil master.
+ if(form.elements.adultBirthday)g.adultBirthday=form.elements.adultBirthday.value;
+ if(form.elements.adultPhone)g.adultPhone=form.elements.adultPhone.value;
  if(form.elements.country)g.country=form.elements.country.value;
  if(form.elements.province)g.province=form.elements.province.value;
  const people=[...form.querySelectorAll('[data-guide-person]')].map(row=>{
@@ -34,17 +35,30 @@ function readGuide(form){
  const pets=[...form.querySelectorAll('[data-guide-pet]')].map(row=>({name:row.querySelector('[name=petName]').value,species:row.querySelector('[name=petSpecies]').value,birthday:row.querySelector('[name=petBirthday]')?.value||''}));
  if(people.length)g.people=people;if(pets.length)g.pets=pets;return g;
 }
+function guideOptionalBirthday(raw){
+ const typed=String(raw||'').trim();
+ if(!typed)return '';
+ const birthday=typeof parseTypedDate==='function'?parseTypedDate(typed):typed;
+ // Fecha opcional: si el valor no es usable, se omite en vez de bloquear el alta.
+ if(!birthday||!C.validDate(birthday)||birthday>C.iso())return '';
+ return birthday;
+}
+function guideMasterProfile(g){
+ const master=(typeof linkedAdultMember==='function'&&linkedAdultMember())||state.members.find(m=>m.role==='adult'&&m.active!==false);
+ const meta=(typeof access!=='undefined'&&access._meta)||{};
+ const pick=(...vals)=>{for(const v of vals){const s=String(v||'').trim();if(s)return s;}return '';};
+ return requireAdultProfile({
+  birthday:pick(master?.birthday,g.adultBirthday,meta.birthday),
+  phone:normalizePhone(pick(master?.phone,g.adultPhone,meta.phone)),
+  country:pick(state.settings.country,g.country,meta.country),
+  province:pick(state.settings.province,g.province,meta.province)
+ },{needLocation:true});
+}
 function finishGuide(){
  const g=guideDraft(),family=g.familyName.trim(),adultName=g.adultName.trim(),adultRelation=normalizeRelation(g.adultRelation);
  if(!family||!adultName)throw new Error(t5('guideNeedNames'));
  if(!adultRelation)throw new Error(t5('guideNeedRelation'));
- const adult=state.members.find(m=>m.role==='adult'&&m.active!==false);
- const profile=requireAdultProfile({
-  birthday:g.adultBirthday||adult?.birthday||'',
-  phone:normalizePhone(g.adultPhone||adult?.phone||''),
-  country:g.country||state.settings.country||'',
-  province:g.province||state.settings.province||''
- },{needLocation:true});
+ const profile=guideMasterProfile(g);
  profile.relation=adultRelation;
  const petEmoji={perro:'\u{1F436}',gato:'\u{1F431}',otro:'\u{1F43E}'};
  const ok=transact(s=>{
@@ -53,23 +67,24 @@ function finishGuide(){
   let n=s.members.length;
   for(const p of g.people){
    const name=p.name.trim();if(!name)continue;
-   const ownProfile=!!p.ownProfile||!!String(p.email||'').trim();
+   const ownProfile=!!p.ownProfile;
    const email=ownProfile?String(p.email||'').trim().toLowerCase():'';
-   if(ownProfile&&(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))throw new Error(t5('checkEmail'));
-   const birthday=String(p.birthday||'').trim();
-   if(birthday&&(!C.validDate(birthday)||birthday>C.iso()))throw new Error(t5('birthdayInvalid'));
    const phone=ownProfile?normalizePhone(p.phone):'';
-   if(phone&&!validPhone(phone))throw new Error(t5('phoneInvalid'));
+   if(ownProfile){
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t5('guideOwnNeedContact'));
+    if(!validPhone(phone))throw new Error(t5('guideOwnNeedContact'));
+   }
+   const birthday=guideOptionalBirthday(p.birthday);
    const relation=normalizeRelation(p.relation);
    const role=relation?roleFromRelation(relation):(p.role==='adult'?'adult':'member');
-   s.members.push({id:C.uid('member'),name:name.slice(0,80),role,relation,avatar:relationAvatar(relation)||(role==='adult'?'\u{1F9D1}':'\u{1F9D2}'),color:colors[n%colors.length],age:birthday&&C.validDate(birthday)?C.ageFromBirthday(birthday):null,birthday:birthday&&C.validDate(birthday)?birthday:'',phone,active:true,email:email||'',inviteStatus:email?'none':'none'});n++;
+   s.members.push({id:C.uid('member'),name:name.slice(0,80),role,relation,avatar:relationAvatar(relation)||(role==='adult'?'\u{1F9D1}':'\u{1F9D2}'),color:colors[n%colors.length],age:birthday?C.ageFromBirthday(birthday):null,birthday,phone,active:true,email:email||'',inviteStatus:'none'});n++;
   }
   for(const p of g.pets){
    const name=p.name.trim();if(!name)continue;
    const species=['perro','gato','otro'].includes(p.species)?p.species:'otro';
-   const birthday=String(p.birthday||'').trim();
-   if(birthday&&(!C.validDate(birthday)||birthday>C.iso()))throw new Error(t5('birthdayInvalid'));
-   s.members.push({id:C.uid('member'),name:name.slice(0,80),role:'pet',species,avatar:petEmoji[species],color:colors[n%colors.length],age:birthday&&C.validDate(birthday)?C.ageFromBirthday(birthday):null,birthday:birthday&&C.validDate(birthday)?birthday:'',phone:'',relation:'',active:true});n++;
+   const birthday=guideOptionalBirthday(p.birthday);
+   const age=birthday?C.ageFromBirthday(birthday):null;
+   s.members.push({id:C.uid('member'),name:name.slice(0,80),role:'pet',species,avatar:petEmoji[species],color:colors[n%colors.length],age,birthday,phone:'',relation:'',active:true});n++;
   }
   const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
   if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
@@ -95,8 +110,8 @@ function finishGuide(){
 function renderFamilyGuide(){
  const g=guideDraft(),step=g.step,titles=[t5('guideTitle0'),t5('guideTitle1'),t5('guideTitle2')];
  const body=step===0?`${field(t5('familyName'),'familyName',g.familyName,'text',`required maxlength="80" placeholder="${esc(t5('familyPh'))}"`)}${field(t5('adultName'),'adultName',g.adultName,'text','required maxlength="80"')}${selectField(t5('iAm'),'adultRelation',relationOpts(true),g.adultRelation||'','required')}<p class="small muted">${esc(t5('guideAdultHint'))}</p>`
-  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p>${g.people.map((p,i)=>{const own=!!p.ownProfile||!!p.email;return `<div class="guide-person" data-guide-person><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRelation">${selectOptions(relationOpts(true),normalizeRelation(p.relation)||(p.role==='adult'?'padre':'hijo'))}</select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="personBirthday" type="date" max="${C.iso()}" value="${esc(p.birthday||'')}"></label><label class="check-label mt"><input type="checkbox" name="personOwnProfile" data-change="guide-own-profile" ${own?'checked':''}>${esc(t5('guideOwnProfile'))}</label><div class="guide-own-fields ${own?'':'hidden'}"><p class="tiny muted mb">${esc(t5('guideOwnProfileHint'))}</p><label class="field"><span>${esc(t5('optionalEmail'))}</span><input name="personEmail" type="email" maxlength="254" value="${esc(p.email||'')}" placeholder="${esc(t5('optionalEmailPh'))}"></label><label class="field"><span>${esc(t5('phoneRequired'))}</span><input name="personPhone" type="tel" maxlength="40" value="${esc(p.phone||'')}" placeholder="${esc(t5('phonePh'))}"></label></div></div>`;}).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
-  :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet style="flex-wrap:wrap"><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="petBirthday" type="date" max="${C.iso()}" value="${esc(p.birthday||'')}"></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
+  :step===1?`<p class="small muted mb">${esc(t5('guidePeopleHint'))}</p>${g.people.map((p,i)=>{const own=!!p.ownProfile;return `<div class="guide-person" data-guide-person><div class="guide-row"><label class="field"><span>${esc(t5('personName'))}</span><input name="personName" value="${esc(p.name)}" maxlength="80"></label><label class="field"><span>${esc(t5('personIs'))}</span><select name="personRelation">${selectOptions(relationOpts(true),normalizeRelation(p.relation)||(p.role==='adult'?'padre':'hijo'))}</select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="person" data-index="${i}"`)}</div><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="personBirthday" type="text" maxlength="10" inputmode="numeric" autocomplete="bday" placeholder="${esc(t5('birthdayPh'))}" value="${esc(typeof formatTypedDate==='function'?formatTypedDate(p.birthday||''):(p.birthday||''))}"></label><label class="check-label mt"><input type="checkbox" name="personOwnProfile" data-change="guide-own-profile" ${own?'checked':''}>${esc(t5('guideOwnProfile'))}</label><div class="guide-own-fields ${own?'':'hidden'}"><p class="tiny muted mb">${esc(t5('guideOwnProfileHint'))}</p><label class="field"><span>${esc(t5('email'))}</span><input name="personEmail" type="email" maxlength="254" value="${esc(p.email||'')}" placeholder="${esc(t5('optionalEmailPh'))}" ${own?'required':''}></label><label class="field"><span>${esc(t5('phoneRequired'))}</span><input name="personPhone" type="tel" maxlength="40" value="${esc(p.phone||'')}" placeholder="${esc(t5('phonePh'))}" ${own?'required':''}></label></div></div>`;}).join('')}${btn(t5('addPerson'),'guide-add','data-kind="person"','secondary','plus')}`
+  :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet style="flex-wrap:wrap"><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label><label class="field"><span>${esc(t5('birthdayOpt'))}</span><input name="petBirthday" type="text" maxlength="10" inputmode="numeric" autocomplete="bday" placeholder="${esc(t5('birthdayPh'))}" value="${esc(typeof formatTypedDate==='function'?formatTypedDate(p.birthday||''):(p.birthday||''))}"></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('guideEyebrow'))}</span><h1>${esc(t5('guideStoryTitle'))}</h1><p>${esc(t5('guideStoryText'))}</p><label class="field mt"><span>${esc(t5('chooseLang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(window.HomaI18n.getLocale()):'<option value="es">Español</option>'}</select></label></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">${esc(t5('guideStep',{n:step+1}))}</span><h2>${esc(titles[step])}</h2>${body}<div class="guide-actions">${step?btn(t5('back'),'guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?esc(t5('enterHome')):esc(t5('continue'))}</button></div></form></section></div>`;
 }
 function renderAdultProfileGate(){
@@ -239,7 +254,7 @@ async function web5Action(a,d,el,event){
  }
  return false;
 }
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='guide-own-profile'){const box=el.closest('[data-guide-person]')?.querySelector('.guide-own-fields');if(box)box.classList.toggle('hidden',!el.checked);return;}if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);$('#member-pet-birthday')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='invite-role'){const box=$('#invite-adult-fields');if(box)box.classList.toggle('hidden',el.value!=='adult');}if(el.dataset.change==='profile-country'){const wrap=el.closest('form')||el.closest('.modal-body')||document;const prov=wrap.querySelector('[name=province]');if(!prov)return;const box=prov.closest('label.field')||prov;const v=el.value,cur=prov.value;if(v==='ES'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><select name="province" required>${selectOptions([{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))],ES_PROVINCES.includes(cur)?cur:'')}</select></label>`;}else if(prov.tagName==='SELECT'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><input name="province" type="text" required maxlength="80" value="${esc(cur&&!ES_PROVINCES.includes(cur)?cur:'')}" placeholder="${esc(t('provincePh'))}"></label>`;}}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='guide-own-profile'){const row=el.closest('[data-guide-person]');const box=row?.querySelector('.guide-own-fields');if(box){box.classList.toggle('hidden',!el.checked);box.querySelectorAll('input').forEach(inp=>{if(el.checked)inp.setAttribute('required','');else inp.removeAttribute('required');});}return;}if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);$('#member-pet-birthday')?.classList.toggle('hidden',!pet);}if(el.dataset.change==='invite-role'){const box=$('#invite-adult-fields');if(box)box.classList.toggle('hidden',el.value!=='adult');}if(el.dataset.change==='profile-country'){const wrap=el.closest('form')||el.closest('.modal-body')||document;const prov=wrap.querySelector('[name=province]');if(!prov)return;const box=prov.closest('label.field')||prov;const v=el.value,cur=prov.value;if(v==='ES'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><select name="province" required>${selectOptions([{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))],ES_PROVINCES.includes(cur)?cur:'')}</select></label>`;}else if(prov.tagName==='SELECT'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><input name="province" type="text" required maxlength="80" value="${esc(cur&&!ES_PROVINCES.includes(cur)?cur:'')}" placeholder="${esc(t('provincePh'))}"></label>`;}}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
 document.addEventListener('submit',e=>{
  if(e.target.id==='adult-profile-form'){
   e.preventDefault();

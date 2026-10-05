@@ -101,13 +101,13 @@ ${alts}
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/site.css?v=7">
+<link rel="stylesheet" href="/site.css?v=8">
 ${ld}
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6RZ43V4"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<noscript><iframe class="gtm-noscript" src="https://www.googletagmanager.com/ns.html?id=GTM-T6RZ43V4"
+height="0" width="0" title="Google Tag Manager"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 <a class="skip" href="#contenido">${escapeHtml(c.skip)}</a>
 <header class="site-header">

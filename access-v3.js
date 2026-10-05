@@ -3,10 +3,25 @@ if(typeof t!=='function'){var t=(k,v)=>{const i18n=typeof window!=='undefined'?w
  * The persistent local session key is a convenience, not a bank-grade lock.
  * No data leaves this browser unless cloud configuration and login are provided.
  */
+function parseTypedDate(raw){
+ const s=String(raw||'').trim();
+ if(!s)return '';
+ if(C.validDate(s))return s;
+ let m=s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/);
+ if(m){const iso=`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;return C.validDate(iso)?iso:'';}
+ m=s.match(/^(\d{2})(\d{2})(\d{4})$/);
+ if(m){const iso=`${m[3]}-${m[2]}-${m[1]}`;return C.validDate(iso)?iso:'';}
+ return '';
+}
+function formatTypedDate(iso){
+ if(!iso||!C.validDate(iso))return String(iso||'').trim();
+ const [y,mo,d]=iso.split('-');
+ return `${d}/${mo}/${y}`;
+}
 const normalizePhone=v=>String(v||'').trim().replace(/[^\d+]/g,'').slice(0,40);
 const validPhone=v=>{const d=String(v||'').replace(/\D/g,'');return d.length>=9&&d.length<=15;};
 const readProfileFields=fd=>{
- const birthday=String(fd.get('birthday')||'').trim();
+ const birthday=parseTypedDate(fd.get('birthday'));
  const phone=normalizePhone(fd.get('phone'));
  const country=String(fd.get('country')||'').trim().slice(0,80);
  const province=String(fd.get('province')||'').trim().slice(0,80);
@@ -59,6 +74,7 @@ function completeAdultProfile(fd){
  const name=String(fd.get('name')||'').trim()||person?.name||'';
  const needLoc=adultNeedsLocation();
  const profile=requireAdultProfile(readProfileFields(fd),{needLocation:needLoc});
+ let targetRelation='';
  const ok=transact(s=>{
   let target=null;
   const mid=access.membership?.linkedMemberId;
@@ -69,6 +85,7 @@ function completeAdultProfile(fd){
   if(!target)throw new Error(t('adultProfileNeed'));
   if(name)target.name=name.slice(0,80);
   target.birthday=profile.birthday;target.age=profile.age;target.phone=profile.phone;
+  targetRelation=target.relation||'';
   if(access.user?.id)target.userId=access.user.id;
   if(access.user?.email)target.email=target.email||access.user.email;
   if(needLoc){s.settings.country=profile.country;s.settings.province=profile.province;}
@@ -76,6 +93,7 @@ function completeAdultProfile(fd){
   if(w){const shot=C.memberSnapshot(target),snap=w.members.find(x=>x.id===target.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
  },t('adultProfileSaved'));
  if(!ok)return false;
+ access._meta={birthday:profile.birthday,phone:profile.phone,country:profile.country||state.settings.country||'',province:profile.province||state.settings.province||'',relation:targetRelation||''};
  syncAdultProfileAuth(profile,name);
  return true;
 }
@@ -229,6 +247,7 @@ async function activateCloud(session,name='',profile={}){
  const metaPhone=profile.phone||user.user_metadata?.phone||'';
  const metaCountry=profile.country||user.user_metadata?.country||'';
  const metaProvince=profile.province||user.user_metadata?.province||'';
+ access._meta={birthday:metaBirthday,phone:metaPhone,country:metaCountry,province:metaProvince,relation:profile.relation||user.user_metadata?.relation||''};
  if(person){
   person.userId=user.id;person.email=person.email||user.email||'';person.inviteStatus='joined';
   if(metaBirthday){person.birthday=metaBirthday;person.age=C.ageFromBirthday(metaBirthday);}
@@ -277,7 +296,7 @@ async function accessAction(a,d){
  case 'access-tab':access.tab=d.tab;access.message='';render();return true;
  case 'access-guest':await guestAccess();return true;
  case 'access-config':if(access.blocked||needAdult())cloudConfigForm();return true;
- case 'access-invite':{if(!needAdult()||access.mode!=='cloud'||!canManageInvites())return true;openModal(t('inviteFamily'),`<p class="dialog-description">${esc(t('inviteFamilyNote'))}</p><label class="field"><span>${esc(t('email'))}</span><input name="email" type="email" required maxlength="254" placeholder="${esc(t('emailPh'))}"></label><label class="field"><span>${esc(t('fieldName'))}</span><input name="name" type="text" required maxlength="80" placeholder="${esc(t('homeNamePh'))}"></label><label class="field"><span>${esc(t('whoIs'))}</span><select name="role" data-change="invite-role"><option value="adult">${esc(t('adult'))}</option><option value="member">${esc(t('roleChildLabel'))}</option></select></label><div id="invite-adult-fields">${adultContactFieldsHtml()}</div><div class="note">${esc(t('inviteCodeNote'))}</div>${footer(esc(t('createInvite')))}`,async fd=>{const email=String(fd.get('email')).trim().toLowerCase(),name=String(fd.get('name')).trim(),role=fd.get('role')==='adult'?'adult':'member';if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t('needNameEmail'));let birthday='',phone='',age=null;if(role==='adult'){const p=requireAdultProfile(readProfileFields(fd));birthday=p.birthday;phone=p.phone;age=p.age;}else{birthday=String(fd.get('birthday')||'').trim();if(birthday&&(!C.validDate(birthday)||birthday>C.iso()))throw new Error(t('birthdayInvalid'));age=birthday?C.ageFromBirthday(birthday):null;phone=normalizePhone(fd.get('phone'));}let memberId=null;const ok=transact(s=>{const existing=s.members.find(m=>m.email===email&&m.active!==false);if(existing){memberId=existing.id;existing.inviteStatus='pending';if(birthday){existing.birthday=birthday;existing.age=age;}if(phone)existing.phone=phone;}else{memberId=C.uid('member');s.members.push({id:memberId,name,role,avatar:role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[s.members.length%colors.length],age,birthday,phone,active:true,email,inviteStatus:'pending'});const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);if(w){const shot=C.memberSnapshot(s.members.find(m=>m.id===memberId));const snap=w.members.find(x=>x.id===memberId);if(snap)Object.assign(snap,shot);else w.members.push(shot);}}},null);if(!ok)return false;const inv=await window.HomaCloudTransport.invite(email,memberId,role==='adult'?'adult':'child');closeModal(true);showInviteResult(inv,name);return false;});return true;}
+ case 'access-invite':{if(!needAdult()||access.mode!=='cloud'||!canManageInvites())return true;openModal(t('inviteFamily'),`<p class="dialog-description">${esc(t('inviteFamilyNote'))}</p><label class="field"><span>${esc(t('email'))}</span><input name="email" type="email" required maxlength="254" placeholder="${esc(t('emailPh'))}"></label><label class="field"><span>${esc(t('fieldName'))}</span><input name="name" type="text" required maxlength="80" placeholder="${esc(t('homeNamePh'))}"></label><label class="field"><span>${esc(t('whoIs'))}</span><select name="role" data-change="invite-role"><option value="adult">${esc(t('adult'))}</option><option value="member">${esc(t('roleChildLabel'))}</option></select></label><div id="invite-adult-fields">${adultContactFieldsHtml()}</div><div class="note">${esc(t('inviteCodeNote'))}</div>${footer(esc(t('createInvite')))}`,async fd=>{const email=String(fd.get('email')).trim().toLowerCase(),name=String(fd.get('name')).trim(),role=fd.get('role')==='adult'?'adult':'member';if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error(t('needNameEmail'));let birthday='',phone='',age=null;if(role==='adult'){const p=requireAdultProfile(readProfileFields(fd));birthday=p.birthday;phone=p.phone;age=p.age;}else{birthday=parseTypedDate(fd.get('birthday'));if(String(fd.get('birthday')||'').trim()&&(!birthday||birthday>C.iso()))throw new Error(t('birthdayInvalid'));age=birthday?C.ageFromBirthday(birthday):null;phone=normalizePhone(fd.get('phone'));}let memberId=null;const ok=transact(s=>{const existing=s.members.find(m=>m.email===email&&m.active!==false);if(existing){memberId=existing.id;existing.inviteStatus='pending';if(birthday){existing.birthday=birthday;existing.age=age;}if(phone)existing.phone=phone;}else{memberId=C.uid('member');s.members.push({id:memberId,name,role,avatar:role==='adult'?'\u{1F9D1}':'\u{1F9D2}',color:colors[s.members.length%colors.length],age,birthday,phone,active:true,email,inviteStatus:'pending'});const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);if(w){const shot=C.memberSnapshot(s.members.find(m=>m.id===memberId));const snap=w.members.find(x=>x.id===memberId);if(snap)Object.assign(snap,shot);else w.members.push(shot);}}},null);if(!ok)return false;const inv=await window.HomaCloudTransport.invite(email,memberId,role==='adult'?'adult':'child');closeModal(true);showInviteResult(inv,name);return false;});return true;}
  case 'access-logout':if(!needAdult())return true;confirmDialog(t('signOut'),t('signOutBody'),async()=>{await logOut();return true;},t('signOut'));return true;
  case 'access-oauth':{if(d.provider!=='google')throw new Error(t('accessNotExist'));if(!cloudConfigured()||!cloudOriginReady())throw new Error(t('cloudNotReady'));const c=await cloudClient();const options={redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}};const {error}=await c.auth.signInWithOAuth({provider:'google',options});if(error)throw new Error(/provider is not enabled|unsupported provider/i.test(error.message)?t('googleNotConnected'):t('googleOpenFail'));return true;}
  case 'access-retry':if(needAdult()){access.saveError='';queueAccountSave(C.copy(state));await access.chain;render();}return true;
