@@ -92,8 +92,9 @@ function removeTourDom(){document.querySelector('.tour-layer')?.remove();}
 
 function render(){
   C.ensureWeb5(state);
-  if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
+  // After Google (or any login), collect registration contact before the family guide.
   if(!access.blocked&&typeof adultProfileIncomplete==='function'&&adultProfileIncomplete()){renderAdultProfileGate();return;}
+  if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
   if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
   renderBefore5();
   if(access.blocked){enhanceAuth5();return;}
