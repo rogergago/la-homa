@@ -5,7 +5,7 @@
   else root.HomaI18n = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  if (typeof require === 'function') { try { require('./i18n-extra.js'); } catch (_) {} }
+  if (typeof require === 'function') { try { require('./i18n-extra.js'); } catch (_) {} try { require('./i18n-kitchen.js'); } catch (_) {} }
   const STORAGE = 'lahoma-locale';
   const LOCALES = [
     { code: 'es', label: 'Español', native: 'Español', bcp: 'es-ES' },
