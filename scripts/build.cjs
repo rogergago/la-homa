@@ -4,7 +4,7 @@ const files={'core.js':core,'app.js':app,'styles.css':css,'i18n.js':read('i18n-e
 for(const [n,s] of Object.entries(files))fs.writeFileSync(path.join(out,n),s);
 fs.copyFileSync(path.join(root,'config.js'),path.join(out,'config.js'));fs.copyFileSync(path.join(root,'vendor','supabase.js'),path.join(out,'supabase.js'));fs.cpSync(path.join(root,'icons'),path.join(out,'icons'),{recursive:true});
 let base=read('index.template.html').replace(/Family Points(?: 2.1)?/g,'La Homa').replace('Un hogar, un equipo','Tu vida familiar, organizada');
-const hash=crypto.createHash('sha256').update('cache-2026-10-05b\n'+core+app+css+base).digest('hex').slice(0,12);
+const hash=crypto.createHash('sha256').update('cache-2026-10-05c\n'+core+app+css+base).digest('hex').slice(0,12);
 const favicon='<link rel="icon" href="./icons/icon-192.png">';const assets=favicon+'\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="stylesheet" href="./styles.css?v='+hash+'">';const scripts=['config.js','supabase.js','i18n.js','entity-sync.js','asset-store.js','recipe-import.js','cloud-transport.js','core.js','app.js'].map(n=>'<script src="./'+n+(n==='config.js'?'':'?v='+hash)+'"></script>').join('\n');
 fs.writeFileSync(path.join(out,'index.html'),base.replace('<!--ASSETS-->',assets).replace('<!--SCRIPTS-->',scripts));
 const inline='<script>window.FAMILY_STANDALONE=true;</script>\n'+['i18n.js','entity-sync.js','asset-store.js','recipe-import.js','cloud-transport.js','core.js','app.js'].map(n=>'<script>\n'+files[n].replace(/<\/script/gi,'<\\/script')+'\n</script>').join('\n');
