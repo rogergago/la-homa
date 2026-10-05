@@ -15,54 +15,54 @@ const APP = 'https://app.lahoma.app';
 const chrome = {
   es: {
     how: 'Cómo funciona', forWhom: 'Para quién es', blog: 'Blog', enter: 'Entrar', create: 'Crear mi casa',
-    privacy: 'Privacidad', skip: 'Saltar al contenido', brandSub: 'Organización familiar',
-    footerTag: 'Tareas, paga, calendario y cocina de toda la familia, en un mismo sitio.',
-    footerApp: 'La app', footerInfo: 'Información', tagline: 'Tu vida familiar, organizada.',
+    privacy: 'Privacidad', skip: 'Saltar al contenido', brandSub: 'Una familia. Un equipo.',
+    footerTag: 'Organización compartida, menos carga mental y un hogar donde todos participan.',
+    footerApp: 'La app', footerInfo: 'Información', tagline: 'Una forma más fácil de vivir en familia.',
     lang: 'Idioma', notFoundTitle: 'Página no encontrada', notFoundH1: 'Esta página no existe.',
     notFoundLede: 'Puede que la dirección esté mal escrita o que la página se haya movido.',
     homeLink: 'Ir al inicio', enterApp: 'Entrar en la app'
   },
   ca: {
     how: 'Com funciona', forWhom: 'Per a qui és', blog: 'Blog', enter: 'Entra', create: 'Crea la meva casa',
-    privacy: 'Privadesa', skip: 'Salta al contingut', brandSub: 'Organització familiar',
+    privacy: 'Privadesa', skip: 'Salta al contingut', brandSub: 'Una família. Un equip.',
     footerTag: 'Tasques, paga, calendari i cuina de tota la família, en un mateix lloc.',
-    footerApp: 'L’app', footerInfo: 'Informació', tagline: 'La vostra vida familiar, organitzada.',
+    footerApp: 'L’app', footerInfo: 'Informació', tagline: 'Una manera més fàcil de viure en família.',
     lang: 'Idioma', notFoundTitle: 'Pàgina no trobada', notFoundH1: 'Aquesta pàgina no existeix.',
     notFoundLede: 'Pot ser que l’adreça estigui mal escrita o que la pàgina s’hagi mogut.',
     homeLink: 'Anar a l’inici', enterApp: 'Entrar a l’app'
   },
   va: {
     how: 'Com funciona', forWhom: 'Per a qui és', blog: 'Blog', enter: 'Entra', create: 'Crea la meua casa',
-    privacy: 'Privacitat', skip: 'Salta al contingut', brandSub: 'Organització familiar',
+    privacy: 'Privacitat', skip: 'Salta al contingut', brandSub: 'Una família. Un equip.',
     footerTag: 'Faenes, paga, calendari i cuina de tota la família, en un mateix lloc.',
-    footerApp: 'L’app', footerInfo: 'Informació', tagline: 'La vostra vida familiar, organitzada.',
+    footerApp: 'L’app', footerInfo: 'Informació', tagline: 'Una manera més fàcil de viure en família.',
     lang: 'Idioma', notFoundTitle: 'Pàgina no trobada', notFoundH1: 'Esta pàgina no existeix.',
     notFoundLede: 'Pot ser que l’adreça estiga mal escrita o que la pàgina s’haja mogut.',
     homeLink: 'Anar a l’inici', enterApp: 'Entrar a l’app'
   },
   eu: {
     how: 'Nola funtzionatzen du', forWhom: 'Norentzat da', blog: 'Bloga', enter: 'Sartu', create: 'Sortu nire etxea',
-    privacy: 'Pribatutasuna', skip: 'Joan edukira', brandSub: 'Familia antolaketa',
+    privacy: 'Pribatutasuna', skip: 'Joan edukira', brandSub: 'Familia bat. Talde bat.',
     footerTag: 'Familia osoaren lanak, dirua, egutegia eta sukaldea, leku bakarrean.',
-    footerApp: 'Aplikazioa', footerInfo: 'Informazioa', tagline: 'Zuen familia bizitza, antolatuta.',
+    footerApp: 'Aplikazioa', footerInfo: 'Informazioa', tagline: 'Familian bizitzeko modu errazagoa.',
     lang: 'Hizkuntza', notFoundTitle: 'Orria ez da aurkitu', notFoundH1: 'Orri hau ez da existitzen.',
     notFoundLede: 'Helbidea gaizki idatzita egon daiteke edo orria mugitu da.',
     homeLink: 'Hasierara joan', enterApp: 'Aplikaziora sartu'
   },
   gl: {
     how: 'Como funciona', forWhom: 'Para quen é', blog: 'Blog', enter: 'Entrar', create: 'Crear a miña casa',
-    privacy: 'Privacidade', skip: 'Saltar ao contido', brandSub: 'Organización familiar',
+    privacy: 'Privacidade', skip: 'Saltar ao contido', brandSub: 'Unha familia. Un equipo.',
     footerTag: 'Tarefas, paga, calendario e cociña de toda a familia, nun mesmo sitio.',
-    footerApp: 'A app', footerInfo: 'Información', tagline: 'A vosa vida familiar, organizada.',
+    footerApp: 'A app', footerInfo: 'Información', tagline: 'Unha forma máis doada de vivir en familia.',
     lang: 'Idioma', notFoundTitle: 'Páxina non atopada', notFoundH1: 'Esta páxina non existe.',
     notFoundLede: 'Pode que o enderezo estea mal escrito ou que a páxina se movese.',
     homeLink: 'Ir ao inicio', enterApp: 'Entrar na app'
   },
   en: {
     how: 'How it works', forWhom: 'Who it’s for', blog: 'Blog', enter: 'Sign in', create: 'Create my home',
-    privacy: 'Privacy', skip: 'Skip to content', brandSub: 'Family organisation',
-    footerTag: 'Tasks, pocket money, calendar and kitchen for the whole family, in one place.',
-    footerApp: 'The app', footerInfo: 'Information', tagline: 'Your family life, organised.',
+    privacy: 'Privacy', skip: 'Skip to content', brandSub: 'One family. One team.',
+    footerTag: 'Shared organisation, less mental load, a home where everyone takes part.',
+    footerApp: 'The app', footerInfo: 'Information', tagline: 'An easier way to live as a family.',
     lang: 'Language', notFoundTitle: 'Page not found', notFoundH1: 'This page doesn’t exist.',
     notFoundLede: 'The address may be wrong or the page may have moved.',
     homeLink: 'Go to home', enterApp: 'Open the app'
@@ -71,7 +71,7 @@ const chrome = {
     how: 'Comment ça marche', forWhom: 'Pour qui', blog: 'Blog', enter: 'Entrer', create: 'Créer ma maison',
     privacy: 'Confidentialité', skip: 'Aller au contenu', brandSub: 'Organisation familiale',
     footerTag: 'Tâches, argent de poche, calendrier et cuisine de toute la famille, au même endroit.',
-    footerApp: 'L’app', footerInfo: 'Informations', tagline: 'Votre vie de famille, organisée.',
+    footerApp: 'L’app', footerInfo: 'Informations', tagline: 'Une façon plus simple de vivre en famille.',
     lang: 'Langue', notFoundTitle: 'Page introuvable', notFoundH1: 'Cette page n’existe pas.',
     notFoundLede: 'L’adresse est peut-être incorrecte ou la page a déménagé.',
     homeLink: 'Retour à l’accueil', enterApp: 'Ouvrir l’app'
@@ -80,7 +80,7 @@ const chrome = {
     how: 'Come funziona', forWhom: 'Per chi è', blog: 'Blog', enter: 'Entra', create: 'Crea la mia casa',
     privacy: 'Privacy', skip: 'Vai al contenuto', brandSub: 'Organizzazione familiare',
     footerTag: 'Compiti, paghetta, calendario e cucina di tutta la famiglia, in un unico posto.',
-    footerApp: 'L’app', footerInfo: 'Informazioni', tagline: 'La vostra vita familiare, organizzata.',
+    footerApp: 'L’app', footerInfo: 'Informazioni', tagline: 'Un modo più semplice di vivere in famiglia.',
     lang: 'Lingua', notFoundTitle: 'Pagina non trovata', notFoundH1: 'Questa pagina non esiste.',
     notFoundLede: 'L’indirizzo potrebbe essere sbagliato o la pagina potrebbe essere stata spostata.',
     homeLink: 'Vai all’inizio', enterApp: 'Apri l’app'
@@ -89,7 +89,7 @@ const chrome = {
     how: 'So funktioniert’s', forWhom: 'Für wen', blog: 'Blog', enter: 'Anmelden', create: 'Zuhause erstellen',
     privacy: 'Datenschutz', skip: 'Zum Inhalt springen', brandSub: 'Familienorganisation',
     footerTag: 'Aufgaben, Taschengeld, Kalender und Küche der ganzen Familie, an einem Ort.',
-    footerApp: 'Die App', footerInfo: 'Informationen', tagline: 'Euer Familienleben, organisiert.',
+    footerApp: 'Die App', footerInfo: 'Informationen', tagline: 'Eine einfachere Art, als Familie zu leben.',
     lang: 'Sprache', notFoundTitle: 'Seite nicht gefunden', notFoundH1: 'Diese Seite gibt es nicht.',
     notFoundLede: 'Die Adresse ist vielleicht falsch oder die Seite wurde verschoben.',
     homeLink: 'Zur Startseite', enterApp: 'App öffnen'
@@ -98,13 +98,13 @@ const chrome = {
 
 const pages = {
   es: {
-    homeTitle: 'La Homa · Tu vida familiar, organizada',
-    homeDesc: 'Tareas con puntos, paga y ahorro, calendario con listas de preparación y menú con lista de la compra. Toda la organización de tu casa en un mismo sitio.',
-    homeH1: 'Tu vida familiar, organizada.',
-    homeLede: 'La Homa es el sitio donde tu familia apunta lo que pasa en casa cada semana: quién hace cada tarea, cuánto lleva ahorrado cada hijo, qué planes vienen y qué hay para comer. Cada adulto lo lleva en su móvil y los niños ven su parte en la tablet de la cocina.',
+    homeTitle: 'La Homa · Una forma más fácil de vivir en familia',
+    homeDesc: 'Menos carga mental, más responsabilidad compartida. Organizaos como un equipo y ayudad a los niños a aprender autonomía y el valor del esfuerzo.',
+    homeH1: 'Una forma más fácil de vivir en familia.',
+    homeLede: 'Menos cosas en la cabeza. Más responsabilidad compartida. Más tiempo para vivir juntos. La Homa hace visible la organización del hogar para que cada persona sepa qué depende de ella.',
     homeCta: 'Crear mi casa', homeSee: 'Ver cómo se usa', homeNote: 'Funciona en el navegador. Entras con tu correo o con tu cuenta de Google.',
-    howTitle: 'Cómo funciona', howDesc: 'Una semana normal de una familia con La Homa.',
-    familiesTitle: 'Para quién es', familiesDesc: 'La Homa para dos adultos o uno solo, niños, mascotas y, si hace falta, custodia compartida.',
+    howTitle: 'Cómo funciona', howDesc: 'De la carga mental a la responsabilidad compartida: una semana en equipo con La Homa.',
+    familiesTitle: 'Para quién es', familiesDesc: 'Para hogares que quieren compartir organización y responsabilidad, y que los niños aprendan participando.',
     privacyTitle: 'Privacidad', privacyDesc: 'Qué guarda La Homa, quién puede ver los datos de tu casa y qué ve el panel de administración.'
   },
   ca: {
@@ -148,13 +148,13 @@ const pages = {
     privacyTitle: 'Privacidade', privacyDesc: 'Que garda La Homa, quen pode ver os datos da casa e que ve o panel de administración.'
   },
   en: {
-    homeTitle: 'La Homa · Your family life, organised',
-    homeDesc: 'Tasks with points, pocket money and saving, a calendar with prep lists, and a menu that builds the shopping list. Your whole home in one place.',
-    homeH1: 'Your family life, organised.',
-    homeLede: 'La Homa is where your family tracks what happens at home each week: who does each task, how much each child has saved, what’s coming up and what’s for dinner. Each adult uses their phone; children see their bit on the kitchen tablet.',
+    homeTitle: 'La Homa · An easier way to live as a family',
+    homeDesc: 'Less mental load, more shared responsibility. Organise as a team and help children learn autonomy and the value of effort.',
+    homeH1: 'An easier way to live as a family.',
+    homeLede: 'Less on your mind. More shared responsibility. More time together. La Homa makes home organisation visible so everyone knows what depends on them.',
     homeCta: 'Create my home', homeSee: 'See how it works', homeNote: 'Works in the browser. Sign in with email or Google.',
-    howTitle: 'How it works', howDesc: 'A normal week with a family using La Homa.',
-    familiesTitle: 'Who it’s for', familiesDesc: 'La Homa for two adults or one, children, pets and, if needed, shared custody.',
+    howTitle: 'How it works', howDesc: 'From mental load to shared responsibility: a week as a team with La Homa.',
+    familiesTitle: 'Who it’s for', familiesDesc: 'For homes that want to share organisation and responsibility — and help children learn by taking part.',
     privacyTitle: 'Privacy', privacyDesc: 'What La Homa stores, who can see your home’s data and what the admin panel sees.'
   },
   fr: {

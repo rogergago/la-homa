@@ -9,11 +9,12 @@ const { buildAdmin } = require('../admin/build.cjs');
 test('marketing pages explain the product and stay free of secrets', async () => {
   const dist = await buildSite();
   const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-  assert.match(home, /Tu vida familiar, organizada/);
+  assert.match(home, /Una forma más fácil de vivir en familia/);
+  assert.match(home, /carga mental|responsabilidad compartida/);
   assert.match(home, /https:\/\/app\.lahoma\.app/);
-  assert.match(home, /no suman puntos/);
+  assert.match(home, /sin puntos/);
   assert.doesNotMatch(home, /sb_secret|service_role|Iniciar sesión con Apple/);
-  assert.match(fs.readFileSync(path.join(dist, 'como-funciona', 'index.html'), 'utf8'), /correo o con Google/);
+  assert.match(fs.readFileSync(path.join(dist, 'como-funciona', 'index.html'), 'utf8'), /Participar\. Responsabilizarse\. Aprender|depende de mí/);
   assert.match(fs.readFileSync(path.join(dist, 'familias', 'index.html'), 'utf8'), /Custodia compartida/);
   assert.match(fs.readFileSync(path.join(dist, 'privacidad', 'index.html'), 'utf8'), /no abre los nombres/);
   assert.match(home, /"@type":"FAQPage"/);

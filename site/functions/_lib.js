@@ -227,7 +227,7 @@ export function articleDocument(post) {
     path: `/blog/${post.slug}`,
     article: true,
     jsonLd,
-    body: `<article class="wrap page narrow article"><p class="eyebrow"><a href="/blog">Blog</a></p><h1>${escapeHtml(post.title)}</h1><p class="byline"><time datetime="${escapeHtml(post.published_at || '')}">${escapeHtml(formatDate(post.published_at))}</time></p><div class="prose">${renderMarkdown(post.body)}</div><aside class="article-cta"><h2>Organiza tu casa con La Homa</h2><p>Tareas con puntos, paga y ahorro, calendario y menú de toda la familia en un mismo sitio.</p><a class="button" href="${PUBLIC.app}">Crear mi casa</a></aside><p class="back"><a href="/blog">Volver al blog</a></p></article>`
+    body: `<article class="wrap page narrow article"><p class="eyebrow"><a href="/blog">Blog</a></p><h1>${escapeHtml(post.title)}</h1><p class="byline"><time datetime="${escapeHtml(post.published_at || '')}">${escapeHtml(formatDate(post.published_at))}</time></p><div class="prose">${renderMarkdown(post.body)}</div><aside class="article-cta"><h2>Vividla como un equipo</h2><p>Menos cosas en la cabeza. Más responsabilidad compartida. Más tiempo para estar juntos.</p><a class="button" href="${PUBLIC.app}">Crear mi casa</a></aside><p class="back"><a href="/blog">Volver al blog</a></p></article>`
   });
 }
 

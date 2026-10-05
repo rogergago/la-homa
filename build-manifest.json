@@ -1,22 +1,22 @@
 {
   "version": "5.0.0-beta.1",
-  "hash": "0c2e249dff9e",
+  "hash": "153597998cfe",
   "files": {
     "core.js": {
       "bytes": 122868,
       "sha256": "7b014cbd01168347204d4dc8f596732a358dcd5edf3b68a557d0c9ffb8ac183b"
     },
     "app.js": {
-      "bytes": 323466,
-      "sha256": "4a38623d0eff4c2c870e584d6d8d27ce7d43106b71754a36c6e4ca8d266c8bcc"
+      "bytes": 323469,
+      "sha256": "e3b24289106f3792e2c6147d6cb007560bf8a690e21d6f8078979d797743aaf9"
     },
     "styles.css": {
       "bytes": 92678,
       "sha256": "53790f59296e9547f9c0d3816e3257077ac2b82a25b20860a875c0768f3f0c50"
     },
     "i18n.js": {
-      "bytes": 36244,
-      "sha256": "a66982f31e58fdee3172185f1f42f8c0454d34cbdb9c3986b3083166b3946fcc"
+      "bytes": 37156,
+      "sha256": "51b613f0e23f51d6fe8a3f9626352a21a960bb4e0f8ad9035e384c1fd2d5e49e"
     },
     "asset-store.js": {
       "bytes": 2429,

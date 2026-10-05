@@ -7,7 +7,7 @@ const faq = [
   },
   {
     q: '¿Mis hijos necesitan correo electrónico?',
-    a: 'No. Los niños se crean dentro de la familia, con su nombre y su foto o un dibujo. Ven su parte desde el móvil de un adulto o desde la tablet de la cocina, sin correo ni contraseña.'
+    a: 'No es obligatorio. Pueden usar la tablet o el móvil de un adulto con su perfil. Si ya tienen correo, puedes invitarles a su propia cuenta: solo verán lo suyo.'
   },
   {
     q: '¿Podemos usarla los dos adultos de la casa?',
@@ -15,7 +15,7 @@ const faq = [
   },
   {
     q: '¿Los puntos se convierten en dinero?',
-    a: 'No. Los puntos sirven para llegar al objetivo de la semana y desbloquear recompensas. La paga puede depender de alcanzar ese objetivo, pero se apunta aparte y los puntos nunca se cambian por euros.'
+    a: 'No. Los puntos ayudan a ver el esfuerzo y llegar a un objetivo. Las recompensas son retos especiales, no un cobro por cada tarea. La paga se apunta aparte y los puntos nunca se cambian por euros.'
   },
   {
     q: '¿Quién puede ver los datos de mi familia?',
@@ -180,9 +180,9 @@ const kitchenMock = `
 const home = `
 <section class="hero wrap">
   <div class="hero-copy">
-    <p class="eyebrow">Organización familiar</p>
-    <h1>Tu vida familiar, organizada.</h1>
-    <p class="lede">La Homa es el sitio donde tu familia apunta lo que pasa en casa cada semana: quién hace cada tarea, cuánto lleva ahorrado cada hijo, qué planes vienen y qué hay para comer. Cada adulto lo lleva en su móvil y los niños ven su parte en la tablet de la cocina.</p>
+    <p class="eyebrow">Una familia. Un equipo.</p>
+    <h1>Una forma más fácil de vivir en familia.</h1>
+    <p class="lede">Menos cosas en la cabeza. Más responsabilidad compartida. Más tiempo para vivir juntos. La Homa hace visible la organización del hogar para que cada persona sepa qué depende de ella.</p>
     <div class="actions">
       <a class="button" href="${APP}">Crear mi casa</a>
       <a class="button quiet" href="#como-se-usa">Ver cómo se usa</a>
@@ -194,38 +194,46 @@ const home = `
 
 <section class="wrap section why">
   <div class="section-head">
-    <p class="eyebrow">Por qué existe</p>
-    <h2>La organización de una casa no debería depender de la memoria de una sola persona.</h2>
-    <p class="lede">Las tareas están en una pizarra, la paga en una libreta, los planes en un grupo de mensajes y el menú en la cabeza de quien hace la compra. Cuando todo eso vive en sitios distintos, alguien tiene que acordarse de todo y recordárselo a los demás. La Homa lo junta en un solo lugar que ve toda la familia, para que la semana se explique sola.</p>
+    <p class="eyebrow">La carga mental</p>
+    <h2>¿Por qué tiene que acordarse siempre la misma persona de todo?</h2>
+    <p class="lede">Cuando todo depende de una persona, el hogar pesa demasiado. No se trata solo de repartir tareas: se trata de repartir responsabilidad. La Homa convierte la organización invisible en algo visible, compartido y accesible para todos.</p>
   </div>
   <div class="questions">
     <article>
-      <p class="q">«¿A quién le toca hoy sacar la basura?»</p>
-      <p class="a">Lo dice el turno de la semana, que rota solo.</p>
+      <p class="q">«Te lo he dicho mil veces.»</p>
+      <p class="a">Pasa a: «Sabes que esto depende de ti.»</p>
     </article>
     <article>
-      <p class="q">«¿Cuánto me falta para la bici?»</p>
-      <p class="a">Tu hija lo ve en su hucha, con el ahorro y los intereses.</p>
+      <p class="q">«Todo depende de mí.»</p>
+      <p class="a">Pasa a: «Ya no depende todo de mí.»</p>
     </article>
     <article>
-      <p class="q">«¿Qué hacemos de cena el jueves?»</p>
-      <p class="a">Está en el menú, y lo que falta ya está en la lista de la compra.</p>
+      <p class="q">«¿Qué tenemos que hacer hoy?»</p>
+      <p class="a">Pasa a: «Todos sabemos lo que tenemos que hacer.»</p>
     </article>
+  </div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head center">
+    <p class="eyebrow">Participar · Responsabilizarse · Aprender</p>
+    <h2>Un hogar donde todos forman parte.</h2>
+    <p class="lede">A los adultos les quita peso de la cabeza. A los niños les da responsabilidades que les ayudan a crecer. A toda la familia, una forma de organizarse juntos y vivir mejor.</p>
   </div>
 </section>
 
 <section class="wrap section" id="como-se-usa">
   <div class="section-head center">
-    <p class="eyebrow">Qué podéis hacer</p>
-    <h2>Cuatro cosas que cada casa resuelve todas las semanas.</h2>
+    <p class="eyebrow">En el día a día</p>
+    <h2>Cuatro sitios donde la responsabilidad deja de ser invisible.</h2>
   </div>
 
   <article class="feature tint-lilac">
     <div class="feature-copy">
       <p class="eyebrow">Tareas y puntos</p>
-      <h3>Cada uno sabe qué le toca, y lo marca él mismo.</h3>
-      <p>Defines las tareas de la casa una vez: hacer la cama cada mañana, poner la mesa de lunes a viernes, sacar la basura por turnos. La Homa las reparte en los días en que cada persona está en casa, y cada niño ve su lista del día.</p>
-      <p>Cada tarea da puntos. Cuando un niño llega a su objetivo de la semana, desbloquea la recompensa que habéis acordado, como elegir la cena del sábado o una tarde de piscina, y la guarda como un vale que se usa una sola vez.</p>
+      <h3>Cada uno sabe qué depende de él, y lo marca él mismo.</h3>
+      <p>Defines las responsabilidades de la casa una vez. La Homa las reparte en los días en que cada persona está en casa. El cambio no es «te lo asigno»: es «esto depende de ti».</p>
+      <p>Los puntos ayudan a ver el esfuerzo. Al llegar al objetivo de la semana se desbloquea una recompensa acordada — no un premio por todo, sino un reto especial que enseña constancia y valor.</p>
       <ul class="checks">
         ${check('Los turnos pasan de un hermano a otro cada semana sin que nadie lo recuerde.')}
         ${check('Un niño puede proponer a su hermano cambiar una tarea, y el otro decide si acepta.')}
@@ -238,9 +246,9 @@ const home = `
   <article class="feature tint-sage flip">
     <div class="feature-copy">
       <p class="eyebrow">Paga y ahorro</p>
-      <h3>La paga deja de ser un billete que desaparece.</h3>
-      <p>La paga se prepara al cerrar la semana. Puede ser un importe fijo por llegar al objetivo o crecer por tramos de puntos. Cada niño la reparte en su hucha entre lo que quiere gastar, lo que ahorra y lo que guarda para algo concreto.</p>
-      <p>Si quieres, el ahorro genera intereses con el porcentaje que tú decidas. Así tu hijo comprueba con su propio dinero que lo que guarda crece.</p>
+      <h3>Aprender que las cosas tienen un valor.</h3>
+      <p>La paga se prepara al cerrar la semana. Cada niño reparte en su hucha lo que gasta, lo que ahorra y lo que guarda para un objetivo. Marcarse algo, esforzarse y conseguirlo.</p>
+      <p>Si quieres, el ahorro genera intereses con el porcentaje que tú decidas. Colaborar en casa no es cobrar por todo: las recompensas son para retos especiales.</p>
       <ul class="checks">
         ${check('Los puntos y los euros van por separado: los puntos nunca se cambian por dinero.')}
         ${check('Cada movimiento queda apuntado. Un error se corrige con un apunte nuevo, sin borrar el anterior.')}
@@ -281,8 +289,8 @@ const home = `
 
 <section class="wrap section">
   <div class="section-head">
-    <p class="eyebrow">Quién está en la casa</p>
-    <h2>Toda la familia tiene su sitio, y cada uno ve lo que le corresponde.</h2>
+    <p class="eyebrow">El equipo</p>
+    <h2>Cada uno tiene su papel, y ve lo que depende de él.</h2>
   </div>
   <div class="roles">
     <article>
@@ -293,7 +301,7 @@ const home = `
     <article>
       <span class="role-icon sand">🧒</span>
       <h3>Los niños</h3>
-      <p>No necesitan correo ni contraseña. Tienen su perfil dentro de la familia, con sus tareas, sus puntos, sus recompensas y su hucha. Pueden pedir que se revise una tarea, pero no cambiar las reglas.</p>
+      <p>Ven solo lo suyo: tareas, puntos, recompensas y hucha. Pueden usar la tablet sin cuenta, o tener correo propio si ya lo tienen. El objetivo no es controlarlos mejor: es que necesiten cada vez menos control.</p>
     </article>
     <article>
       <span class="role-icon sage">🐶</span>
@@ -312,14 +320,14 @@ const home = `
   <div class="not-list">
     <div>
       <p class="eyebrow">Lo que hemos dejado fuera</p>
-      <h2>No es un juego ni una red social.</h2>
-      <p class="lede">La Homa ayuda a que la casa funcione. Por eso hay cosas que no tiene, y no las va a tener.</p>
+      <h2>No es un juego ni un mando a distancia para padres.</h2>
+      <p class="lede">La Homa ayuda a que la casa funcione como un equipo. Por eso hay cosas que no tiene, y no las va a tener.</p>
     </div>
     <ul>
+      <li><b>Sin jefe de la casa.</b> No sirve para controlar a los demás: sirve para que cada uno sepa qué depende de él.</li>
       <li><b>Sin clasificaciones entre hermanos.</b> Cada niño se compara solo con su propio objetivo.</li>
-      <li><b>Sin chat.</b> Para hablar ya tenéis la mesa de la cocina.</li>
-      <li><b>Sin localización en tiempo real.</b> La Homa no sabe ni pregunta dónde está nadie.</li>
-      <li><b>Sin monedas inventadas.</b> Los puntos son puntos y el dinero es dinero.</li>
+      <li><b>Sin premios por todo.</b> Colaborar forma parte de vivir juntos; las recompensas son para objetivos especiales.</li>
+      <li><b>Sin chat ni localización.</b> Para hablar está la mesa; La Homa no pregunta dónde está nadie.</li>
     </ul>
   </div>
 </section>
@@ -359,8 +367,8 @@ const home = `
 
 <section class="wrap section">
   <div class="cta">
-    <h2>Empieza esta semana.</h2>
-    <p>Crea la casa, añade a tu familia y prueba con unas pocas tareas. El domingo, al cerrar la semana, verás cómo ha ido.</p>
+    <h2>Menos cosas en la cabeza. Más tiempo juntos.</h2>
+    <p>Crea la casa, dad a cada uno un papel claro y empezad esta semana. Organizaros juntos. Crecer juntos.</p>
     <div class="actions">
       <a class="button light" href="${APP}">Crear mi casa</a>
       <a class="button ghost" href="/como-funciona">Ver una semana de ejemplo</a>
@@ -409,8 +417,8 @@ const timeline = [
 const howBody = `
 <section class="wrap page-hero">
   <p class="eyebrow">Cómo funciona</p>
-  <h1>Una semana con La Homa, de lunes a domingo.</h1>
-  <p class="lede">La mejor forma de entender La Homa es ver una semana normal. El ejemplo es una casa con dos adultos, Marta y Jorge, dos hijos, Lucía y Pablo, y Kira, la perra.</p>
+  <h1>De «todo depende de mí» a «lo tenemos controlado».</h1>
+  <p class="lede">Así se ve una semana normal cuando la organización deja de vivir en una sola cabeza. El ejemplo: Marta y Jorge, Lucía y Pablo, y Kira, la perra. Una familia. Un equipo.</p>
 </section>
 
 <section class="wrap timeline">
@@ -426,24 +434,24 @@ const howBody = `
 
 <section class="wrap section">
   <div class="section-head">
-    <p class="eyebrow">Por debajo</p>
-    <h2>Las reglas que hacen que funcione.</h2>
+    <p class="eyebrow">La filosofía</p>
+    <h2>Participar. Responsabilizarse. Aprender.</h2>
   </div>
   <div class="rules">
     <article>
-      <h3>Todo está en la nube</h3>
-      <p>Entras con tu correo o con Google y la casa se guarda en vuestra cuenta, no en un archivo de un dispositivo. Si cambias de móvil, la casa sigue ahí.</p>
+      <h3>Visible para todos</h3>
+      <p>La Homa convierte la organización invisible en una responsabilidad compartida. Cada persona sabe qué tiene que hacer, cuándo hacerlo y qué depende de ella.</p>
     </article>
     <article>
-      <h3>Los adultos deciden</h3>
-      <p>Solo un adulto crea las tareas, cambia los puntos, cierra la semana o mueve dinero. Los niños marcan lo que han hecho y piden revisiones.</p>
+      <h3>Sin jefe de la casa</h3>
+      <p>Los adultos configuran el hogar; no persiguen a los demás. Los niños marcan lo suyo y piden revisiones. El objetivo es que necesiten cada vez menos control.</p>
     </article>
     <article>
-      <h3>Lo apuntado no se reescribe</h3>
-      <p>Cambiar un ajuste no modifica las semanas que ya se cerraron ni el dinero que ya se pagó. Una corrección queda como un apunte nuevo.</p>
+      <h3>Esfuerzo con valor</h3>
+      <p>Colaborar forma parte de vivir juntos: no todo se cobra. Los puntos y recompensas sirven para objetivos especiales: marcarse algo, esforzarse y conseguirlo.</p>
     </article>
     <article>
-      <h3>Empiezas por lo que necesitas</h3>
+      <h3>Empiezas por lo que necesitáis</h3>
       <p>Puedes usar solo las tareas y añadir la paga, el menú o el calendario cuando os venga bien. Lo que no uséis no hace falta configurarlo.</p>
     </article>
   </div>
@@ -451,8 +459,8 @@ const howBody = `
 
 <section class="wrap section">
   <div class="cta">
-    <h2>Haz la prueba con tu casa.</h2>
-    <p>No hace falta prepararlo todo. Con unas pocas tareas y una recompensa ya tenéis la primera semana.</p>
+    <h2>Organizaros juntos. Crecer juntos.</h2>
+    <p>No hace falta prepararlo todo. Con unas pocas responsabilidades claras ya empezáis a quitar peso de una sola cabeza.</p>
     <div class="actions"><a class="button light" href="${APP}">Crear mi casa</a></div>
   </div>
 </section>`;
@@ -460,25 +468,25 @@ const howBody = `
 const familiesBody = `
 <section class="wrap page-hero">
   <p class="eyebrow">Para quién es</p>
-  <h1>Para casas reales, que no se parecen entre sí.</h1>
-  <p class="lede">Hay casas con dos adultos y casas con uno, con niños pequeños o que ya manejan su dinero, y con perros que también son de la familia. La Homa se adapta a cómo es tu casa, y no al revés.</p>
+  <h1>Para hogares que quieren funcionar como un equipo.</h1>
+  <p class="lede">Dos adultos o uno, niños pequeños o que ya manejan dinero, mascotas, una o dos casas. La Homa se adapta a cómo es tu hogar — y ayuda a que todos participen, se responsabilicen y aprendan.</p>
 </section>
 
 <section class="wrap families">
   <article class="tint-lilac">
     <span class="role-icon">👫</span>
-    <h2>Dos adultos que se reparten la casa</h2>
-    <p>Cada uno entra con su cuenta y ve lo mismo: qué ha hecho cada niño, qué plan viene y qué falta en la despensa. Ya no hace falta preguntar al otro si alguien ha puesto la lavadora o si la autorización está firmada.</p>
+    <h2>Dos adultos que comparten la responsabilidad</h2>
+    <p>Cada uno entra con su cuenta y ve lo mismo. Ya no hace falta que una sola persona cargue con acordarse de todo, preguntar y perseguir. La organización es compartida.</p>
   </article>
   <article class="tint-sand">
     <span class="role-icon">🧸</span>
     <h2>Niños pequeños</h2>
-    <p>Las rutinas, como la de la mañana o la de antes de dormir, se siguen paso a paso en la tablet, con un dibujo grande en cada paso. No hace falta saber leer bien para saber qué viene ahora.</p>
+    <p>Las rutinas se siguen paso a paso en la tablet. Empiezan a saber qué depende de ellos sin que nadie se lo recuerde mil veces. Participar en casa también es aprender para la vida.</p>
   </article>
   <article class="tint-sage">
     <span class="role-icon">🚲</span>
     <h2>Niños que empiezan a manejar dinero</h2>
-    <p>Su hucha separa lo que gastan, lo que ahorran y lo que guardan para un objetivo. Con los intereses que decidas, ven crecer lo que no gastan. Y pueden negociar con sus hermanos un cambio de tareas sin pedir permiso a nadie.</p>
+    <p>Aprenden que las cosas tienen un valor: marcarse un objetivo, esforzarse y conseguirlo. La hucha separa gasto, ahorro y meta. Colaborar en casa no es cobrar por todo; las recompensas son para retos especiales.</p>
   </article>
   <article class="tint-rose">
     <span class="role-icon">🐶</span>
@@ -488,7 +496,7 @@ const familiesBody = `
   <article class="tint-lilac">
     <span class="role-icon">🏠</span>
     <h2>Un solo adulto</h2>
-    <p>La Homa funciona igual con una sola cuenta adulta. Para quien organiza la casa sin ayuda, tenerlo todo en un sitio ya quita mucho trabajo.</p>
+    <p>Cuando todo depende de una persona, el hogar pesa demasiado. Tenerlo visible y compartido con los niños ya quita carga mental, aunque solo haya una cuenta adulta.</p>
   </article>
   <article class="tint-sand">
     <span class="role-icon">🗓️</span>
@@ -499,8 +507,8 @@ const familiesBody = `
 
 <section class="wrap section">
   <div class="cta">
-    <h2>Sea como sea tu casa, tiene sitio.</h2>
-    <p>Crea la casa con las personas que viven en ella hoy. Si algo cambia, se cambia en la ficha de la familia.</p>
+    <h2>Un hogar donde todos tienen su papel.</h2>
+    <p>Crea la casa con quienes viven en ella hoy. Invita a quien tenga correo, o dejad que usen la tablet. Si algo cambia, se cambia en la familia.</p>
     <div class="actions"><a class="button light" href="${APP}">Crear mi casa</a></div>
   </div>
 </section>`;
@@ -529,8 +537,8 @@ export const pages = [
   {
     path: '/',
     file: 'index.html',
-    title: 'La Homa · Tu vida familiar, organizada',
-    description: 'Tareas con puntos, paga y ahorro, calendario con listas de preparación y menú con lista de la compra. Toda la organización de tu casa en un mismo sitio.',
+    title: 'La Homa · Una forma más fácil de vivir en familia',
+    description: 'Menos carga mental, más responsabilidad compartida. La Homa ayuda a las familias a organizarse como un equipo y a que los niños aprendan autonomía y el valor del esfuerzo.',
     jsonLd: {
       '@context': 'https://schema.org',
       '@graph': [
@@ -538,7 +546,7 @@ export const pages = [
           '@type': 'WebSite',
           name: 'La Homa',
           url: 'https://lahoma.app/',
-          description: 'Tu vida familiar, organizada.',
+          description: 'Una familia. Un equipo. Una forma más fácil de vivir en familia.',
           inLanguage: 'es'
         },
         {
@@ -565,14 +573,14 @@ export const pages = [
     path: '/como-funciona',
     file: 'como-funciona/index.html',
     title: 'Cómo funciona',
-    description: 'Una semana normal de una familia con La Homa: tareas, cambios entre hermanos, excursiones, menú, recuperación y cierre de la semana con la paga.',
+    description: 'De la carga mental a la responsabilidad compartida: cómo una familia vive una semana con La Homa y aprende a funcionar como un equipo.',
     body: howBody
   },
   {
     path: '/familias',
     file: 'familias/index.html',
     title: 'Para quién es',
-    description: 'La Homa para dos adultos o uno solo, niños pequeños, niños que empiezan a manejar dinero, casas con mascotas y, si hace falta, custodia compartida.',
+    description: 'Para hogares que quieren compartir la organización y la responsabilidad: dos adultos o uno, niños, mascotas y, si hace falta, custodia compartida.',
     body: familiesBody
   },
   {
