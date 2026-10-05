@@ -128,6 +128,13 @@
     refreshAgain: false,
     channel: null,
     async clientFor(session) {
+      // Reuse the app auth client. A second createClient with detectSessionInUrl
+      // races PKCE on OAuth return and can hang house creation forever.
+      const shared = globalThis.FPAccess?.cloud;
+      if (shared) {
+        this.client = shared;
+        return this.client;
+      }
       const bundled = globalThis.FAMILY_CLOUD?.url && globalThis.FAMILY_CLOUD?.anonKey ? globalThis.FAMILY_CLOUD : null;
       const cfg = !bundled && typeof localStorage !== 'undefined' && localStorage.getItem('family-points-v3-cloud-config')
         ? JSON.parse(localStorage.getItem('family-points-v3-cloud-config') || 'null')
@@ -145,12 +152,15 @@
       }
       if (!this.client) {
         this.client = globalThis.supabase.createClient(cloud.url, cloud.anonKey, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' }
         });
       }
       if (session?.access_token && session?.refresh_token) {
-        const { error } = await this.client.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
-        if (error) throw error;
+        const { data: cur } = await this.client.auth.getSession();
+        if (cur?.session?.access_token !== session.access_token) {
+          const { error } = await this.client.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
+          if (error) throw error;
+        }
       }
       return this.client;
     },
@@ -266,6 +276,7 @@
         if (this.saving) { this.refreshAgain = true; return; }
         try {
           const rows = await this.pull();
+          if (!rows.length) return;
           const state = assemble(rows);
           globalThis.HomaApplyCloudState?.(state);
         } catch (error) {

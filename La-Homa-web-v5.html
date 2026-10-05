@@ -187,6 +187,15 @@ body{font-size:15px;line-height:1.55}button,input,select,textarea{font-size:inhe
     provincePh: 'Madrid, Barcelona…',
     homeLocationNote: 'País y provincia del hogar familiar.',
     adultProfileNeed: 'Los adultos necesitan cumpleaños y teléfono.',
+    adultProfileEyebrow: 'Tu cuenta',
+    adultProfileTitle: 'Completa tus datos',
+    adultProfileText: 'Da igual si entras con correo o con Google: hace falta el mismo registro de contacto.',
+    adultProfileSub: 'Cumpleaños, teléfono y ubicación de la casa.',
+    adultProfileSubInvite: 'Cumpleaños y teléfono de contacto.',
+    adultProfileSave: 'Guardar y continuar',
+    adultProfileSaved: 'Datos de contacto guardados.',
+    creatingHome: 'Creando tu casa…',
+    creatingHomeTimeout: 'La creación de la casa está tardando demasiado. Comprueba la conexión y vuelve a intentarlo.',
     countryRequired: 'Elige el país.',
     provinceRequired: 'Indica la provincia.',
     toddlerTitle: 'Hola, {name}',
@@ -1332,6 +1341,15 @@ body{font-size:15px;line-height:1.55}button,input,select,textarea{font-size:inhe
     countryField: 'Country', provinceField: 'Province / region', provincePh: 'Madrid, Barcelona…',
     homeLocationNote: 'Country and province of the family home.',
     adultProfileNeed: 'Adults need a birthday and phone number.',
+    adultProfileEyebrow: 'Your account',
+    adultProfileTitle: 'Complete your details',
+    adultProfileText: 'Whether you sign in with email or Google, the same contact registration is required.',
+    adultProfileSub: 'Birthday, phone, and home location.',
+    adultProfileSubInvite: 'Birthday and contact phone.',
+    adultProfileSave: 'Save and continue',
+    adultProfileSaved: 'Contact details saved.',
+    creatingHome: 'Creating your home…',
+    creatingHomeTimeout: 'Creating the home is taking too long. Check your connection and try again.',
     countryRequired: 'Choose the country.', provinceRequired: 'Enter the province.',
     toddlerTitle: 'Hi, {name}', toddlerSub: 'Gentle space', toddlerBody: 'At this age adults handle missions. As they grow, big icons will appear here to mark what they do.',
     littleHelloEyebrow: 'Today', littleHello: 'Hi, {name}!', littleMissions: 'My missions', littleRoutines: 'My routines',
@@ -8670,6 +8688,13 @@ return{merge,entities,patch};});
     refreshAgain: false,
     channel: null,
     async clientFor(session) {
+      // Reuse the app auth client. A second createClient with detectSessionInUrl
+      // races PKCE on OAuth return and can hang house creation forever.
+      const shared = globalThis.FPAccess?.cloud;
+      if (shared) {
+        this.client = shared;
+        return this.client;
+      }
       const bundled = globalThis.FAMILY_CLOUD?.url && globalThis.FAMILY_CLOUD?.anonKey ? globalThis.FAMILY_CLOUD : null;
       const cfg = !bundled && typeof localStorage !== 'undefined' && localStorage.getItem('family-points-v3-cloud-config')
         ? JSON.parse(localStorage.getItem('family-points-v3-cloud-config') || 'null')
@@ -8687,12 +8712,15 @@ return{merge,entities,patch};});
       }
       if (!this.client) {
         this.client = globalThis.supabase.createClient(cloud.url, cloud.anonKey, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' }
         });
       }
       if (session?.access_token && session?.refresh_token) {
-        const { error } = await this.client.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
-        if (error) throw error;
+        const { data: cur } = await this.client.auth.getSession();
+        if (cur?.session?.access_token !== session.access_token) {
+          const { error } = await this.client.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
+          if (error) throw error;
+        }
       }
       return this.client;
     },
@@ -8808,6 +8836,7 @@ return{merge,entities,patch};});
         if (this.saving) { this.refreshAgain = true; return; }
         try {
           const rows = await this.pull();
+          if (!rows.length) return;
           const state = assemble(rows);
           globalThis.HomaApplyCloudState?.(state);
         } catch (error) {
@@ -10951,6 +10980,66 @@ const requireAdultProfile=(p,{needLocation=false}={})=>{
  const age=C.ageFromBirthday(p.birthday);
  return {...p,age};
 };
+function linkedAdultMember(){
+ if(access.blocked||access.mode==='guest'||access.membership?.role==='child')return null;
+ const mid=access.membership?.linkedMemberId;
+ if(mid){const m=state.members.find(x=>x.id===mid&&x.active!==false);if(m&&m.role!=='pet')return m;}
+ if(access.user?.id){const byId=state.members.find(m=>m.userId===access.user.id&&m.active!==false);if(byId&&byId.role!=='pet')return byId;}
+ if(access.user?.email){const email=String(access.user.email).toLowerCase();const byEmail=state.members.find(m=>m.email&&m.email.toLowerCase()===email&&m.active!==false);if(byEmail&&byEmail.role!=='pet')return byEmail;}
+ return state.members.find(m=>m.role==='adult'&&m.active!==false)||null;
+}
+function adultNeedsLocation(){
+ const m=access.membership||{};
+ if(m.role==='adult'&&!m.isOwner)return false;
+ return true;
+}
+function adultProfileIncomplete(){
+ if(access.blocked||access.mode==='guest'||!isAdult()||access.membership?.role==='child')return false;
+ const person=linkedAdultMember();
+ try{
+  requireAdultProfile({
+   birthday:person?.birthday||'',
+   phone:normalizePhone(person?.phone||''),
+   country:state.settings.country||'',
+   province:state.settings.province||''
+  },{needLocation:adultNeedsLocation()});
+  return false;
+ }catch{return true;}
+}
+function syncAdultProfileAuth(profile,name=''){
+ if(access.mode!=='cloud'||!access.cloud)return;
+ const data={birthday:profile.birthday,phone:profile.phone};
+ if(name)data.name=String(name).slice(0,80);
+ if(profile.country)data.country=profile.country;
+ if(profile.province)data.province=profile.province;
+ access.cloud.auth.updateUser({data}).catch(()=>{});
+}
+function completeAdultProfile(fd){
+ const person=linkedAdultMember();
+ const name=String(fd.get('name')||'').trim()||person?.name||'';
+ const needLoc=adultNeedsLocation();
+ const profile=requireAdultProfile(readProfileFields(fd),{needLocation:needLoc});
+ const ok=transact(s=>{
+  let target=null;
+  const mid=access.membership?.linkedMemberId;
+  if(mid)target=s.members.find(x=>x.id===mid&&x.active!==false);
+  if(!target&&access.user?.id)target=s.members.find(m=>m.userId===access.user.id&&m.active!==false);
+  if(!target&&access.user?.email){const email=String(access.user.email).toLowerCase();target=s.members.find(m=>m.email&&m.email.toLowerCase()===email&&m.active!==false);}
+  if(!target)target=s.members.find(m=>m.role==='adult'&&m.active!==false);
+  if(!target)throw new Error(t('adultProfileNeed'));
+  if(name)target.name=name.slice(0,80);
+  target.birthday=profile.birthday;target.age=profile.age;target.phone=profile.phone;
+  if(access.user?.id)target.userId=access.user.id;
+  if(access.user?.email)target.email=target.email||access.user.email;
+  if(needLoc){s.settings.country=profile.country;s.settings.province=profile.province;}
+  const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
+  if(w){const shot=C.memberSnapshot(target),snap=w.members.find(x=>x.id===target.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
+ },t('adultProfileSaved'));
+ if(!ok)return false;
+ syncAdultProfileAuth(profile,name);
+ return true;
+}
+window.FPAdultProfile={incomplete:()=>adultProfileIncomplete(),needsLocation:()=>adultNeedsLocation()};
 
 const ACCESS_SESSION='family-points-v3-session',ACCESS_CONFIG='family-points-v3-cloud-config';
 const access={blocked:true,mode:'guest',user:null,key:null,rawKey:null,record:null,tab:'login',target:'cloud',busy:false,message:'',error:false,pending:0,saveError:'',chain:Promise.resolve(),cloud:null,revision:0,suppress:false,cloudPending:null,pendingInvite:'',membership:null};
@@ -10988,6 +11077,8 @@ function applyAccountState(next,key){
 }
 window.HomaApplyCloudState=function(next){
  if(access.mode!=='cloud'||access.pending||access.suppress)return false;
+ // Don't wipe local onboarding with an empty/partial cloud pull.
+ if(state?.settings?.familyReady===false)return false;
  let incoming;try{incoming=C.validateState(C.copy(next));}catch(_){return false;}
  if(JSON.stringify(incoming)===JSON.stringify(state))return true;
  access.suppress=true;
@@ -11070,16 +11161,26 @@ async function cloudClient(){
  access.cloud.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&access.mode==='cloud'){setTimeout(()=>{if(!access.pending&&!access.saveError){localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-previous');sessionStorage.removeItem(KEY+'-profile');localStorage.removeItem(ACCESS_SESSION);}access.blocked=true;access.message=t('sessionRevoked');access.user=null;closeModal();render();},0);}});
  return access.cloud;
 }
+function withTimeout(promise,ms,message){
+ return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),ms))]);
+}
 async function activateCloud(session,name='',profile={}){
  if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('v5AdapterMissing'));
  if(!session?.user)throw new Error(t('noValidSession'));
  const invite=access.pendingInvite||'';access.pendingInvite='';
- const result=await window.HomaCloudTransport.activate(session,name,invite);
+ // Ensure a single auth client exists before transport RPCs (avoids PKCE race).
+ if(!access.cloud)await cloudClient();
+ access.busy=true;access.message=t('creatingHome');access.error=false;render();
+ let result;
+ try{
+  result=await withTimeout(window.HomaCloudTransport.activate(session,name,invite),45000,t('creatingHomeTimeout'));
+ }finally{access.busy=false;}
  const user=session.user;access.mode='cloud';access.target='cloud';access.user={id:user.id,email:user.email||'',name:name||user.user_metadata?.name||t('myFamilyDefault'),householdId:result.householdId};
  access.membership=result.membership||{role:null,linkedMemberId:null,isOwner:false};
- access.revision=result.revision||0;access.saveError='';access.cloudPending=null;
+ access.revision=result.revision||0;access.saveError='';access.cloudPending=null;access.message='';
  let next=C.validateState(result.state);const cacheKey='family-points-v3-cloud-'+result.householdId,cache=localStorage.getItem(cacheKey);
- if(cache){try{const local=C.validateState(JSON.parse(cache));if((local.updatedAt||'')>(next.updatedAt||''))next=local;}catch(_){}}
+ const cloudFresh=next.settings?.familyReady===false&&!(next.members||[]).some(m=>m.birthday||m.phone);
+ if(cache&&!cloudFresh){try{const local=C.validateState(JSON.parse(cache));if((local.updatedAt||'')>(next.updatedAt||''))next=local;}catch(_){}}
  const link=access.membership;const inviteMeta=result.invite;
  let mid=link?.linkedMemberId||inviteMeta?.memberId||null;
  let person=mid?next.members.find(m=>m.id===mid):null;
@@ -11341,6 +11442,7 @@ function finishGuide(){
   if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
  },t5('familyReady'));
  if(!ok)return;
+ if(typeof syncAdultProfileAuth==='function')syncAdultProfileAuth(profile,adultName);
  ui.guide=null;ui.view='home';ui.tour={step:0};render();
  if(access.mode==='cloud'&&typeof canManageInvites==='function'&&canManageInvites()){
   const pending=state.members.filter(m=>m.active!==false&&m.role!=='pet'&&m.email&&m.inviteStatus!=='joined'&&m.userId!==access.user?.id);
@@ -11364,6 +11466,12 @@ function renderFamilyGuide(){
   :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('guideEyebrow'))}</span><h1>${esc(t5('guideStoryTitle'))}</h1><p>${esc(t5('guideStoryText'))}</p><label class="field mt"><span>${esc(t5('chooseLang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(window.HomaI18n.getLocale()):'<option value="es">Español</option>'}</select></label></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">${esc(t5('guideStep',{n:step+1}))}</span><h2>${esc(titles[step])}</h2>${body}<div class="guide-actions">${step?btn(t5('back'),'guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?esc(t5('enterHome')):esc(t5('continue'))}</button></div></form></section></div>`;
 }
+function renderAdultProfileGate(){
+ const person=typeof linkedAdultMember==='function'?linkedAdultMember():null;
+ const needLoc=typeof adultNeedsLocation==='function'?adultNeedsLocation():true;
+ const name=person?.name&&person.name!=='Adulto'?person.name:(access.user?.name||'');
+ $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('adultProfileEyebrow'))}</span><h1>${esc(t5('adultProfileTitle'))}</h1><p>${esc(t5('adultProfileText'))}</p></section><section class="auth-panel"><form id="adult-profile-form" class="auth-card"><h2>${esc(t5('adultProfileTitle'))}</h2><p class="auth-sub">${esc(needLoc?t5('adultProfileSub'):t5('adultProfileSubInvite'))}</p>${field(t5('name'),'name',name,'text','required maxlength="80" autocomplete="name"')}${adultContactFieldsHtml({birthday:person?.birthday||'',phone:person?.phone||'',country:state.settings.country||'ES',province:state.settings.province||'',withLocation:needLoc})}<button type="submit" class="btn primary wide">${esc(t5('adultProfileSave'))}</button><p class="tiny muted center mt">${esc(access.user?.email||'')}</p></form></section></div>`;
+}
 
 const TOUR_STEPS=[{view:'home',title:'tour1Title',text:'tour1Text'},{view:'family',title:'tour2Title',text:'tour2Text'},{view:'tasks',title:'tour3Title',text:'tour3Text'},{view:'calendar',title:'tour4Title',text:'tour4Text'},{view:'recipes',title:'tour5Title',text:'tour5Text'},{view:'money',title:'tour6Title',text:'tour6Text'}];
 function clearTour(persist){ui.tour=null;if(persist)transact(s=>{s.settings.tutorialDismissed=true;},null);}
@@ -11383,6 +11491,7 @@ function removeTourDom(){document.querySelector('.tour-layer')?.remove();}
 function render(){
   C.ensureWeb5(state);
   if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
+  if(!access.blocked&&typeof adultProfileIncomplete==='function'&&adultProfileIncomplete()){renderAdultProfileGate();return;}
   if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
   renderBefore5();
   if(access.blocked){enhanceAuth5();return;}
@@ -11497,7 +11606,16 @@ async function web5Action(a,d,el,event){
  return false;
 }
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);}if(el.dataset.change==='invite-role'){const box=$('#invite-adult-fields');if(box)box.classList.toggle('hidden',el.value!=='adult');}if(el.dataset.change==='profile-country'){const wrap=el.closest('form')||el.closest('.modal-body')||document;const prov=wrap.querySelector('[name=province]');if(!prov)return;const box=prov.closest('label.field')||prov;const v=el.value,cur=prov.value;if(v==='ES'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><select name="province" required>${selectOptions([{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))],ES_PROVINCES.includes(cur)?cur:'')}</select></label>`;}else if(prov.tagName==='SELECT'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><input name="province" type="text" required maxlength="80" value="${esc(cur&&!ES_PROVINCES.includes(cur)?cur:'')}" placeholder="${esc(t('provincePh'))}"></label>`;}}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
-document.addEventListener('submit',e=>{if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step===0){try{requireAdultProfile({birthday:g.adultBirthday||'',phone:normalizePhone(g.adultPhone),country:g.country||'',province:g.province||''},{needLocation:true});}catch(err){toast(err.message,true);return;}}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
+document.addEventListener('submit',e=>{
+ if(e.target.id==='adult-profile-form'){
+  e.preventDefault();
+  try{
+   const ok=completeAdultProfile(new FormData(e.target));
+   if(ok)render();
+  }catch(err){toast(err.message||t5('adultProfileNeed'),true);}
+  return;
+ }
+ if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step===0){try{requireAdultProfile({birthday:g.adultBirthday||'',phone:normalizePhone(g.adultPhone),country:g.country||'',province:g.province||''},{needLocation:true});}catch(err){toast(err.message,true);return;}}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
 window.addEventListener('beforeunload',e=>{if($('#modal')?.open&&modalSubmit&&web5.modalInitial&&modalSnapshot5()!==web5.modalInitial){e.preventDefault();e.returnValue='';}});
 $('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
 

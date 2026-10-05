@@ -44,6 +44,7 @@ function finishGuide(){
   if(w)for(const m of s.members){const shot=C.memberSnapshot(m),snap=w.members.find(x=>x.id===m.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
  },t5('familyReady'));
  if(!ok)return;
+ if(typeof syncAdultProfileAuth==='function')syncAdultProfileAuth(profile,adultName);
  ui.guide=null;ui.view='home';ui.tour={step:0};render();
  if(access.mode==='cloud'&&typeof canManageInvites==='function'&&canManageInvites()){
   const pending=state.members.filter(m=>m.active!==false&&m.role!=='pet'&&m.email&&m.inviteStatus!=='joined'&&m.userId!==access.user?.id);
@@ -67,6 +68,12 @@ function renderFamilyGuide(){
   :`<p class="small muted mb">${esc(t5('guidePetsHint'))}</p>${g.pets.map((p,i)=>`<div class="guide-row" data-guide-pet><label class="field"><span>${esc(t5('personName'))}</span><input name="petName" value="${esc(p.name)}" maxlength="80" placeholder="Coco"></label><label class="field"><span>${esc(t5('animal'))}</span><select name="petSpecies"><option value="perro" ${p.species==='perro'?'selected':''}>${esc(t5('dog'))}</option><option value="gato" ${p.species==='gato'?'selected':''}>${esc(t5('cat'))}</option><option value="otro" ${p.species==='otro'?'selected':''}>${esc(t5('other'))}</option></select></label>${iconBtn('trash','guide-remove',t5('remove'),`data-kind="pet" data-index="${i}"`)}</div>`).join('')}${btn(t5('addPet'),'guide-add','data-kind="pet"','secondary','plus')}`;
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('guideEyebrow'))}</span><h1>${esc(t5('guideStoryTitle'))}</h1><p>${esc(t5('guideStoryText'))}</p><label class="field mt"><span>${esc(t5('chooseLang'))}</span><select data-change="app-locale" aria-label="${esc(t5('chooseLang'))}">${window.HomaI18n?window.HomaI18n.langOptions(window.HomaI18n.getLocale()):'<option value="es">Español</option>'}</select></label></section><section class="auth-panel"><form id="family-guide" class="auth-card"><div class="guide-steps">${[0,1,2].map(i=>`<span class="${i<=step?'on':''}"></span>`).join('')}</div><span class="pill green">${esc(t5('guideStep',{n:step+1}))}</span><h2>${esc(titles[step])}</h2>${body}<div class="guide-actions">${step?btn(t5('back'),'guide-back','','secondary'):''}<button type="submit" class="btn primary">${step===2?esc(t5('enterHome')):esc(t5('continue'))}</button></div></form></section></div>`;
 }
+function renderAdultProfileGate(){
+ const person=typeof linkedAdultMember==='function'?linkedAdultMember():null;
+ const needLoc=typeof adultNeedsLocation==='function'?adultNeedsLocation():true;
+ const name=person?.name&&person.name!=='Adulto'?person.name:(access.user?.name||'');
+ $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('adultProfileEyebrow'))}</span><h1>${esc(t5('adultProfileTitle'))}</h1><p>${esc(t5('adultProfileText'))}</p></section><section class="auth-panel"><form id="adult-profile-form" class="auth-card"><h2>${esc(t5('adultProfileTitle'))}</h2><p class="auth-sub">${esc(needLoc?t5('adultProfileSub'):t5('adultProfileSubInvite'))}</p>${field(t5('name'),'name',name,'text','required maxlength="80" autocomplete="name"')}${adultContactFieldsHtml({birthday:person?.birthday||'',phone:person?.phone||'',country:state.settings.country||'ES',province:state.settings.province||'',withLocation:needLoc})}<button type="submit" class="btn primary wide">${esc(t5('adultProfileSave'))}</button><p class="tiny muted center mt">${esc(access.user?.email||'')}</p></form></section></div>`;
+}
 
 const TOUR_STEPS=[{view:'home',title:'tour1Title',text:'tour1Text'},{view:'family',title:'tour2Title',text:'tour2Text'},{view:'tasks',title:'tour3Title',text:'tour3Text'},{view:'calendar',title:'tour4Title',text:'tour4Text'},{view:'recipes',title:'tour5Title',text:'tour5Text'},{view:'money',title:'tour6Title',text:'tour6Text'}];
 function clearTour(persist){ui.tour=null;if(persist)transact(s=>{s.settings.tutorialDismissed=true;},null);}
@@ -86,6 +93,7 @@ function removeTourDom(){document.querySelector('.tour-layer')?.remove();}
 function render(){
   C.ensureWeb5(state);
   if(!access.blocked&&state.settings.familyReady===false&&isAdult()){renderFamilyGuide();return;}
+  if(!access.blocked&&typeof adultProfileIncomplete==='function'&&adultProfileIncomplete()){renderAdultProfileGate();return;}
   if(!access.blocked&&!viewAllowed5(ui.view)){ui.view='member';ui.memberId=actor.memberId;}
   renderBefore5();
   if(access.blocked){enhanceAuth5();return;}
@@ -200,7 +208,16 @@ async function web5Action(a,d,el,event){
  return false;
 }
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.change==='member-role'){const pet=el.value==='pet';$('#member-age')?.classList.toggle('hidden',pet);$('#member-species')?.classList.toggle('hidden',!pet);$('#member-email')?.classList.toggle('hidden',pet);}if(el.dataset.change==='invite-role'){const box=$('#invite-adult-fields');if(box)box.classList.toggle('hidden',el.value!=='adult');}if(el.dataset.change==='profile-country'){const wrap=el.closest('form')||el.closest('.modal-body')||document;const prov=wrap.querySelector('[name=province]');if(!prov)return;const box=prov.closest('label.field')||prov;const v=el.value,cur=prov.value;if(v==='ES'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><select name="province" required>${selectOptions([{value:'',label:'—'},...ES_PROVINCES.map(x=>({value:x,label:x}))],ES_PROVINCES.includes(cur)?cur:'')}</select></label>`;}else if(prov.tagName==='SELECT'){box.outerHTML=`<label class="field"><span>${esc(t('provinceField'))}</span><input name="province" type="text" required maxlength="80" value="${esc(cur&&!ES_PROVINCES.includes(cur)?cur:'')}" placeholder="${esc(t('provincePh'))}"></label>`;}}if(el.dataset.change==='web5-list'){web5.shoppingList=el.value;render();}if(el.dataset.change==='web5-diet'){web5.diet=el.value;render();}if(el.dataset.change==='app-locale'&&window.HomaI18n){const code=window.HomaI18n.normalize(el.value);window.HomaI18n.setLocale(code);if(state?.settings){const apply=()=>{state.settings.locale=code;if(typeof queueAccountSave==='function')queueAccountSave(C.copy(state));else if(typeof save==='function')save();};if(typeof transact==='function'&&!access.blocked)transact(s=>{s.settings.locale=code;},'');else apply();}render();}});
-document.addEventListener('submit',e=>{if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step===0){try{requireAdultProfile({birthday:g.adultBirthday||'',phone:normalizePhone(g.adultPhone),country:g.country||'',province:g.province||''},{needLocation:true});}catch(err){toast(err.message,true);return;}}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
+document.addEventListener('submit',e=>{
+ if(e.target.id==='adult-profile-form'){
+  e.preventDefault();
+  try{
+   const ok=completeAdultProfile(new FormData(e.target));
+   if(ok)render();
+  }catch(err){toast(err.message||t5('adultProfileNeed'),true);}
+  return;
+ }
+ if(e.target.id!=='family-guide')return;e.preventDefault();const g=readGuide(e.target);if(g.step===0&&(!g.familyName.trim()||!g.adultName.trim())){toast(t5('guideNeedNames'),true);return;}if(g.step===0){try{requireAdultProfile({birthday:g.adultBirthday||'',phone:normalizePhone(g.adultPhone),country:g.country||'',province:g.province||''},{needLocation:true});}catch(err){toast(err.message,true);return;}}if(g.step<2){g.step++;render();return;}try{finishGuide();}catch(err){toast(err.message,true);}});
 window.addEventListener('beforeunload',e=>{if($('#modal')?.open&&modalSubmit&&web5.modalInitial&&modalSnapshot5()!==web5.modalInitial){e.preventDefault();e.returnValue='';}});
 $('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
 

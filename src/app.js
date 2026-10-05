@@ -638,6 +638,66 @@ const requireAdultProfile=(p,{needLocation=false}={})=>{
  const age=C.ageFromBirthday(p.birthday);
  return {...p,age};
 };
+function linkedAdultMember(){
+ if(access.blocked||access.mode==='guest'||access.membership?.role==='child')return null;
+ const mid=access.membership?.linkedMemberId;
+ if(mid){const m=state.members.find(x=>x.id===mid&&x.active!==false);if(m&&m.role!=='pet')return m;}
+ if(access.user?.id){const byId=state.members.find(m=>m.userId===access.user.id&&m.active!==false);if(byId&&byId.role!=='pet')return byId;}
+ if(access.user?.email){const email=String(access.user.email).toLowerCase();const byEmail=state.members.find(m=>m.email&&m.email.toLowerCase()===email&&m.active!==false);if(byEmail&&byEmail.role!=='pet')return byEmail;}
+ return state.members.find(m=>m.role==='adult'&&m.active!==false)||null;
+}
+function adultNeedsLocation(){
+ const m=access.membership||{};
+ if(m.role==='adult'&&!m.isOwner)return false;
+ return true;
+}
+function adultProfileIncomplete(){
+ if(access.blocked||access.mode==='guest'||!isAdult()||access.membership?.role==='child')return false;
+ const person=linkedAdultMember();
+ try{
+  requireAdultProfile({
+   birthday:person?.birthday||'',
+   phone:normalizePhone(person?.phone||''),
+   country:state.settings.country||'',
+   province:state.settings.province||''
+  },{needLocation:adultNeedsLocation()});
+  return false;
+ }catch{return true;}
+}
+function syncAdultProfileAuth(profile,name=''){
+ if(access.mode!=='cloud'||!access.cloud)return;
+ const data={birthday:profile.birthday,phone:profile.phone};
+ if(name)data.name=String(name).slice(0,80);
+ if(profile.country)data.country=profile.country;
+ if(profile.province)data.province=profile.province;
+ access.cloud.auth.updateUser({data}).catch(()=>{});
+}
+function completeAdultProfile(fd){
+ const person=linkedAdultMember();
+ const name=String(fd.get('name')||'').trim()||person?.name||'';
+ const needLoc=adultNeedsLocation();
+ const profile=requireAdultProfile(readProfileFields(fd),{needLocation:needLoc});
+ const ok=transact(s=>{
+  let target=null;
+  const mid=access.membership?.linkedMemberId;
+  if(mid)target=s.members.find(x=>x.id===mid&&x.active!==false);
+  if(!target&&access.user?.id)target=s.members.find(m=>m.userId===access.user.id&&m.active!==false);
+  if(!target&&access.user?.email){const email=String(access.user.email).toLowerCase();target=s.members.find(m=>m.email&&m.email.toLowerCase()===email&&m.active!==false);}
+  if(!target)target=s.members.find(m=>m.role==='adult'&&m.active!==false);
+  if(!target)throw new Error(t('adultProfileNeed'));
+  if(name)target.name=name.slice(0,80);
+  target.birthday=profile.birthday;target.age=profile.age;target.phone=profile.phone;
+  if(access.user?.id)target.userId=access.user.id;
+  if(access.user?.email)target.email=target.email||access.user.email;
+  if(needLoc){s.settings.country=profile.country;s.settings.province=profile.province;}
+  const w=s.weeks.find(w=>w.status==='open')||s.weeks.at(-1);
+  if(w){const shot=C.memberSnapshot(target),snap=w.members.find(x=>x.id===target.id);if(snap)Object.assign(snap,shot);else w.members.push(shot);}
+ },t('adultProfileSaved'));
+ if(!ok)return false;
+ syncAdultProfileAuth(profile,name);
+ return true;
+}
+window.FPAdultProfile={incomplete:()=>adultProfileIncomplete(),needsLocation:()=>adultNeedsLocation()};
 
 const ACCESS_SESSION='family-points-v3-session',ACCESS_CONFIG='family-points-v3-cloud-config';
 const access={blocked:true,mode:'guest',user:null,key:null,rawKey:null,record:null,tab:'login',target:'cloud',busy:false,message:'',error:false,pending:0,saveError:'',chain:Promise.resolve(),cloud:null,revision:0,suppress:false,cloudPending:null,pendingInvite:'',membership:null};
@@ -675,6 +735,8 @@ function applyAccountState(next,key){
 }
 window.HomaApplyCloudState=function(next){
  if(access.mode!=='cloud'||access.pending||access.suppress)return false;
+ // Don't wipe local onboarding with an empty/partial cloud pull.
+ if(state?.settings?.familyReady===false)return false;
  let incoming;try{incoming=C.validateState(C.copy(next));}catch(_){return false;}
  if(JSON.stringify(incoming)===JSON.stringify(state))return true;
  access.suppress=true;
@@ -757,16 +819,26 @@ async function cloudClient(){
  access.cloud.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'&&access.mode==='cloud'){setTimeout(()=>{if(!access.pending&&!access.saveError){localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-previous');sessionStorage.removeItem(KEY+'-profile');localStorage.removeItem(ACCESS_SESSION);}access.blocked=true;access.message=t('sessionRevoked');access.user=null;closeModal();render();},0);}});
  return access.cloud;
 }
+function withTimeout(promise,ms,message){
+ return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),ms))]);
+}
 async function activateCloud(session,name='',profile={}){
  if(!window.HomaCloudTransport||window.HomaCloudTransport.version!==5)throw new Error(t('v5AdapterMissing'));
  if(!session?.user)throw new Error(t('noValidSession'));
  const invite=access.pendingInvite||'';access.pendingInvite='';
- const result=await window.HomaCloudTransport.activate(session,name,invite);
+ // Ensure a single auth client exists before transport RPCs (avoids PKCE race).
+ if(!access.cloud)await cloudClient();
+ access.busy=true;access.message=t('creatingHome');access.error=false;render();
+ let result;
+ try{
+  result=await withTimeout(window.HomaCloudTransport.activate(session,name,invite),45000,t('creatingHomeTimeout'));
+ }finally{access.busy=false;}
  const user=session.user;access.mode='cloud';access.target='cloud';access.user={id:user.id,email:user.email||'',name:name||user.user_metadata?.name||t('myFamilyDefault'),householdId:result.householdId};
  access.membership=result.membership||{role:null,linkedMemberId:null,isOwner:false};
- access.revision=result.revision||0;access.saveError='';access.cloudPending=null;
+ access.revision=result.revision||0;access.saveError='';access.cloudPending=null;access.message='';
  let next=C.validateState(result.state);const cacheKey='family-points-v3-cloud-'+result.householdId,cache=localStorage.getItem(cacheKey);
- if(cache){try{const local=C.validateState(JSON.parse(cache));if((local.updatedAt||'')>(next.updatedAt||''))next=local;}catch(_){}}
+ const cloudFresh=next.settings?.familyReady===false&&!(next.members||[]).some(m=>m.birthday||m.phone);
+ if(cache&&!cloudFresh){try{const local=C.validateState(JSON.parse(cache));if((local.updatedAt||'')>(next.updatedAt||''))next=local;}catch(_){}}
  const link=access.membership;const inviteMeta=result.invite;
  let mid=link?.linkedMemberId||inviteMeta?.memberId||null;
  let person=mid?next.members.find(m=>m.id===mid):null;

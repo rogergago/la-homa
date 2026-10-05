@@ -19,3 +19,26 @@ test('duplicate local email is rejected case-insensitively',async()=>{const x=en
 test('account switch isolates family and finances',async()=>{const x=env();await x.localCredentials(fd(signupFd({email:'a@a.test',password:'Password123',repeat:'Password123',name:'First'})),true);await x.window.FPAccess.chain;await x.logOut();await x.localCredentials(fd(signupFd({email:'b@b.test',password:'Password123',repeat:'Password123',name:'Second'})),true);assert.equal(x.state.members.length,1);assert.equal(x.state.members[0].name,'Second');assert.equal(x.vaultRecords.size,2);});
 test('mismatched or short registration password is rejected',async()=>{const x=env();await assert.rejects(()=>x.localCredentials(fd(signupFd({email:'a@a.test',password:'x',repeat:'x',name:'A'})),true));await assert.rejects(()=>x.localCredentials(fd(signupFd({email:'a@a.test',password:'Password123',repeat:'Password124',name:'A'})),true));assert.equal(x.vaultRecords.size,0);});
 test('cloud client refuses a file URL and does not fake a provider login',async()=>{const x=env();x.localStorage.setItem('family-points-v3-cloud-config',JSON.stringify({url:'https://demo.supabase.co',anonKey:'public'}));await assert.rejects(()=>x.cloudClient(),/HTTPS|localhost/);assert.equal(x.window.FPAccess.cloud,null);});
+test('adult profile gate requires birthday and phone after Google-style login without metadata',async()=>{
+ const x=env();
+ await x.localCredentials(fd(signupFd({email:'g@a.test',password:'Password123',repeat:'Password123',name:'Google User'})),true);
+ await x.window.FPAccess.chain;
+ x.state.members[0].birthday='';x.state.members[0].phone='';
+ x.state.settings.country='';x.state.settings.province='';
+ assert.equal(x.adultProfileIncomplete(),true);
+ x.state.members[0].birthday='1990-05-15';x.state.members[0].phone='+34600111222';
+ x.state.settings.country='ES';x.state.settings.province='Madrid';
+ assert.equal(x.adultProfileIncomplete(),false);
+});
+test('invited adult profile gate does not require household location',()=>{
+ const x=env();
+ x.window.FPAccess.blocked=false;x.window.FPAccess.mode='cloud';
+ x.window.FPAccess.user={id:'u1',email:'inv@a.test',name:'Inv'};
+ x.window.FPAccess.membership={role:'adult',isOwner:false,linkedMemberId:x.state.members[0].id};
+ x.state.members[0].role='adult';x.state.members[0].userId='u1';x.state.members[0].birthday='';x.state.members[0].phone='';
+ x.state.settings.country='';x.state.settings.province='';
+ assert.equal(x.adultNeedsLocation(),false);
+ assert.equal(x.adultProfileIncomplete(),true);
+ x.state.members[0].birthday='1991-01-01';x.state.members[0].phone='600111222';
+ assert.equal(x.adultProfileIncomplete(),false);
+});
