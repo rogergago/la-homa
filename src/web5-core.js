@@ -151,9 +151,30 @@ function saveMenu(s,week,name,a){requireAdult(a);ensureWeb5(s);const plans=s.mea
 function applySavedMenu(s,id,week,a){requireAdult(a);const menu=s.savedMenus.find(x=>x.id===id);if(!menu)throw new Error('Men\u00fa no disponible.');let count=0;for(const p of menu.plans){const d=addDays(week,p.offset),servings=menuServings(s,d);if(!servings||s.mealPlan.some(x=>x.date===d&&x.slot===p.slot)||!s.recipes.some(r=>r.id===p.recipeId))continue;s.mealPlan.push({id:uid('meal'),date:d,slot:p.slot,recipeId:p.recipeId,servings:Math.min(30,servings)});count++;}return count;}
 function reminderItems(s,now=new Date()){
   ensureWeb5(s);const cfg=s.settings.notifications;if(!cfg.enabled)return [];const today=householdDay(s,now),items=[];
+  const tr=(k,v)=>globalThis.HomaI18n?.t?.(k,v)||k;
   if(cfg.events)for(const e of s.events.filter(e=>e.date>=today&&e.date<=addDays(today,1)))items.push({id:'event:'+e.id,title:e.title,detail:e.date+(e.time?' '+e.time:'')+(e.location?' \u00b7 '+e.location:''),view:'events',eventId:e.id,memberIds:eventParticipants(e),kind:'event'});
   if(cfg.checklists)for(const p of s.preparations)for(const i of p.items.filter(i=>!i.done&&i.dueDate&&i.dueDate<=today)){const e=s.events.find(e=>e.id===p.eventId);if(e&&(e.endDate||e.date)>=today)items.push({id:'prep:'+i.id,title:i.title,detail:e.title+' \u00b7 preparar '+i.dueDate,view:'events',eventId:p.eventId,memberIds:i.memberId?[i.memberId]:eventParticipants(e),kind:'checklist'});}
   if(cfg.allowance)for(const d of s.finance.dues.filter(d=>d.status==='pending'&&(d.payDate||d.dueDate)<=today))items.push({id:'allowance:'+d.id,title:'Paga pendiente de confirmar',detail:s.members.find(m=>m.id===d.memberId)?.name||'',view:'money',kind:'adult'});
+  // Weekly mission nudge (Mon–Wed of each open week): empty list vs progress toward reward.
+  {
+    const weekStart=monday(today);
+    const dayIndex=Math.round((Date.parse(today+'T00:00:00Z')-Date.parse(weekStart+'T00:00:00Z'))/86400000);
+    if(dayIndex>=0&&dayIndex<=2){
+      const w=s.weeks.find(x=>x.start===weekStart&&x.status==='open');
+      const templates=(s.templates||[]).filter(t=>t.active!==false);
+      const weekMissions=w?(w.tasks||[]).filter(t=>t.kind==='normal'&&t.status!=='excused'):[];
+      if(!templates.length||!weekMissions.length){
+        items.push({id:'missions:empty:'+weekStart,title:tr('notifMissionsEmptyTitle'),detail:tr('notifMissionsEmptyDetail'),view:'tasks',memberIds:[],kind:'adult'});
+      }else{
+        for(const m of (s.members||[]).filter(m=>m.active!==false&&m.role==='member')){
+          const st=stats(w,m.id);
+          const reward=(w.rewards||[]).find(r=>r.memberId===m.id&&r.active!==false);
+          if(!reward||st.remaining<=0)continue;
+          items.push({id:'missions:week:'+weekStart+':'+m.id,title:tr('notifMissionsWeekTitle'),detail:tr('notifMissionsWeekDetail',{n:st.remaining}),view:'tasks',memberIds:[m.id],kind:'missions'});
+        }
+      }
+    }
+  }
   return items;
 }
 function approvalItems(s){ensureWeb5(s);return [

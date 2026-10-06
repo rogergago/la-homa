@@ -217,7 +217,48 @@ function renderInbox5(){if(!isAdult())return empty(esc(t5('emptyAdultOnlyTitle')
 function notificationSettings5(){if(!needAdult())return;const n=state.settings.notifications;openModal(t5('whenNotify'),`<p class="dialog-description">${esc(t5('notifModalNote'))}</p>${['enabled','events','checklists','approvals','allowance'].map((k,i)=>`<label class="check-label"><input name="${k}" type="checkbox" ${n[k]?'checked':''}>${esc(t5(['enableNotices','upcomingPlans','pendingPrep','adultReviews','payToConfirm'][i]))}</label>`).join('')}<div class="form-grid">${field(t5('leadMinutes'),'leadMinutes',n.leadMinutes,'number','min="0" max="10080" required')}${field(t5('quietFrom'),'quietStart',n.quietStart,'time','required')}${field(t5('quietUntil'),'quietEnd',n.quietEnd,'time','required')}</div>${footer(esc(t5('savePrefs')))}`,fd=>transact(s=>{s.settings.notifications=Object.fromEntries(['enabled','events','checklists','approvals','allowance'].map(k=>[k,!!fd.get(k)]));Object.assign(s.settings.notifications,{leadMinutes:Number(fd.get('leadMinutes')),quietStart:fd.get('quietStart'),quietEnd:fd.get('quietEnd')});},t5('prefsSaved')));}
 function renderNotifications5(){const items=C.reminderItems(state).filter(x=>isAdult()||x.kind!=='adult'&&(!x.memberIds.length||x.memberIds.includes(actor.memberId)));return `${heading(esc(t5('notifTitle')), esc(t5('notifSub')),isAdult()?btn(esc(t5('noticesBtn')),'web5-notification-settings','','secondary','settings'):'')}<div class="note mb">${esc(t5('notifInAppNote'))}</div><div class="panel">${items.map(x=>`<article class="review-row"><div class="grow"><h3>${esc(x.title)}</h3><p>${esc(x.detail)}</p></div>${btn(esc(t5('open')),x.eventId?'ev31-detail':'nav',x.eventId?`data-id="${esc(x.eventId)}"`:`data-view="${x.view}"`,'secondary small','arrow')}</article>`).join('')||empty(esc(t5('emptyNotifTitle')),esc(t5('emptyNotifDetail')))}</div>`;}
 function renderTasksV2(){let html=renderTasksBefore5();if(isAdult())html=html.replace('</div></div>','</div></div>');return html+(isAdult()?`<div class="context-toolbar mt">${btn(esc(t5('taskPresets')),'web5-task-presets','','secondary','plus')}</div>`:'');}
-function taskForm(id=null,mid=null){taskFormBefore5(id,mid);if(!isAdult())return;const t=state.templates.find(t=>t.id===id),freq=$('#modal [name=frequency]');if(!freq)return;freq.insertAdjacentHTML('beforeend',`<option value="flexible">${esc(t5('freqFlexible'))}</option><option value="monthly">${esc(t5('freqMonthly'))}</option>`);freq.value=t?.frequency||'daily';const grid=freq.closest('.form-grid');grid.insertAdjacentHTML('afterend',`<div class="form-grid mt" id="web5-task-options">${field(t5('quotaWeek'),'quota',t?.quota||3,'number','min="1" max="7" required')}${field(t5('monthDayField'),'monthDay',t?.monthDay||1,'number','min="1" max="28" required')}</div><p class="small muted mt">${esc(t5('flexibleHint'))}</p><label class="check-label"><input name="allowEarly" type="checkbox" ${t?.allowEarly?'checked':''}>${esc(t5('allowEarly'))}</label>`);if(t)$('#modal .modal-footer').insertAdjacentHTML('afterbegin',btn(esc(t5('duplicate')),'web5-task-duplicate',vattr(t.id),'secondary'));}
+function missionChooser(mid=null){
+ if(!needAdult())return;
+ const list=state.templates.filter(tpl=>tpl.active!==false);
+ openModal(t5('missionChooserTitle'),`<p class="dialog-description">${esc(t5('missionChooserSub'))}</p><label class="field"><span>${esc(t5('missionChooserPick'))}</span><select name="pickId" data-change="mission-chooser-mode" aria-label="${esc(t5('missionChooserPick'))}"><option value="">${esc(t5('missionChooserNew'))}</option>${list.map(tpl=>`<option value="${esc(tpl.id)}">${esc(tpl.title)}</option>`).join('')}</select></label><div id="mission-chooser-new">${field(t5('missionChooserNew'),'newTitle','','text',`maxlength="160" placeholder="${esc(t5('missionChooserNewPh'))}"`)}</div><div class="mt">${btn(esc(t5('missionChooserOneOff')),'mission-one-off',mid?`data-member="${esc(mid)}"`:'','secondary wide','sparkles')}</div>${footer(esc(t5('missionChooserContinue')))}`,fd=>{
+  const pick=String(fd.get('pickId')||'').trim();
+  const newTitle=String(fd.get('newTitle')||'').trim();
+  if(!pick&&!newTitle)throw new Error(t5('missionChooserNeedPick'));
+  queueMicrotask(()=>{if(pick)taskForm(pick,mid,{forceForm:true});else taskForm(null,mid,{forceForm:true,presetTitle:newTitle});});
+  return true;
+ });
+ queueMicrotask(()=>{const sel=$('#modal [name=pickId]'),box=$('#mission-chooser-new');if(!sel||!box)return;const sync=()=>{box.classList.toggle('hidden',!!sel.value);const input=box.querySelector('[name=newTitle]');if(input)input.required=!sel.value;};sel.addEventListener('change',sync);sync();});
+}
+function updateTaskFreqUI(){
+ const freq=$('#modal [name=frequency]');if(!freq)return;
+ const v=freq.value;
+ const quota=$('#modal [name=quota]')?.closest('.field');
+ const month=$('#modal [name=monthDay]')?.closest('.field');
+ const daysBlock=$('#modal .days-picker')?.closest('.field');
+ const flexHint=$('#web5-freq-hint');
+ if(quota)quota.classList.toggle('hidden',v!=='flexible');
+ if(month)month.classList.toggle('hidden',v!=='monthly');
+ if(daysBlock)daysBlock.classList.toggle('hidden',v==='monthly');
+ if(flexHint)flexHint.textContent=v==='monthly'?t5('freqMonthlyHint'):v==='flexible'?t5('flexibleHint'):'';
+ flexHint?.classList.toggle('hidden',!['flexible','monthly'].includes(v));
+ const qEl=$('#modal [name=quota]'),mEl=$('#modal [name=monthDay]');
+ if(qEl)qEl.required=v==='flexible';
+ if(mEl)mEl.required=v==='monthly';
+}
+window.updateTaskFreqUI=updateTaskFreqUI;
+function taskForm(id=null,mid=null,opts={}){
+ if(!needAdult())return;
+ if(!id&&!opts.forceForm&&!opts.presetTitle&&state.templates.some(tpl=>tpl.active!==false)){missionChooser(mid);return;}
+ taskFormBefore5(id,mid);if(!isAdult())return;
+ const tpl=state.templates.find(x=>x.id===id),freq=$('#modal [name=frequency]');if(!freq)return;
+ if(![...freq.options].some(o=>o.value==='flexible'))freq.insertAdjacentHTML('beforeend',`<option value="flexible">${esc(t5('freqFlexible'))}</option><option value="monthly">${esc(t5('freqMonthly'))}</option>`);
+ freq.value=tpl?.frequency||'daily';
+ if(opts.presetTitle&&!id){const titleEl=$('#modal [name=title]');if(titleEl)titleEl.value=opts.presetTitle;}
+ const grid=freq.closest('.form-grid');
+ if(!$('#web5-task-options'))grid.insertAdjacentHTML('afterend',`<div class="form-grid mt" id="web5-task-options">${field(t5('quotaWeek'),'quota',tpl?.quota||3,'number','min="1" max="7"')}${field(t5('monthDayField'),'monthDay',tpl?.monthDay||1,'number','min="1" max="28"')}</div><p class="small muted mt" id="web5-freq-hint"></p><label class="check-label"><input name="allowEarly" type="checkbox" ${tpl?.allowEarly?'checked':''}>${esc(t5('allowEarly'))}</label>`);
+ updateTaskFreqUI();
+ if(tpl&&!$('#modal [data-action="web5-task-duplicate"]'))$('#modal .modal-footer').insertAdjacentHTML('afterbegin',btn(esc(t5('duplicate')),'web5-task-duplicate',vattr(tpl.id),'secondary'));
+}
 function eventForm(id=null,d=null,copyId=null,type='family'){
  eventFormBefore5(id,d,copyId,type);if(!isAdult())return;
  const e=state.events.find(e=>e.id===(id||copyId)),root=e?.seriesId?state.events.find(x=>x.id===e.seriesId):null,spec=root?.recurrence||e?.recurrence||{frequency:'none',interval:1,until:C.addDays(e?.date||d||C.iso(),90)};
@@ -263,8 +304,10 @@ async function web5Action(a,d,el,event){
  case 'guide-skip':{const g=readGuide($('#family-guide'));const family=(g.familyName||state.settings.familyName||'La Homa').trim()||'La Homa';const adultName=(g.adultName||state.members.find(m=>m.role==='adult')?.name||t5('adultFallbackName')).trim()||t5('adultFallbackName');g.familyName=family;g.adultName=adultName;if(!normalizeRelation(g.adultRelation))g.adultRelation='padre';g.step=2;try{finishGuide();clearTour(true);removeTourDom();render();}catch(err){toast(err.message,true);}return true;}
  case 'web5-notification-settings':notificationSettings5();return true;
  case 'web5-task-presets':taskPresets5();return true;
- case 'web5-task-preset':{const s=modalContext.presets[Number(d.index)];closeModal(true);taskForm();const f=$('#modal-form');f.elements.title.value=s[0];f.elements.icon.value=[...f.elements.icon.options].some(o=>o.value===s[1])?s[1]:'house';f.elements.frequency.value=s[2];f.elements.points.value=s[3];return true;}
- case 'web5-task-duplicate':{const t=state.templates.find(x=>x.id===d.id);if(!t)return true;closeModal(true);taskForm();const f=$('#modal-form');for(const k of ['title','description','points','frequency','category','icon','quota','monthDay'])if(f.elements[k]&&t[k]!=null)f.elements[k].value=k==='title'?t5('copyOf',{title:t[k]}):t[k];f.querySelectorAll('[name=members]').forEach(x=>x.checked=t.memberIds.includes(x.value));return true;}
+ case 'web5-task-preset':{const s=modalContext.presets[Number(d.index)];closeModal(true);taskForm(null,null,{forceForm:true,presetTitle:s[0]});const f=$('#modal-form');if(!f)return true;f.elements.icon.value=[...f.elements.icon.options].some(o=>o.value===s[1])?s[1]:'house';f.elements.frequency.value=s[2];f.elements.points.value=s[3];if(typeof window.updateTaskFreqUI==='function')window.updateTaskFreqUI();return true;}
+ case 'web5-task-duplicate':{const tpl=state.templates.find(x=>x.id===d.id);if(!tpl)return true;closeModal(true);taskForm(null,null,{forceForm:true,presetTitle:t5('copyOf',{title:tpl.title})});const f=$('#modal-form');if(!f)return true;for(const k of ['description','points','frequency','category','icon','quota','monthDay'])if(f.elements[k]&&tpl[k]!=null)f.elements[k].value=tpl[k];f.querySelectorAll('[name=members]').forEach(x=>x.checked=tpl.memberIds.includes(x.value));if(typeof window.updateTaskFreqUI==='function')window.updateTaskFreqUI();return true;}
+ case 'mission-one-off':{closeModal(true);recoveryForm(d.member||null,current().id);return true;}
+ case 'mission-chooser-mode':return true;
  case 'web5-series-edit':{if(!closeModal()){web5.queued=()=>eventForm(d.id);return true;}eventForm(d.id);return true;}
  case 'web5-list-new':openModal(t5('newList'),`${field(t5('fieldName'),'name','','text',`required maxlength="60" placeholder="${esc(t5('listNamePh'))}"`)}${field(t5('anIcon'),'icon','\u{1F6D2}','text','required maxlength="20"')}${footer(esc(t5('createList')))}`,fd=>transact(s=>{web5.shoppingList=C.addShoppingList(s,fd.get('name'),actor,fd.get('icon')).id;},t5('listCreated')));return true;
  case 'web5-list-archive':confirmDialog(t5('archiveList'),t5('archiveListBody'),()=>transact(s=>C.archiveShoppingList(s,d.id,actor),t5('listArchived')));return true;
@@ -327,6 +370,17 @@ document.addEventListener('submit',async e=>{
 window.addEventListener('beforeunload',e=>{if($('#modal')?.open&&modalSubmit&&web5.modalInitial&&modalSnapshot5()!==web5.modalInitial){e.preventDefault();e.returnValue='';}});
 $('#modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
 
-document.addEventListener('change',e=>{if(e.target.dataset.change==='task-frequency'&&['flexible','monthly'].includes(e.target.value)){document.querySelectorAll('#modal [name=days]').forEach(x=>x.checked=true);const hint=document.querySelector('#frequency-hint');if(hint)hint.textContent=e.target.value==='flexible'?t5('flexibleHintShort'):t5('monthlyHintShort');}});
+document.addEventListener('change',e=>{
+ if(e.target.dataset.change==='task-frequency'){
+  if(['flexible','monthly','daily'].includes(e.target.value))document.querySelectorAll('#modal [name=days]').forEach(x=>x.checked=true);
+  const hint=document.querySelector('#frequency-hint');
+  if(hint)hint.textContent=e.target.value==='flexible'?t5('flexibleHintShort'):e.target.value==='monthly'?t5('monthlyHintShort'):e.target.value==='daily'?t5('hintDaily'):e.target.value==='weekly'?t5('hintWeekly'):t5('hintCustom');
+  updateTaskFreqUI();
+ }
+ if(e.target.dataset.change==='mission-chooser-mode'){
+  const box=document.querySelector('#mission-chooser-new');
+  if(box){box.classList.toggle('hidden',!!e.target.value);const input=box.querySelector('[name=newTitle]');if(input)input.required=!e.target.value;}
+ }
+});
 
 async function cloudFunction5(name,payload){const client=await cloudClient();const {data,error}=await client.functions.invoke(name,{body:payload});if(error)throw new Error(t5('webServiceFail'));return data;}
