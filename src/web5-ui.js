@@ -144,9 +144,10 @@ function renderAdultProfileGate(){
 }
 function renderJoinFamilyGate(){
  const mode=ui.joinFamily==='code'?'code':'choice';
- const body=mode==='code'
-  ?`<p class="auth-sub">${esc(t5('joinFamilyCodeSub'))}</p>${field(t5('invite'),'inviteCode','','text','required maxlength="64" autocomplete="off" spellcheck="false" inputmode="text")}${access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:''}<button type="submit" class="btn primary wide" ${access.busy?'disabled':''}>${access.busy?esc(t5('joiningFamily')):esc(t5('joinFamilySubmit'))}</button><button type="button" class="text-btn wide mt" data-action="join-family-back">${esc(t5('back'))}</button>`
-  :`<p class="auth-sub">${esc(t5('joinFamilySub'))}</p><button type="button" class="btn primary wide" data-action="join-family-code">${esc(t5('joinFamilyWithCode'))}</button><button type="button" class="btn secondary wide mt" data-action="join-family-create">${esc(t5('joinFamilyCreate'))}</button>`;
+ const msg=access.message?`<div class="note ${access.error?'warning':'success'} mb" role="status">${esc(access.message)}</div>`:'';
+ const codeBody=`<p class="auth-sub">${esc(t5('joinFamilyCodeSub'))}</p>${field(t5('invite'),'inviteCode','','text','required maxlength="64" autocomplete="off" spellcheck="false" inputmode="text"')}${msg}<button type="submit" class="btn primary wide" ${access.busy?'disabled':''}>${access.busy?esc(t5('joiningFamily')):esc(t5('joinFamilySubmit'))}</button><button type="button" class="text-btn wide mt" data-action="join-family-back">${esc(t5('back'))}</button>`;
+ const choiceBody=`<p class="auth-sub">${esc(t5('joinFamilySub'))}</p><button type="button" class="btn primary wide" data-action="join-family-code">${esc(t5('joinFamilyWithCode'))}</button><button type="button" class="btn secondary wide mt" data-action="join-family-create">${esc(t5('joinFamilyCreate'))}</button>`;
+ const body=mode==='code'?codeBody:choiceBody;
  $('#app').innerHTML=`<div class="auth-layout"><section class="auth-story"><div class="brand"><div class="brand-mark">${icon('house')}</div><span>La <span style="color:var(--purple)">Homa</span><small>${esc(t5('brandSub'))}</small></span></div><span class="auth-eyebrow">${esc(t5('joinFamilyEyebrow'))}</span><h1>${esc(t5('joinFamilyTitle'))}</h1><p>${esc(t5('joinFamilyStory'))}</p></section><section class="auth-panel"><form id="join-family-form" class="auth-card"><h2>${esc(mode==='code'?t5('joinFamilyWithCode'):t5('joinFamilyTitle'))}</h2>${body}</form></section></div>`;
 }
 
